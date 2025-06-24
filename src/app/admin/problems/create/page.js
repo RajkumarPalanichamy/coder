@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
-import AdminSidebar from '@/components/AdminSidebar';
+import AdminSidebar from '../../../components/AdminSidebar';
 
 export default function AdminProblemCreatePage() {
   const [formData, setFormData] = useState({

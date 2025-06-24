@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import TestTaking from '@/src/app/components/TestTaking';
+import TestTaking from '../../components/TestTaking';
 
 export default function TakeTestPage() {
   const router = useRouter();
