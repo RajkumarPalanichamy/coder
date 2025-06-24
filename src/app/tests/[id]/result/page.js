@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import TestResult from '../../components/TestResult';
+import TestResult from '../../../components/TestResult';
 
 export default function TestResultPage() {
   const params = useParams();

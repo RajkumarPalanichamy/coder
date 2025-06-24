@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/src/lib/mongodb';
-import Test from '@/src/models/Test';
-import MCQ from '@/src/models/MCQ';
-import StudentTestSubmission from '@/src/models/StudentTestSubmission';
-import { getUserFromRequest, requireStudent } from '@/src/lib/auth';
+import dbConnect from '../../../../../lib/mongodb';
+import Test from '../../../../../models/Test';
+import MCQ from '../../../../../models/MCQ';
+import StudentTestSubmission from '../../../../../models/StudentTestSubmission';
+import { getUserFromRequest, requireStudent } from '../../../../../lib/auth';
 
 export async function POST(req, { params }) {
   await dbConnect();
