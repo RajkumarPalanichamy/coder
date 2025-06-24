@@ -1,0 +1,17 @@
+import { NextResponse } from 'next/server';
+import dbConnect from '@/src/lib/mongodb';
+import Test from '@/src/models/Test';
+import StudentTestSubmission from '@/src/models/StudentTestSubmission';
+import { getUserFromRequest, requireStudent } from '@/src/lib/auth';
+
+export async function GET(req, { params }) {
+  await dbConnect();
+  const user = await getUserFromRequest(req);
+  requireStudent(user);
+  const test = await Test.findById(params.id).populate('mcqs');
+  if (!test) return NextResponse.json({ error: 'Test not found' }, { status: 404 });
+  const submission = await StudentTestSubmission.findOne({ student: user._id, test: test._id });
+  if (!submission) return NextResponse.json({ error: 'No submission' }, { status: 404 });
+  const correctAnswers = test.mcqs.map(mcq => mcq.correctOption);
+  return NextResponse.json({ answers: submission.answers, score: submission.score, correctAnswers });
+} 
