@@ -6,8 +6,8 @@ const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Problems', href: '/admin/problems', icon: BookOpen },
   { label: 'MCQ Management', href: '/admin/mcqs', icon: BookOpen },
-  { label: 'Test Management', href: '/admin/tests', icon: BookOpen },
-  { label: 'Students', href: '/admin/students', icon: Users },
+  // { label: 'Test Management', href: '/admin/tests', icon: BookOpen },
+  // { label: 'Students', href: '/admin/students', icon: Users },
 ];
 
 export default function AdminSidebar({ onLogout }) {
@@ -17,7 +17,7 @@ export default function AdminSidebar({ onLogout }) {
       {/* Logo / App Name */}
       <div className="flex items-center justify-center md:justify-start h-16 px-4 border-b border-indigo-100">
         <Code2 className="h-8 w-8 text-indigo-600" />
-        <span className="hidden md:inline ml-2 text-xl font-bold text-indigo-700 tracking-tight">CodeMaster</span>
+        <span className="hidden md:inline ml-2 text-xl font-bold text-indigo-700 tracking-tight">Zenith Mentor</span>
       </div>
       {/* Navigation */}
       <nav className="flex-1 flex flex-col gap-2 py-6 px-2 md:px-4">

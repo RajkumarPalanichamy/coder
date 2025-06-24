@@ -82,7 +82,7 @@ export default function Dashboard() {
                   {user.firstName[0]}{user.lastName[0]}
                 </div>
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold leading-tight">Welcome, {user.firstName}!</h1>
+                  <h1 className="text-xl md:text-2xl text-indigo-700 font-bold leading-tight">Welcome, {user.firstName}!</h1>
                   <p className="text-gray-600 text-sm">Ready to solve some problems?</p>
                 </div>
               </div>

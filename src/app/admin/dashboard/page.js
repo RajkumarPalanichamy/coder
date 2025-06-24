@@ -35,7 +35,7 @@ export default function AdminDashboard() {
     totalSubmissions: 0
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('students');
   const [language, setLanguage] = useState('');
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
         <AdminStatsCards stats={stats} />
-        <div className="flex items-center gap-2 mb-6">
+        {/* <div className="flex items-center gap-2 mb-6">
           <label htmlFor="language" className="text-sm font-medium text-gray-700">Filter by Language:</label>
           <select
             id="language"
@@ -163,11 +163,11 @@ export default function AdminDashboard() {
               <option key={lang.value} value={lang.value}>{lang.label}</option>
             ))}
           </select>
-        </div>
+        </div> */}
         <div className="bg-white rounded-lg shadow">
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8 px-6">
-              <button
+              {/* <button
                 onClick={() => setActiveTab('overview')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'overview'
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
                 }`}
               >
                 Overview
-              </button>
+              </button> */}
               <button
                 onClick={() => setActiveTab('students')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
             </nav>
           </div>
           <div className="p-6">
-            {activeTab === 'overview' && (
+            {/* {activeTab === 'overview' && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
                 <div className="space-y-4">
@@ -209,7 +209,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
             {activeTab === 'students' && (
               <div>
                 <div className="flex justify-between items-center mb-4">
