@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function StudentMCQPage() {
   const [mcqs, setMcqs] = useState([]);
@@ -8,6 +9,7 @@ export default function StudentMCQPage() {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [lastScore, setLastScore] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     fetchMCQs();
@@ -68,6 +70,13 @@ export default function StudentMCQPage() {
   if (submitted) {
     return (
       <div className="max-w-2xl mx-auto py-12">
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard')}
+          className="mb-6 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow"
+        >
+          ← Back to Dashboard
+        </button>
         <h1 className="text-2xl font-bold mb-4 text-black">MCQ Results</h1>
         <div className="mb-6 text-lg">You got <span className="font-bold text-green-700">{lastScore}</span> out of <span className="font-bold">{mcqs.length}</span> correct.</div>
         <div className="space-y-6">
@@ -95,6 +104,13 @@ export default function StudentMCQPage() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl mx-auto py-12">
+      <button
+        type="button"
+        onClick={() => router.push('/dashboard')}
+        className="mb-6 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow"
+      >
+        ← Back to Dashboard
+      </button>
       <h1 className="text-2xl font-bold mb-4 text-black">MCQ Practice</h1>
       {lastScore !== null && (
         <div className="mb-4 text-green-700 font-semibold">Last Score: {lastScore} / {mcqs.length}</div>
