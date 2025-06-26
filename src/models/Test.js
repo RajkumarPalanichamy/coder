@@ -1,9 +1,16 @@
 import mongoose from 'mongoose';
 
+const MCQSchema = new mongoose.Schema({
+  question: { type: String, required: true },
+  options: [{ type: String, required: true }],
+  correctOption: { type: Number, required: true },
+  // Add more fields if needed
+}, { _id: true });
+
 const TestSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
-  mcqs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MCQ', required: true }],
+  mcqs: [MCQSchema], // Embedded MCQs
   language: { type: String },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   availableFrom: { type: Date },

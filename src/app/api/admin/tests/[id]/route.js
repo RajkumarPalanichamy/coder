@@ -5,7 +5,7 @@ import { getUserFromRequest, requireAdmin } from '@/lib/auth';
 
 export async function GET(req, { params }) {
   await dbConnect();
-  const test = await Test.findById(params.id).populate('mcqs');
+  const test = await Test.findById(params.id);
   if (!test) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(test);
 }
@@ -19,7 +19,7 @@ export async function PUT(req, { params }) {
     params.id,
     { title, description, mcqs, language, availableFrom, availableTo },
     { new: true }
-  ).populate('mcqs');
+  );
   if (!test) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(test);
 }

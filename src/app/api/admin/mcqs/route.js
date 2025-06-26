@@ -16,8 +16,8 @@ export async function POST(req) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
-  const { question, options, correctOption, language } = await req.json();
-  if (!question || !options || correctOption === undefined) {
+  const { question, options, correctOption, language, test } = await req.json();
+  if (!question || !options || correctOption === undefined || !test) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
   const mcq = await MCQ.create({
@@ -26,6 +26,7 @@ export async function POST(req) {
     correctOption,
     language,
     createdBy: user._id,
+    test,
   });
   return NextResponse.json(mcq);
 } 

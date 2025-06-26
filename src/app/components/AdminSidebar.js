@@ -1,11 +1,14 @@
 import Link from 'next/link';
-import { Users, BookOpen, LayoutDashboard, LogOut, Code2 } from 'lucide-react';
+import { Users, BookOpen, LayoutDashboard, LogOut, Code2, ListChecks } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { label: 'Students', href: '/admin/students', icon: Users },
   { label: 'Problems', href: '/admin/problems', icon: BookOpen },
   { label: 'MCQ Management', href: '/admin/mcqs', icon: BookOpen },
+  { label: 'Tests', href: '/admin/tests', icon: ListChecks },
+  { label: 'MCQs by Test', href: '/admin/mcqs-by-test', icon: BookOpen },
   // { label: 'Test Management', href: '/admin/tests', icon: BookOpen },
   // { label: 'Students', href: '/admin/students', icon: Users },
 ];
