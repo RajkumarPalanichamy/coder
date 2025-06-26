@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import TestTaking from '../../components/TestTaking';
+import TestTaking from '../../../components/TestTaking';
 
 export default function TakeTestPage() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function TakeTestPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ answers }),
     });
-    router.push(`/tests/${params.id}/result`);
+    router.push('/dashboard/tests');
   };
   if (!test) return <div>Loading...</div>;
   return (

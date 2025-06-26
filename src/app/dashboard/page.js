@@ -22,11 +22,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState('');
   const [user, setUser] = useState(null);
+  const [tests, setTests] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
     fetchStatsAndProblems();
     fetchUser();
+    fetchTests();
   }, [language]);
 
   const fetchStatsAndProblems = async () => {
@@ -64,6 +66,16 @@ export default function Dashboard() {
     }
   };
 
+  const fetchTests = async () => {
+    try {
+      const res = await fetch('/api/tests');
+      const data = await res.json();
+      setTests(data);
+    } catch (err) {
+      // handle error
+    }
+  };
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
@@ -71,7 +83,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <StudentSidebar onLogout={handleLogout} />
+      <StudentSidebar onLogout={handleLogout} user={user} />
       <main className="flex-1 px-0 md:px-8 py-0 md:py-8 relative">
         {/* Sticky header */}
         <div className="sticky top-0 z-20 bg-gradient-to-br from-blue-50 to-indigo-100 px-4 md:px-0 pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-indigo-100">
@@ -93,7 +105,7 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-indigo-500" />
             <div className="flex gap-1 bg-white rounded-full shadow px-2 py-1">
               {LANGUAGES.map(lang => (
@@ -110,12 +122,46 @@ export default function Dashboard() {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Stats */}
         <div className="max-w-7xl mx-auto px-4 md:px-0 mt-6">
           <StudentStatsCards stats={stats} />
+        </div>
+
+        {/* Available Tests Section */}
+        <div className="max-w-7xl mx-auto px-4 md:px-0 mt-8">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-indigo-500" />
+              <h2 className="text-xl font-semibold tracking-tight">Available Tests</h2>
+            </div>
+            <button
+              onClick={() => router.push('/tests')}
+              className="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition-colors"
+            >
+              View All Tests
+            </button>
+          </div>
+          {tests.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No tests available.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {tests.slice(0, 3).map(test => (
+                <div key={test._id} className="border rounded p-4 bg-white shadow hover:shadow-lg transition-shadow">
+                  <div className="font-semibold text-lg text-black mb-1">{test.title}</div>
+                  <div className="text-gray-600 mb-2 line-clamp-2">{test.description}</div>
+                  <button
+                    onClick={() => router.push(`/tests/${test._id}`)}
+                    className="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm mt-2"
+                  >
+                    Start Test
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Problems Section */}
