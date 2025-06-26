@@ -36,8 +36,7 @@ const problemSchema = new mongoose.Schema({
     trim: true
   },
   constraints: {
-    type: String,
-    required: true
+    type: String
   },
   examples: [{
     input: String,
@@ -50,8 +49,7 @@ const problemSchema = new mongoose.Schema({
     required: true
   },
   solution: {
-    type: String,
-    required: true
+    type: String
   },
   timeLimit: {
     type: Number,

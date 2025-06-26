@@ -11,15 +11,22 @@ export default function StudentSubmissionsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchSubmissions();
+    fetchAllSubmissions();
   }, []);
 
-  const fetchSubmissions = async () => {
+  const fetchAllSubmissions = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/submissions');
-      const data = await res.json();
-      setSubmissions(data.submissions || []);
+      const [problemRes, testRes] = await Promise.all([
+        fetch('/api/submissions'),
+        fetch('/api/test-submissions')
+      ]);
+      const problemData = await problemRes.json();
+      const testData = await testRes.json();
+      // Add type for rendering
+      const problemSubs = (problemData.submissions || []).map(s => ({ ...s, type: 'problem' }));
+      const testSubs = (testData.submissions || []).map(s => ({ ...s, type: 'test' }));
+      setSubmissions([...problemSubs, ...testSubs]);
     } catch (err) {
       // handle error
     } finally {

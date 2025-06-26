@@ -8,7 +8,7 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const language = searchParams.get('language');
   const filter = language ? { language } : {};
-  const tests = await Test.find(filter).populate('mcqs');
+  const tests = await Test.find(filter);
   return NextResponse.json(tests);
 }
 

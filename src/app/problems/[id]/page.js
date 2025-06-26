@@ -15,6 +15,8 @@ export default function ProblemPage() {
   const [result, setResult] = useState(null);
   const [canSubmit, setCanSubmit] = useState(false);
   const [runResult, setRunResult] = useState(null);
+  const [runTestResults, setRunTestResults] = useState(null);
+  const [runError, setRunError] = useState('');
   const codeRef = useRef(null);
 
   useEffect(() => {
@@ -42,13 +44,35 @@ export default function ProblemPage() {
   const handleRun = async () => {
     setRunResult(null);
     setCanSubmit(false);
-    // Simulate code run: if code contains 'return', consider it a pass
-    if (code.includes('return')) {
-      setRunResult({ status: 'success', message: 'All test cases passed!' });
-      setCanSubmit(true);
-    } else {
-      setRunResult({ status: 'error', message: 'Some test cases failed. Please check your code.' });
-      setCanSubmit(false);
+    setRunTestResults(null);
+    setRunError('');
+    // Only use non-hidden test cases
+    const sampleTestCases = (problem.testCases || []).filter(tc => !tc.isHidden);
+    if (!sampleTestCases.length) {
+      setRunError('No sample test cases available.');
+      return;
+    }
+    try {
+      // Mock API call to /api/execute
+      const response = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language,
+          testCases: sampleTestCases
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setRunError(data.error || 'Code execution failed.');
+        return;
+      }
+      setRunTestResults(data.results); // [{input, expected, actual, passed, error}]
+      // If all passed, allow submit
+      setCanSubmit(data.results.every(r => r.passed));
+    } catch (err) {
+      setRunError('Error running code.');
     }
   };
 
@@ -106,6 +130,10 @@ export default function ProblemPage() {
   const getLineNumbers = () => {
     return code.split('\n').map((_, i) => i + 1).join('\n');
   };
+
+  // After submission, show all test case results, grouped by sample and hidden
+  const sampleResults = runTestResults ? runTestResults.filter((tc, idx) => problem.testCases && !problem.testCases[idx].isHidden) : [];
+  const hiddenResults = runTestResults ? runTestResults.filter((tc, idx) => problem.testCases && problem.testCases[idx].isHidden) : [];
 
   if (loading) {
     return (
@@ -195,6 +223,22 @@ export default function ProblemPage() {
                   ))}
                 </div>
               )}
+
+              {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Sample Test Cases:</h3>
+                  {problem.testCases.filter(tc => !tc.isHidden).map((tc, idx) => (
+                    <div key={idx} className="bg-gray-50 rounded p-3 mb-2">
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Input:</strong> {tc.input}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Expected Output:</strong> {tc.output}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -234,7 +278,80 @@ export default function ProblemPage() {
                   placeholder="Write your code here..."
                 />
               </div>
-              
+              {/* Error message for run code */}
+              {runError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+                  {runError}
+                </div>
+              )}
+              {/* Test case results table */}
+              {runTestResults && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Test Case Results:</h3>
+                  {sampleResults.length > 0 && (
+                    <div className="mb-2">
+                      <div className="font-semibold text-green-700">Sample Test Cases</div>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-xs border mb-2">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="px-2 py-1 border">#</th>
+                              <th className="px-2 py-1 border">Input</th>
+                              <th className="px-2 py-1 border">Expected Output</th>
+                              <th className="px-2 py-1 border">Your Output</th>
+                              <th className="px-2 py-1 border">Result</th>
+                              <th className="px-2 py-1 border">Error</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sampleResults.map((res, idx) => (
+                              <tr key={idx} className={res.passed ? 'bg-green-50' : 'bg-red-50'}>
+                                <td className="px-2 py-1 border text-center">{idx + 1}</td>
+                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.input}</td>
+                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.expected}</td>
+                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.actual}</td>
+                                <td className="px-2 py-1 border text-center">{res.passed ? <span className="text-green-700 font-bold">Pass</span> : <span className="text-red-700 font-bold">Fail</span>}</td>
+                                <td className="px-2 py-1 border text-xs text-red-600">{res.error || ''}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                  {hiddenResults.length > 0 && (
+                    <div className="mb-2">
+                      <div className="font-semibold text-blue-700">Hidden Test Cases</div>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-xs border">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="px-2 py-1 border">#</th>
+                              <th className="px-2 py-1 border">Input</th>
+                              <th className="px-2 py-1 border">Expected Output</th>
+                              <th className="px-2 py-1 border">Your Output</th>
+                              <th className="px-2 py-1 border">Result</th>
+                              <th className="px-2 py-1 border">Error</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {hiddenResults.map((res, idx) => (
+                              <tr key={idx} className={res.passed ? 'bg-green-50' : 'bg-red-50'}>
+                                <td className="px-2 py-1 border text-center">{idx + 1}</td>
+                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.input}</td>
+                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.expected}</td>
+                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.actual}</td>
+                                <td className="px-2 py-1 border text-center">{res.passed ? <span className="text-green-700 font-bold">Pass</span> : <span className="text-red-700 font-bold">Fail</span>}</td>
+                                <td className="px-2 py-1 border text-xs text-red-600">{res.error || ''}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="mt-4 flex space-x-4">
                 <button
                   onClick={handleRun}

@@ -9,11 +9,17 @@ export default function EditMCQPage() {
   const router = useRouter();
   const params = useParams();
   const [mcq, setMcq] = useState(null);
+  const [testList, setTestList] = useState([]);
+
   useEffect(() => {
     fetch(`/api/admin/mcqs/${params.id}`)
       .then(res => res.json())
       .then(setMcq);
+    fetch('/api/admin/tests')
+      .then(res => res.json())
+      .then(setTestList);
   }, [params.id]);
+
   const handleSubmit = async (data) => {
     await fetch(`/api/admin/mcqs/${params.id}`, {
       method: 'PUT',
@@ -33,7 +39,7 @@ export default function EditMCQPage() {
             &#8592; Back to MCQ Management
           </Link>
           <h1 className="text-2xl font-bold mb-4 text-black">Edit MCQ</h1>
-          <MCQForm initialData={mcq} onSubmit={handleSubmit} />
+          <MCQForm initialData={mcq} onSubmit={handleSubmit} testList={testList} />
         </div>
       </main>
     </div>
