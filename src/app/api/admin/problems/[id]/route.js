@@ -32,6 +32,8 @@ export async function PUT(request, { params }) {
     problem.solution = body.solution;
     problem.tags = body.tags;
     problem.isActive = body.isActive;
+    problem.examples = body.examples;
+    problem.testCases = body.testCases;
     await problem.save();
     return NextResponse.json({ message: 'Problem updated successfully', problem });
   } catch (error) {

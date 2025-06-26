@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
+import { getUserFromRequest } from '@/lib/auth';
 
 export async function GET(request) {
   try {
@@ -55,8 +56,11 @@ export async function POST(request) {
       );
     }
 
-    // Get user ID from headers (set by middleware)
-    const userId = request.headers.get('user-id');
+    // Get user from request
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Create new problem
     const problem = new Problem({
@@ -70,7 +74,7 @@ export async function POST(request) {
       starterCode,
       solution: solution || '',
       tags: tags || [],
-      createdBy: userId
+      createdBy: user._id
     });
 
     await problem.save();
@@ -86,7 +90,11 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error creating problem:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred.',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      },
       { status: 500 }
     );
   }
