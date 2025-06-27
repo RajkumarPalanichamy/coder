@@ -52,13 +52,13 @@ export default function TestListPage() {
             <select value={language} onChange={e => setLanguage(e.target.value)} className="border rounded px-3 py-1">
               {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
-            <input
+            {/* <input
               type="text"
               placeholder="Search tests by title..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full sm:w-72 px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            />
+            /> */}
           </div>
           {loading ? (
             <div>Loading...</div>

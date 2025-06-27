@@ -213,6 +213,44 @@ export default function AdminDashboard() {
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
         <AdminStatsCards stats={stats} />
+        {/* Navigation Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+          <button
+            onClick={() => router.push('/admin/students')}
+            className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"
+          >
+            <Users className="h-8 w-8 text-indigo-600 mb-2" />
+            <span className="font-semibold text-lg">Students</span>
+          </button>
+          <button
+            onClick={() => router.push('/admin/problems')}
+            className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"
+          >
+            <BookOpen className="h-8 w-8 text-indigo-600 mb-2" />
+            <span className="font-semibold text-lg">Problems</span>
+          </button>
+          <button
+            onClick={() => router.push('/admin/mcqs')}
+            className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"
+          >
+            <Edit className="h-8 w-8 text-indigo-600 mb-2" />
+            <span className="font-semibold text-lg">MCQs</span>
+          </button>
+          <button
+            onClick={() => router.push('/admin/tests')}
+            className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"
+          >
+            <BarChart3 className="h-8 w-8 text-indigo-600 mb-2" />
+            <span className="font-semibold text-lg">Tests</span>
+          </button>
+          <button
+            onClick={() => router.push('/admin/submissions')}
+            className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"
+          >
+            <Code className="h-8 w-8 text-indigo-600 mb-2" />
+            <span className="font-semibold text-lg">Submissions</span>
+          </button>
+        </div>
       </main>
     </div>
   );

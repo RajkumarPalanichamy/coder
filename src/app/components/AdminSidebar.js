@@ -8,6 +8,7 @@ const navItems = [
   { label: 'Problems', href: '/admin/problems', icon: BookOpen },
   // { label: 'MCQ Management', href: '/admin/mcqs', icon: BookOpen },
   { label: 'Tests', href: '/admin/tests', icon: ListChecks },
+  { label: 'Submissions', href: '/admin/submissions', icon: Code2 },
   // { label: 'MCQs by Test', href: '/admin/mcqs-by-test', icon: BookOpen },
   // { label: 'Test Management', href: '/admin/tests', icon: BookOpen },
   // { label: 'Students', href: '/admin/students', icon: Users },
