@@ -83,7 +83,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <StudentSidebar onLogout={handleLogout} user={user} />
+      <StudentSidebar onLogout={handleLogout}/>
       <main className="flex-1 px-0 md:px-8 py-0 md:py-8 relative">
         {/* Sticky header */}
         <div className="sticky top-0 z-20 bg-gradient-to-br from-blue-50 to-indigo-100 px-4 md:px-0 pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-indigo-100">
@@ -138,7 +138,7 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold tracking-tight">Available Tests</h2>
             </div>
             <button
-              onClick={() => router.push('/tests')}
+              onClick={() => router.push('/dashboard/tests')}
               className="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition-colors"
             >
               View All Tests
@@ -172,10 +172,10 @@ export default function Dashboard() {
               <h2 className="text-xl font-semibold tracking-tight">Available Problems</h2>
             </div>
             <button
-              onClick={() => router.push('/dashboard/submissions')}
+              onClick={() => router.push('/dashboard/problems')}
               className="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition-colors"
             >
-              My Submissions
+              View All Problems
             </button>
           </div>
           {loading ? (
@@ -184,7 +184,7 @@ export default function Dashboard() {
             <div className="text-center py-12 text-gray-500">No problems found for this language.</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {problems.map((problem) => (
+              {problems.slice(0, 3).map((problem) => (
                 <div key={problem._id} className="transition-transform hover:-translate-y-1">
                   <ProblemCard
                     problem={problem}

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { LayoutDashboard, BookOpen, Trophy, LogOut, Code2, ListChecks, UserCircle, FileText } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -10,7 +11,28 @@ const navItems = [
   { label: 'My Submissions', href: '/dashboard/submissions', icon: BookOpen },
 ];
 
-export default function StudentSidebar({ onLogout, user }) {
+export default function StudentSidebar({ onLogout }) {
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const fetchUser = async () => {
+    try {
+      const res = await fetch('/api/user/me');
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        if (data.user.role === 'admin') {
+          router.push('/admin/dashboard');
+        }
+      } else if (res.status === 401) {
+        router.push('/login');
+      }
+    } catch {
+      router.push('/login');
+    }
+  };
   const pathname = usePathname();
   // Get initials for profile section
   const initials = user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() : '';
