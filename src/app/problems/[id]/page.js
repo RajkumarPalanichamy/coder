@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Play, Save, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { Play, Save, ArrowLeft, CheckCircle, XCircle, Copy } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Monaco Editor (dynamically loaded to avoid SSR issues)
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 export default function ProblemPage() {
   const params = useParams();
@@ -18,6 +22,7 @@ export default function ProblemPage() {
   const [runTestResults, setRunTestResults] = useState(null);
   const [runError, setRunError] = useState('');
   const codeRef = useRef(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchProblem();
@@ -126,10 +131,13 @@ export default function ProblemPage() {
     }
   };
 
-  // Generate line numbers for code editor
-  const getLineNumbers = () => {
-    return code.split('\n').map((_, i) => i + 1).join('\n');
-  };
+  const handleCopy = useCallback(() => {
+    if (codeRef.current) {
+      navigator.clipboard.writeText(codeRef.current.getValue ? codeRef.current.getValue() : code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  }, [code]);
 
   // After submission, show all test case results, grouped by sample and hidden
   const sampleResults = runTestResults ? runTestResults.filter((tc, idx) => problem.testCases && !problem.testCases[idx].isHidden) : [];
@@ -243,10 +251,13 @@ export default function ProblemPage() {
           </div>
 
           {/* Code Editor */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="border-b border-gray-200 p-4">
-              <div className="flex justify-between items-center">
+          <div className="bg-white rounded-lg shadow flex flex-col">
+            <div className="border-b border-gray-200 p-4 flex justify-between items-center">
+              <div className="flex items-center space-x-2">
                 <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-700 capitalize">{language}</span>
+              </div>
+              <div className="flex items-center space-x-2">
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
@@ -258,105 +269,106 @@ export default function ProblemPage() {
                   <option value="cpp">C++</option>
                   <option value="c">C</option>
                 </select>
+                <button
+                  onClick={handleCopy}
+                  className={`flex items-center px-2 py-1 rounded text-xs border ${copied ? 'bg-green-100 border-green-300 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-700'} hover:bg-gray-200 transition`}
+                  title="Copy code"
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
               </div>
             </div>
-            
+            <div className="p-0 flex-1 min-h-[384px]">
+              <MonacoEditor
+                height="384px"
+                defaultLanguage={language}
+                language={language === 'cpp' ? 'cpp' : language}
+                value={code}
+                theme="vs-light"
+                options={{
+                  fontSize: 14,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  automaticLayout: true,
+                  lineNumbers: 'on',
+                  tabSize: 2,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  smoothScrolling: true,
+                  scrollbar: { vertical: 'auto', horizontal: 'auto' },
+                  suggestOnTriggerCharacters: false,
+                  quickSuggestions: false,
+                  wordBasedSuggestions: false,
+                  parameterHints: { enabled: false },
+                  tabCompletion: 'off',
+                  acceptSuggestionOnEnter: 'off',
+                  suggestSelection: 'first',
+                  snippetSuggestions: 'none',
+                }}
+                onChange={(value) => setCode(value || '')}
+                onMount={(editor) => { codeRef.current = editor; }}
+              />
+            </div>
             <div className="p-4">
-              <div className="flex rounded-md border border-gray-300 bg-white" style={{ minHeight: 384 }}>
-                <pre className="select-none text-gray-400 text-xs py-4 px-2 bg-gray-50 rounded-l-md border-r border-gray-200 font-mono" style={{ minWidth: 32, textAlign: 'right' }}>
-                  {getLineNumbers()}
-                </pre>
-                <textarea
-                  ref={codeRef}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full h-96 p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black bg-white resize-none rounded-r-md"
-                  style={{ minHeight: 384, lineHeight: '1.5', tabSize: 2, overflow: 'auto' }}
-                  spellCheck={false}
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  placeholder="Write your code here..."
-                />
-              </div>
               {/* Error message for run code */}
               {runError && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
                   {runError}
                 </div>
               )}
               {/* Test case results table */}
               {runTestResults && (
                 <div className="mt-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Test Case Results:</h3>
-                  {sampleResults.length > 0 && (
-                    <div className="mb-2">
-                      <div className="font-semibold text-green-700">Sample Test Cases</div>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-xs border mb-2">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="px-2 py-1 border">#</th>
-                              <th className="px-2 py-1 border">Input</th>
-                              <th className="px-2 py-1 border">Expected Output</th>
-                              <th className="px-2 py-1 border">Your Output</th>
-                              <th className="px-2 py-1 border">Result</th>
-                              <th className="px-2 py-1 border">Error</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sampleResults.map((res, idx) => (
-                              <tr key={idx} className={res.passed ? 'bg-green-50' : 'bg-red-50'}>
-                                <td className="px-2 py-1 border text-center">{idx + 1}</td>
-                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.input}</td>
-                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.expected}</td>
-                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.actual}</td>
-                                <td className="px-2 py-1 border text-center">{res.passed ? <span className="text-green-700 font-bold">Pass</span> : <span className="text-red-700 font-bold">Fail</span>}</td>
-                                <td className="px-2 py-1 border text-xs text-red-600">{res.error || ''}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                  {hiddenResults.length > 0 && (
-                    <div className="mb-2">
-                      <div className="font-semibold text-blue-700">Hidden Test Cases</div>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-xs border">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="px-2 py-1 border">#</th>
-                              <th className="px-2 py-1 border">Input</th>
-                              <th className="px-2 py-1 border">Expected Output</th>
-                              <th className="px-2 py-1 border">Your Output</th>
-                              <th className="px-2 py-1 border">Result</th>
-                              <th className="px-2 py-1 border">Error</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {hiddenResults.map((res, idx) => (
-                              <tr key={idx} className={res.passed ? 'bg-green-50' : 'bg-red-50'}>
-                                <td className="px-2 py-1 border text-center">{idx + 1}</td>
-                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.input}</td>
-                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.expected}</td>
-                                <td className="px-2 py-1 border font-mono whitespace-pre">{res.actual}</td>
-                                <td className="px-2 py-1 border text-center">{res.passed ? <span className="text-green-700 font-bold">Pass</span> : <span className="text-red-700 font-bold">Fail</span>}</td>
-                                <td className="px-2 py-1 border text-xs text-red-600">{res.error || ''}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
+                  <div className="flex items-center mb-2">
+                    <h3 className="text-sm font-medium text-gray-900 mr-2">Test Case Results:</h3>
+                    <span className={`text-xs px-2 py-1 rounded font-semibold ${runTestResults.every(r => r.passed) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{runTestResults.filter(r => r.passed).length}/{runTestResults.length} Passed</span>
+                  </div>
+                  <div className="overflow-x-auto rounded shadow border border-gray-200">
+                    <table className="min-w-full text-xs">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="px-2 py-1 border">#</th>
+                          <th className="px-2 py-1 border">Input</th>
+                          <th className="px-2 py-1 border">Expected</th>
+                          <th className="px-2 py-1 border">Output</th>
+                          <th className="px-2 py-1 border">Result</th>
+                          <th className="px-2 py-1 border">Error</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {runTestResults.map((res, idx) => (
+                          <tr key={idx} className={res.passed ? 'bg-green-50' : 'bg-red-50'}>
+                            <td className="px-2 py-1 border text-center">{idx + 1}</td>
+                            <td className="px-2 py-1 border font-mono whitespace-pre">{res.input}</td>
+                            <td className="px-2 py-1 border font-mono whitespace-pre">{res.expected}</td>
+                            <td className="px-2 py-1 border font-mono whitespace-pre">{res.actual}</td>
+                            <td className="px-2 py-1 border text-center">
+                              {res.passed ? (
+                                <span className="inline-flex items-center text-green-700 font-bold">
+                                  <CheckCircle className="h-4 w-4 mr-1" /> Pass
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center text-red-700 font-bold">
+                                  <XCircle className="h-4 w-4 mr-1" /> Fail
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-2 py-1 border text-xs text-red-600">{res.error || ''}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
               <div className="mt-4 flex space-x-4">
                 <button
                   onClick={handleRun}
                   disabled={submitting}
-                  className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
+                  title="Run your code against sample test cases"
                 >
                   <Play className="h-4 w-4 mr-2" />
                   Run Code
@@ -364,35 +376,13 @@ export default function ProblemPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || submitting}
-                  className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
+                  title="Submit your solution for full evaluation"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Submit Solution
                 </button>
               </div>
-
-              {/* Run Result */}
-              {runResult && (
-                <div className={`mt-4 p-4 rounded-md ${
-                  runResult.status === 'success' 
-                    ? 'bg-green-50 border border-green-200' 
-                    : 'bg-red-50 border border-red-200'
-                }`}>
-                  <div className="flex items-center">
-                    {runResult.status === 'success' ? (
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600 mr-2" />
-                    )}
-                    <p className={`text-sm ${
-                      runResult.status === 'success' ? 'text-green-800' : 'text-red-800'
-                    }`}>
-                      {runResult.message}
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* Submission Result */}
               {result && (
                 <div className={`mt-4 p-4 rounded-md ${
