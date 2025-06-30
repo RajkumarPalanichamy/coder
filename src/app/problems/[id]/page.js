@@ -58,7 +58,6 @@ export default function ProblemPage() {
       return;
     }
     try {
-      // Mock API call to /api/execute
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,13 +70,26 @@ export default function ProblemPage() {
       const data = await response.json();
       if (!response.ok) {
         setRunError(data.error || 'Code execution failed.');
+        if (data.details) {
+          console.error('Execution error details:', data.details);
+        }
         return;
       }
       setRunTestResults(data.results); // [{input, expected, actual, passed, error}]
+      
+      // Display notice if present
+      if (data.notice) {
+        setRunResult({
+          status: 'info',
+          message: data.notice
+        });
+      }
+      
       // If all passed, allow submit
       setCanSubmit(data.results.every(r => r.passed));
     } catch (err) {
-      setRunError('Error running code.');
+      console.error('Error running code:', err);
+      setRunError('Error running code. Please check your network connection and try again.');
     }
   };
 
@@ -318,49 +330,72 @@ export default function ProblemPage() {
                   {runError}
                 </div>
               )}
-              {/* Test case results table */}
+              {/* Run Test Results */}
               {runTestResults && (
                 <div className="mt-4">
-                  <div className="flex items-center mb-2">
-                    <h3 className="text-sm font-medium text-gray-900 mr-2">Test Case Results:</h3>
-                    <span className={`text-xs px-2 py-1 rounded font-semibold ${runTestResults.every(r => r.passed) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{runTestResults.filter(r => r.passed).length}/{runTestResults.length} Passed</span>
-                  </div>
-                  <div className="overflow-x-auto rounded shadow border border-gray-200">
-                    <table className="min-w-full text-xs">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="px-2 py-1 border">#</th>
-                          <th className="px-2 py-1 border">Input</th>
-                          <th className="px-2 py-1 border">Expected</th>
-                          <th className="px-2 py-1 border">Output</th>
-                          <th className="px-2 py-1 border">Result</th>
-                          <th className="px-2 py-1 border">Error</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {runTestResults.map((res, idx) => (
-                          <tr key={idx} className={res.passed ? 'bg-green-50' : 'bg-red-50'}>
-                            <td className="px-2 py-1 border text-center">{idx + 1}</td>
-                            <td className="px-2 py-1 border font-mono whitespace-pre">{res.input}</td>
-                            <td className="px-2 py-1 border font-mono whitespace-pre">{res.expected}</td>
-                            <td className="px-2 py-1 border font-mono whitespace-pre">{res.actual}</td>
-                            <td className="px-2 py-1 border text-center">
-                              {res.passed ? (
-                                <span className="inline-flex items-center text-green-700 font-bold">
-                                  <CheckCircle className="h-4 w-4 mr-1" /> Pass
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center text-red-700 font-bold">
-                                  <XCircle className="h-4 w-4 mr-1" /> Fail
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-2 py-1 border text-xs text-red-600">{res.error || ''}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Test Results</h3>
+                  {runTestResults.map((result, idx) => (
+                    <div key={idx} className={`mb-3 p-4 rounded-md border ${
+                      result.passed 
+                        ? 'bg-green-50 border-green-200' 
+                        : 'bg-red-50 border-red-200'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-sm text-gray-700">
+                          Test Case {idx + 1}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {result.executionTime && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                              {result.executionTime}
+                            </span>
+                          )}
+                          {result.memoryUsed && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                              {result.memoryUsed}
+                            </span>
+                          )}
+                          <span className={`text-xs px-2 py-1 rounded font-medium ${
+                            result.passed 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            {result.passed ? '✓ PASS' : '✗ FAIL'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-600">Input:</span>
+                          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                            {result.input || '(empty)'}
+                          </pre>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-600">Expected:</span>
+                          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                            {result.expected}
+                          </pre>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-600">Your Output:</span>
+                          <pre className={`p-2 rounded mt-1 text-xs font-mono overflow-x-auto ${
+                            result.passed ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
+                            {result.actual || '(no output)'}
+                          </pre>
+                        </div>
+                      </div>
+                      {result.error && (
+                        <div className="mt-2">
+                          <span className="font-medium text-red-600">Error:</span>
+                          <div className="bg-red-100 p-2 rounded mt-1 text-xs text-red-700">
+                            {result.error}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
               <div className="mt-4 flex space-x-4">
@@ -383,6 +418,23 @@ export default function ProblemPage() {
                   Submit Solution
                 </button>
               </div>
+              {/* Run Result Notice */}
+              {runResult && (
+                <div className={`mt-4 p-3 rounded-md ${
+                  runResult.status === 'info' 
+                    ? 'bg-blue-50 border border-blue-200' 
+                    : runResult.status === 'success'
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <p className={`text-sm ${
+                    runResult.status === 'info' ? 'text-blue-800' :
+                    runResult.status === 'success' ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    ℹ️ {runResult.message}
+                  </p>
+                </div>
+              )}
               {/* Submission Result */}
               {result && (
                 <div className={`mt-4 p-4 rounded-md ${

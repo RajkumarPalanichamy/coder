@@ -1,44 +1,30 @@
-# CodeMaster - LeetCode-like Coding Platform
+# Competitive Programming Platform
 
-A comprehensive coding platform built with Next.js and MongoDB Atlas, featuring admin and student dashboards for managing coding problems and tracking progress.
+A competitive programming platform similar to LeetCode and CodeChef, built with Next.js, MongoDB, and real code execution capabilities.
 
 ## Features
 
-### For Students
-- Browse and solve coding problems
-- Multiple programming language support (JavaScript, Python, Java, C++, C)
-- Real-time code submission and testing
-- Progress tracking and statistics
-- View submission history and scores
+- 🔥 **Real Code Execution**: Execute code in multiple languages using HackerEarth API
+- 🏆 **Competitive Programming**: LeetCode-style problems with hidden test cases
+- 📊 **Performance Metrics**: Execution time and memory usage tracking
+- 👥 **User Management**: Student and admin roles with authentication
+- 📝 **Problem Management**: Create, edit, and manage coding problems
+- 🧪 **Test Management**: MCQ tests with automated scoring
+- 📈 **Analytics**: Submission tracking and performance analytics
 
-### For Admins
-- Create and manage student accounts
-- Create, edit, and delete coding problems
-- Monitor student progress and submissions
-- Dashboard with comprehensive statistics
-- Problem management with test cases
+## Supported Languages
 
-## Tech Stack
-
-- **Frontend**: Next.js 15, React 19, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: MongoDB Atlas
-- **Authentication**: JWT with HTTP-only cookies
-- **Icons**: Lucide React
-- **Forms**: React Hook Form with Zod validation
-
-## Prerequisites
-
-- Node.js 18+ 
-- MongoDB Atlas account
-- npm or yarn package manager
+- JavaScript (Node.js)
+- Python 3
+- Java 8
+- C++ 17
+- C
 
 ## Setup Instructions
 
-### 1. Clone and Install Dependencies
-
+### 1. Clone the Repository
 ```bash
-git clone <repository-url>
+git clone <your-repo-url>
 cd coder
 npm install
 ```
@@ -47,151 +33,127 @@ npm install
 
 Create a `.env.local` file in the root directory:
 
-```env
-# MongoDB Atlas Connection String
-MONGODB_URI=mongodb+srv://your-username:your-password@your-cluster.mongodb.net/codemaster?retryWrites=true&w=majority
-
-# JWT Secret for authentication
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-
-# Next.js Environment
-NODE_ENV=development
+```bash
+cp .env.example .env.local
 ```
 
-### 3. MongoDB Atlas Setup
+### 3. Configure HackerEarth API
 
-1. Create a MongoDB Atlas account at [mongodb.com](https://mongodb.com)
-2. Create a new cluster
-3. Create a database user with read/write permissions
-4. Get your connection string and replace it in `.env.local`
-5. Whitelist your IP address in Network Access
+1. **Register for HackerEarth API**:
+   - Go to [HackerEarth API Registration](https://www.hackerearth.com/api/register/)
+   - Sign up for a free account
+   - Create a new client application
+   - Copy your `client-secret`
 
-### 4. Create Admin Account
+2. **Update Environment Variables**:
+   ```bash
+   # In .env.local
+   HACKEREARTH_CLIENT_SECRET=your_actual_client_secret_here
+   ```
 
-After setting up the database, you'll need to create an admin account. You can do this by:
+### 4. Database Setup
 
-1. First registering a regular account
-2. Manually updating the user role in MongoDB to 'admin'
-3. Or using the registration API with role: 'admin'
+Configure your MongoDB connection:
+```bash
+# In .env.local
+MONGODB_URI=mongodb://localhost:27017/competitive_programming
+# OR use MongoDB Atlas
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+```
 
-### 5. Run the Application
+### 5. Authentication Setup
+
+Set up JWT secrets:
+```bash
+# In .env.local
+JWT_SECRET=your_super_secret_jwt_key_here
+NEXTAUTH_SECRET=your_nextauth_secret_here
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### 6. Initialize Sample Data
+
+Run the setup scripts to create sample problems and admin user:
+
+```bash
+# Create admin user
+node scripts/create-admin.js
+
+# Create sample problems
+node scripts/create-sample-problems.js
+
+# Create sample MCQs
+node scripts/create-sample-mcqs.js
+
+# Create sample tests
+node scripts/create-sample-tests.js
+```
+
+### 7. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── auth/           # Authentication endpoints
-│   │   ├── admin/          # Admin-only endpoints
-│   │   ├── problems/       # Problem management
-│   │   ├── submissions/    # Submission handling
-│   │   └── user/           # User-specific endpoints
-│   ├── admin/              # Admin dashboard pages
-│   ├── dashboard/          # Student dashboard
-│   ├── login/              # Login page
-│   ├── register/           # Registration page
-│   └── problems/           # Problem solving pages
-├── lib/
-│   └── mongodb.js          # Database connection
-├── models/
-│   ├── User.js             # User model
-│   ├── Problem.js          # Problem model
-│   └── Submission.js       # Submission model
-└── middleware.js           # Authentication middleware
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-
-### Admin Endpoints
-- `GET /api/admin/students` - Get all students
-- `POST /api/admin/students` - Create new student
-- `DELETE /api/admin/students/[id]` - Delete student
-- `GET /api/admin/problems` - Get all problems
-- `POST /api/admin/problems` - Create new problem
-- `DELETE /api/admin/problems/[id]` - Delete problem
-- `GET /api/admin/stats` - Get admin dashboard stats
-
-### Student Endpoints
-- `GET /api/problems` - Get available problems
-- `GET /api/problems/[id]` - Get specific problem
-- `GET /api/submissions` - Get user submissions
-- `POST /api/submissions` - Submit solution
-- `GET /api/user/stats` - Get user statistics
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## Usage
 
-### For Admins
-
-1. **Login** to the admin dashboard
-2. **Manage Students**: Create, edit, or delete student accounts
-3. **Create Problems**: Add new coding problems with test cases
-4. **Monitor Progress**: View student submissions and statistics
-
 ### For Students
+1. Register an account
+2. Browse available problems
+3. Write and test code against sample test cases
+4. Submit solutions for evaluation against all test cases
+5. Track your progress and submissions
 
-1. **Register** or login to your account
-2. **Browse Problems**: View available coding challenges
-3. **Solve Problems**: Write and submit your solutions
-4. **Track Progress**: Monitor your performance and scores
+### For Administrators
+1. Login with admin credentials
+2. Create and manage programming problems
+3. Set up test cases (both visible and hidden)
+4. Create MCQ tests
+5. Monitor student submissions and performance
 
-## Code Execution
+## API Quotas and Limits
 
-The current implementation includes a basic submission system. For production use, you should implement:
+The HackerEarth free tier includes:
+- Limited API calls per month
+- 5-second execution time limit
+- 256MB memory limit
 
-1. **Code Execution Engine**: Use services like Judge0, Sphere Engine, or AWS Lambda
-2. **Security**: Sandbox code execution to prevent malicious code
-3. **Rate Limiting**: Prevent abuse of the submission system
-4. **Test Case Validation**: Proper input/output validation
+For production use, consider upgrading to a paid plan for higher quotas.
 
-## Security Features
+## Code Execution Flow
 
-- JWT-based authentication with HTTP-only cookies
-- Password hashing with bcrypt
-- Role-based access control
-- Input validation and sanitization
-- Protected API routes
+1. Student writes code in the web editor
+2. Code is tested against sample (visible) test cases
+3. Upon submission, code runs against all test cases (including hidden ones)
+4. Results include:
+   - Pass/fail status for each test case
+   - Execution time and memory usage
+   - Compilation errors or runtime errors
+   - Final score based on test cases passed
 
-## Deployment
+## Technologies Used
 
-### Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
-
-### Other Platforms
-
-The app can be deployed to any platform that supports Next.js:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
+- **Frontend**: Next.js 14, React, Tailwind CSS
+- **Backend**: Next.js API Routes, Node.js
+- **Database**: MongoDB with Mongoose
+- **Authentication**: JWT, NextAuth.js
+- **Code Execution**: HackerEarth API V4
+- **Deployment**: Vercel (recommended)
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Test thoroughly
 5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License - see LICENSE file for details.
 
-## Support
+---
 
-For support and questions, please open an issue in the GitHub repository.
+Built with ❤️ for competitive programming enthusiasts
