@@ -21,6 +21,7 @@ export default function ProblemPage() {
   const [runResult, setRunResult] = useState(null);
   const [runTestResults, setRunTestResults] = useState(null);
   const [runError, setRunError] = useState('');
+  const [submissionTestResults, setSubmissionTestResults] = useState(null);
   const codeRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -51,6 +52,8 @@ export default function ProblemPage() {
     setCanSubmit(false);
     setRunTestResults(null);
     setRunError('');
+    setResult(null); // Clear previous submission results
+    setSubmissionTestResults(null); // Clear previous submission test results
     // Only use non-hidden test cases
     const sampleTestCases = (problem.testCases || []).filter(tc => !tc.isHidden);
     if (!sampleTestCases.length) {
@@ -96,6 +99,7 @@ export default function ProblemPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     setResult(null);
+    setSubmissionTestResults(null);
 
     try {
       const response = await fetch('/api/submissions', {
@@ -113,21 +117,42 @@ export default function ProblemPage() {
       const data = await response.json();
 
       if (response.ok) {
+        // Successful submission - all test cases passed
         setResult({
           status: 'success',
-          message: 'Submission successful!',
-          submission: data.submission
+          message: data.message || 'Submission successful! All test cases passed.',
+          submission: data.submission,
+          passedCount: data.passedCount,
+          totalCount: data.totalCount
         });
+        
+        // Show all test case results
+        if (data.testCaseResults) {
+          setSubmissionTestResults(data.testCaseResults);
+        }
       } else {
+        // Failed submission - show detailed results
+        const passedCount = data.passedCount || 0;
+        const totalCount = data.totalCount || 0;
+        
         setResult({
           status: 'error',
-          message: data.error || 'Submission failed'
+          message: data.error || 'Submission failed',
+          submission: data.submission,
+          passedCount,
+          totalCount
         });
+        
+        // Show detailed test case results for failed submission
+        if (data.testCaseResults) {
+          setSubmissionTestResults(data.testCaseResults);
+        }
       }
     } catch (error) {
+      console.error('Submission error:', error);
       setResult({
         status: 'error',
-        message: 'Network error occurred'
+        message: 'Network error occurred. Please try again.'
       });
     } finally {
       setSubmitting(false);
@@ -448,18 +473,151 @@ export default function ProblemPage() {
                     ) : (
                       <XCircle className="h-5 w-5 text-red-600 mr-2" />
                     )}
-                    <p className={`text-sm ${
+                    <p className={`text-sm font-medium ${
                       result.status === 'success' ? 'text-green-800' : 'text-red-800'
                     }`}>
                       {result.message}
                     </p>
                   </div>
                   {result.submission && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      <p>Score: {result.submission.score}%</p>
-                      <p>Test Cases: {result.submission.testCasesPassed}/{result.submission.totalTestCases}</p>
+                    <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                      <div className={`p-3 rounded ${
+                        result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
+                      }`}>
+                        <p className="font-medium text-gray-700">Score</p>
+                        <p className={`text-lg font-bold ${
+                          result.status === 'success' ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {result.submission.score}%
+                        </p>
+                      </div>
+                      <div className={`p-3 rounded ${
+                        result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
+                      }`}>
+                        <p className="font-medium text-gray-700">Test Cases</p>
+                        <p className={`text-lg font-bold ${
+                          result.status === 'success' ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {result.passedCount || result.submission.testCasesPassed}/{result.totalCount || result.submission.totalTestCases}
+                        </p>
+                      </div>
                     </div>
                   )}
+                  {result.submission && result.submission.status && (
+                    <div className="mt-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        result.submission.status === 'accepted' 
+                          ? 'bg-green-100 text-green-800'
+                          : result.submission.status === 'wrong_answer'
+                          ? 'bg-red-100 text-red-800'
+                          : result.submission.status === 'runtime_error'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {result.submission.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Detailed Submission Test Results */}
+              {submissionTestResults && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">
+                    Submission Test Results
+                    <span className="ml-2 text-sm font-normal text-gray-500">
+                      (All test cases including hidden ones)
+                    </span>
+                  </h3>
+                  <div className="space-y-3">
+                    {submissionTestResults.map((result, idx) => {
+                      // Determine if this is a hidden test case
+                      const isHidden = problem.testCases && problem.testCases[idx] && problem.testCases[idx].isHidden;
+                      
+                      return (
+                        <div key={idx} className={`p-4 rounded-md border ${
+                          result.passed 
+                            ? 'bg-green-50 border-green-200' 
+                            : 'bg-red-50 border-red-200'
+                        }`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm text-gray-700">
+                                Test Case {idx + 1}
+                              </span>
+                              {isHidden && (
+                                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                                  Hidden
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {result.executionTime && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                  {result.executionTime}
+                                </span>
+                              )}
+                              {result.memoryUsed && (
+                                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                  {result.memoryUsed}
+                                </span>
+                              )}
+                              <span className={`text-xs px-2 py-1 rounded font-medium ${
+                                result.passed 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-red-100 text-red-700'
+                              }`}>
+                                {result.passed ? '✓ PASS' : '✗ FAIL'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Show input/output details only for failed cases or sample cases */}
+                          {(!result.passed || !isHidden) && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                              <div>
+                                <span className="font-medium text-gray-600">Input:</span>
+                                <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                                  {result.input || '(empty)'}
+                                </pre>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-600">Expected:</span>
+                                <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                                  {result.expected}
+                                </pre>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-600">Your Output:</span>
+                                <pre className={`p-2 rounded mt-1 text-xs font-mono overflow-x-auto ${
+                                  result.passed ? 'bg-green-100' : 'bg-red-100'
+                                }`}>
+                                  {result.actual || '(no output)'}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* For hidden test cases that passed, just show that they passed */}
+                          {result.passed && isHidden && (
+                            <div className="text-sm text-green-700">
+                              ✓ Hidden test case passed successfully
+                            </div>
+                          )}
+                          
+                          {result.error && (
+                            <div className="mt-2">
+                              <span className="font-medium text-red-600">Error:</span>
+                              <div className="bg-red-100 p-2 rounded mt-1 text-xs text-red-700">
+                                {result.error}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
