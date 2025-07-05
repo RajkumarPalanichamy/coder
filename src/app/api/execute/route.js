@@ -1,325 +1,272 @@
 import { NextResponse } from 'next/server';
 
-// Dynamic configuration system for real-time coding
+// Judge0 CE API configuration based on official documentation
 const createExecutionConfig = () => {
   return {
-    // Judge0 API Configuration - fully dynamic
     judge0: {
       endpoint: process.env.JUDGE0_ENDPOINT || 'https://judge0-ce.p.rapidapi.com',
       apiKey: process.env.JUDGE0_API_KEY || process.env.RAPIDAPI_KEY,
       host: process.env.JUDGE0_HOST || 'judge0-ce.p.rapidapi.com',
       timeout: parseInt(process.env.JUDGE0_TIMEOUT) || 30000,
       pollInterval: parseInt(process.env.JUDGE0_POLL_INTERVAL) || 1000,
-      maxAttempts: parseInt(process.env.JUDGE0_MAX_ATTEMPTS) || 30
+      maxAttempts: parseInt(process.env.JUDGE0_MAX_ATTEMPTS) || 30,
+      // Judge0 execution limits
+      defaultLimits: {
+        cpu_time_limit: parseFloat(process.env.CPU_TIME_LIMIT) || 2.0,
+        memory_limit: parseInt(process.env.MEMORY_LIMIT) || 128000, // KB
+        wall_time_limit: parseFloat(process.env.WALL_TIME_LIMIT) || 5.0,
+        stack_limit: parseInt(process.env.STACK_LIMIT) || 64000 // KB
+      }
     },
     
-    // Dynamic language configuration
-    languages: JSON.parse(process.env.SUPPORTED_LANGUAGES || JSON.stringify({
-      javascript: { id: 63, extension: 'js', compiler: 'Node.js' },
-      python: { id: 71, extension: 'py', compiler: 'Python 3' },
-      java: { id: 62, extension: 'java', compiler: 'OpenJDK' },
-      cpp: { id: 54, extension: 'cpp', compiler: 'GCC' },
-      c: { id: 50, extension: 'c', compiler: 'GCC' }
-    })),
+    // Official Judge0 CE language IDs from documentation
+    languages: {
+      javascript: { id: 63, extension: 'js', compiler: 'Node.js 12.14.0' },
+      python: { id: 71, extension: 'py', compiler: 'Python 3.8.1' },
+      java: { id: 62, extension: 'java', compiler: 'OpenJDK 13.0.1' },
+      cpp: { id: 54, extension: 'cpp', compiler: 'GCC 9.2.0' },
+      c: { id: 50, extension: 'c', compiler: 'GCC 9.2.0' },
+      // Additional languages supported by Judge0 CE
+      csharp: { id: 51, extension: 'cs', compiler: 'C# (Mono 6.6.0.161)' },
+      go: { id: 60, extension: 'go', compiler: 'Go 1.13.5' },
+      kotlin: { id: 78, extension: 'kt', compiler: 'Kotlin 1.3.70' },
+      php: { id: 68, extension: 'php', compiler: 'PHP 7.4.1' },
+      ruby: { id: 72, extension: 'rb', compiler: 'Ruby 2.7.0' },
+      rust: { id: 73, extension: 'rs', compiler: 'Rust 1.40.0' },
+      swift: { id: 83, extension: 'swift', compiler: 'Swift 5.2.3' },
+      typescript: { id: 74, extension: 'ts', compiler: 'TypeScript 3.7.4' }
+    },
     
-    // Real-time execution settings
-    realtime: {
-      enableWebSocket: process.env.ENABLE_WEBSOCKET === 'true',
-      streamResults: process.env.STREAM_RESULTS === 'true',
-      cacheResults: process.env.CACHE_RESULTS === 'true',
-      enableFallback: process.env.ENABLE_FALLBACK !== 'false'
-    }
+    enableFallback: process.env.ENABLE_FALLBACK !== 'false'
   };
 };
 
-// Dynamic problem type detection based on input patterns
-const detectProblemType = (testCases) => {
-  if (!testCases || testCases.length === 0) return 'unknown';
+// LeetCode-style template generator
+class LeetCodeTemplateGenerator {
+  constructor() {}
   
-  const firstInput = testCases[0].input;
-  if (!firstInput) return 'unknown';
-  
-  // Real-time pattern analysis
-  const patterns = [
-    { type: 'array_with_param', test: /^\[.*\]\s*\n\s*\d+/ },
-    { type: 'matrix', test: /^\[\[.*\]\]/ },
-    { type: 'array', test: /^\[.*\]$/ },
-    { type: 'string', test: /^".*"$/ },
-    { type: 'multiple_numbers', test: /^\d+(\s+\d+)+$/ },
-    { type: 'single_number', test: /^\d+$/ },
-    { type: 'multiline', test: /\n/ },
-    { type: 'two_numbers', test: /^\d+\s+\d+$/ }
-  ];
-  
-  for (const pattern of patterns) {
-    if (pattern.test.test(firstInput.trim())) {
-      return pattern.type;
-    }
-  }
-  
-  return 'custom';
-};
-
-// Dynamic template generation system
-class TemplateGenerator {
-  constructor(config) {
-    this.config = config;
-  }
-  
-  generateForLanguage(language, userCode, input, problemType) {
-    const method = `generate${language.charAt(0).toUpperCase() + language.slice(1)}Template`;
-    if (typeof this[method] === 'function') {
-      return this[method](userCode, input, problemType);
-    }
-    throw new Error(`Template generation not supported for language: ${language}`);
-  }
-  
-  generateJavascriptTemplate(userCode, input, problemType) {
-    const templates = {
-      array_with_param: this.createArrayWithParamTemplate('js', userCode, input),
-      array: this.createArrayTemplate('js', userCode, input),
-      matrix: this.createMatrixTemplate('js', userCode, input),
-      string: this.createStringTemplate('js', userCode, input),
-      single_number: this.createSingleNumberTemplate('js', userCode, input),
-      multiple_numbers: this.createMultipleNumbersTemplate('js', userCode, input),
-      multiline: this.createMultilineTemplate('js', userCode, input),
-      two_numbers: this.createTwoNumbersTemplate('js', userCode, input),
-      custom: this.createCustomTemplate('js', userCode, input)
-    };
+  // Detect input type and generate appropriate template
+  generateTemplate(language, userCode, input, expectedOutput) {
+    const inputType = this.detectInputType(input);
     
-    return templates[problemType] || templates.custom;
-  }
-  
-  generatePythonTemplate(userCode, input, problemType) {
-    const templates = {
-      array_with_param: this.createArrayWithParamTemplate('python', userCode, input),
-      array: this.createArrayTemplate('python', userCode, input),
-      matrix: this.createMatrixTemplate('python', userCode, input),
-      string: this.createStringTemplate('python', userCode, input),
-      single_number: this.createSingleNumberTemplate('python', userCode, input),
-      multiple_numbers: this.createMultipleNumbersTemplate('python', userCode, input),
-      multiline: this.createMultilineTemplate('python', userCode, input),
-      two_numbers: this.createTwoNumbersTemplate('python', userCode, input),
-      custom: this.createCustomTemplate('python', userCode, input)
-    };
-    
-    return templates[problemType] || templates.custom;
-  }
-  
-  generateJavaTemplate(userCode, input, problemType) {
-    const templates = {
-      array_with_param: this.createArrayWithParamTemplate('java', userCode, input),
-      array: this.createArrayTemplate('java', userCode, input),
-      two_numbers: this.createTwoNumbersTemplate('java', userCode, input),
-      custom: this.createCustomTemplate('java', userCode, input)
-    };
-    
-    return templates[problemType] || templates.custom;
-  }
-  
-  generateCppTemplate(userCode, input, problemType) {
-    const templates = {
-      array_with_param: this.createArrayWithParamTemplate('cpp', userCode, input),
-      array: this.createArrayTemplate('cpp', userCode, input),
-      two_numbers: this.createTwoNumbersTemplate('cpp', userCode, input),
-      custom: this.createCustomTemplate('cpp', userCode, input)
-    };
-    
-    return templates[problemType] || templates.custom;
-  }
-  
-  generateCTemplate(userCode, input, problemType) {
-    const templates = {
-      array_with_param: this.createArrayWithParamTemplate('c', userCode, input),
-      two_numbers: this.createTwoNumbersTemplate('c', userCode, input),
-      custom: this.createCustomTemplate('c', userCode, input)
-    };
-    
-    return templates[problemType] || templates.custom;
-  }
-  
-  // Dynamic template creators for different problem types
-  createArrayWithParamTemplate(lang, userCode, input) {
-    const escapedInput = input.replace(/`/g, '\\`').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-    
-    switch (lang) {
-      case 'js':
-        return `
-${userCode}
-
-const input = \`${escapedInput}\`;
-const lines = input.trim().split('\\n');
-const arr = JSON.parse(lines[0]);
-const param = parseInt(lines[1]);
-
-let result;
-if (typeof solve === 'function') {
-  result = solve(arr, param);
-} else if (typeof subarraySum === 'function') {
-  result = subarraySum(arr, param);
-} else {
-  result = 0;
-}
-console.log(result);
-`;
-      
+    switch (language) {
+      case 'javascript':
+        return this.generateJavaScriptTemplate(userCode, input, expectedOutput, inputType);
       case 'python':
-        return `
-${userCode}
-
-import json
-input_data = """${escapedInput}"""
-lines = input_data.strip().split('\\n')
-arr = json.loads(lines[0])
-param = int(lines[1])
-
-result = None
-if 'subarray_sum' in locals():
-    result = subarray_sum(arr, param)
-elif 'solve' in locals():
-    result = solve(arr, param)
-else:
-    result = 0
-
-print(result)
-`;
-      
+        return this.generatePythonTemplate(userCode, input, expectedOutput, inputType);
       case 'java':
-        return `
-import java.util.*;
-
-public class Main {
-    ${userCode.includes('class') ? userCode.replace(/public\s+class\s+\w+/g, '').replace(/class\s+\w+/g, '') : userCode}
-    
-    public static void main(String[] args) {
-        String input = "${escapedInput}";
-        String[] lines = input.split("\\\\n");
-        
-        String arrayStr = lines[0].trim().replaceAll("[\\\\[\\\\]]", "");
-        String[] parts = arrayStr.split(",");
-        int[] nums = new int[parts.length];
-        for (int i = 0; i < parts.length; i++) {
-            nums[i] = Integer.parseInt(parts[i].trim());
-        }
-        
-        int k = Integer.parseInt(lines[1].trim());
-        
-        Main solution = new Main();
-        int result = solution.subarraySum(nums, k);
-        System.out.println(result);
-    }
-    
-    public int subarraySum(int[] nums, int k) {
-        return 0;
-    }
-}
-`;
-      
+        return this.generateJavaTemplate(userCode, input, expectedOutput, inputType);
+      case 'cpp':
+        return this.generateCppTemplate(userCode, input, expectedOutput, inputType);
+      case 'c':
+        return this.generateCTemplate(userCode, input, expectedOutput, inputType);
       default:
-        return userCode; // Fallback to raw code
+        return userCode;
     }
   }
   
-  createArrayTemplate(lang, userCode, input) {
-    const escapedInput = input.replace(/`/g, '\\`').replace(/"/g, '\\"');
+  detectInputType(input) {
+    const lines = input.trim().split('\n');
     
-    switch (lang) {
-      case 'js':
-        return `
+    if (lines.length === 1) {
+      const line = lines[0].trim();
+      if (line.startsWith('[') && line.endsWith(']')) {
+        return 'single_array';
+      } else if (/^\d+$/.test(line)) {
+        return 'single_number';
+      } else if (line.startsWith('"') && line.endsWith('"')) {
+        return 'single_string';
+      }
+    } else if (lines.length === 2) {
+      return 'array_and_param';
+    }
+    
+    return 'multi_param';
+  }
+  
+  parseInput(input, inputType) {
+    const lines = input.trim().split('\n');
+    
+    switch (inputType) {
+      case 'single_array':
+        return [lines[0]];
+      case 'single_number':
+        return [lines[0]];
+      case 'single_string':
+        return [lines[0]];
+      case 'array_and_param':
+        return [lines[0], lines[1]];
+      case 'multi_param':
+        return lines;
+      default:
+        return lines;
+    }
+  }
+  
+  generateJavaScriptTemplate(userCode, input, expectedOutput, inputType) {
+    const args = this.parseInput(input, inputType);
+    
+    let testCallCode = '';
+    let parseCode = '';
+    
+    switch (inputType) {
+      case 'single_array':
+        parseCode = `const param1 = JSON.parse('${args[0]}');`;
+        testCallCode = 'const result = userFunction(param1);';
+        break;
+      case 'single_number':
+        parseCode = `const param1 = ${args[0]};`;
+        testCallCode = 'const result = userFunction(param1);';
+        break;
+      case 'single_string':
+        parseCode = `const param1 = ${args[0]};`;
+        testCallCode = 'const result = userFunction(param1);';
+        break;
+      case 'array_and_param':
+        parseCode = `
+const param1 = JSON.parse('${args[0]}');
+const param2 = ${isNaN(args[1]) ? `"${args[1]}"` : args[1]};`;
+        testCallCode = 'const result = userFunction(param1, param2);';
+        break;
+      default:
+        parseCode = args.map((arg, i) => 
+          `const param${i+1} = ${arg.startsWith('[') ? `JSON.parse('${arg}')` : 
+          isNaN(arg) ? `"${arg}"` : arg};`
+        ).join('\n');
+        testCallCode = `const result = userFunction(${args.map((_, i) => `param${i+1}`).join(', ')});`;
+    }
+    
+    return `
 ${userCode}
 
-const input = \`${escapedInput}\`;
-const arr = JSON.parse(input.trim());
-
-let result;
-if (typeof solve === 'function') {
-  result = solve(arr);
-} else {
-  result = arr.reduce((a, b) => a + b, 0);
+// Find user function dynamically
+let userFunction = null;
+const functionNames = Object.getOwnPropertyNames(global).filter(name => typeof global[name] === 'function');
+for (const name of functionNames) {
+  if (!name.startsWith('_') && name !== 'require' && name !== 'eval') {
+    userFunction = global[name];
+    break;
+  }
 }
-console.log(Array.isArray(result) ? JSON.stringify(result) : result);
+
+if (!userFunction) {
+  console.log('ERROR: No function found in code');
+  process.exit(1);
+}
+
+try {
+  ${parseCode}
+  
+  ${testCallCode}
+  
+  // Format output
+  if (Array.isArray(result)) {
+    console.log(JSON.stringify(result));
+  } else if (typeof result === 'string') {
+    console.log(result);
+  } else {
+    console.log(result);
+  }
+} catch (error) {
+  console.log('ERROR: ' + error.message);
+  process.exit(1);
+}
 `;
-      
-      case 'python':
-        return `
+  }
+  
+  generatePythonTemplate(userCode, input, expectedOutput, inputType) {
+    const args = this.parseInput(input, inputType);
+    
+    let testCallCode = '';
+    let parseCode = '';
+    
+    switch (inputType) {
+      case 'single_array':
+        parseCode = `param1 = ${args[0]}`;
+        testCallCode = 'result = user_function(param1)';
+        break;
+      case 'single_number':
+        parseCode = `param1 = ${args[0]};`;
+        testCallCode = 'result = user_function(param1)';
+        break;
+      case 'single_string':
+        parseCode = `param1 = ${args[0]}`;
+        testCallCode = 'result = user_function(param1)';
+        break;
+      case 'array_and_param':
+        parseCode = `
+param1 = ${args[0]}
+param2 = ${isNaN(args[1]) ? `"${args[1]}"` : args[1]}`;
+        testCallCode = 'result = user_function(param1, param2)';
+        break;
+      default:
+        parseCode = args.map((arg, i) => 
+          `param${i+1} = ${arg.startsWith('[') ? arg : 
+          isNaN(arg) ? `"${arg}"` : arg}`
+        ).join('\n');
+        testCallCode = `result = user_function(${args.map((_, i) => `param${i+1}`).join(', ')})`;
+    }
+    
+    return `
 ${userCode}
 
 import json
-input_data = """${escapedInput}"""
-arr = json.loads(input_data.strip())
+import sys
 
-result = None
-if 'solve' in locals():
-    result = solve(arr)
-else:
-    result = sum(arr)
+# Find user function dynamically
+user_function = None
+for name in dir():
+    obj = locals()[name]
+    if callable(obj) and not name.startswith('_') and name not in ['json', 'sys']:
+        user_function = obj
+        break
 
-if isinstance(result, list):
-    print(json.dumps(result))
-else:
-    print(result)
-`;
-      
-      default:
-        return userCode;
-    }
-  }
-  
-  createTwoNumbersTemplate(lang, userCode, input) {
-    const escapedInput = input.replace(/"/g, '\\"');
+if not user_function:
+    print('ERROR: No function found in code')
+    sys.exit(1)
+
+try:
+    ${parseCode}
     
-    switch (lang) {
-      case 'js':
-        return `
-${userCode}
-
-const input = \`${escapedInput}\`;
-const [a, b] = input.trim().split(' ').map(Number);
-
-let result;
-if (typeof solve === 'function') {
-  result = solve(a, b);
-} else {
-  result = a + b;
-}
-console.log(result);
+    ${testCallCode}
+    
+    # Format output
+    if isinstance(result, list):
+        print(json.dumps(result))
+    elif isinstance(result, str):
+        print(result)
+    else:
+        print(result)
+except Exception as error:
+    print(f'ERROR: {error}')
+    sys.exit(1)
 `;
-      
-      case 'python':
-        return `
-${userCode}
-
-input_data = """${escapedInput}"""
-a, b = map(int, input_data.strip().split())
-
-result = None
-if 'solve' in locals():
-    result = solve(a, b)
-else:
-    result = a + b
-
-print(result)
-`;
-      
-      default:
-        return userCode;
-    }
   }
   
-  // Additional template creators for other problem types...
-  createMatrixTemplate(lang, userCode, input) { return this.createArrayTemplate(lang, userCode, input); }
-  createStringTemplate(lang, userCode, input) { return this.createArrayTemplate(lang, userCode, input); }
-  createSingleNumberTemplate(lang, userCode, input) { return this.createTwoNumbersTemplate(lang, userCode, input); }
-  createMultipleNumbersTemplate(lang, userCode, input) { return this.createArrayTemplate(lang, userCode, input); }
-  createMultilineTemplate(lang, userCode, input) { return this.createArrayTemplate(lang, userCode, input); }
-  createCustomTemplate(lang, userCode, input) { return userCode; }
+  generateJavaTemplate(userCode, input, expectedOutput, inputType) {
+    // For Java, we expect users to write complete programs with main()
+    // Just return their code as-is for now since Java method detection is complex
+    return userCode;
+  }
+  
+  generateCppTemplate(userCode, input, expectedOutput, inputType) {
+    // For C++, we expect users to write complete programs with main()
+    // Just return their code as-is for now since C++ function detection is complex
+    return userCode;
+  }
+  
+  generateCTemplate(userCode, input, expectedOutput, inputType) {
+    // For C, we expect users to write complete programs with main()
+    // Just return their code as-is for now since C function detection is complex
+    return userCode;
+  }
 }
 
-// Real-time execution engine
-class RealTimeExecutor {
+// Judge0 CE executor with LeetCode-style templates
+class Judge0Executor {
   constructor(config) {
     this.config = config;
-    this.templateGenerator = new TemplateGenerator(config);
+    this.templateGenerator = new LeetCodeTemplateGenerator();
   }
   
   async execute(code, language, testCases) {
@@ -328,13 +275,13 @@ class RealTimeExecutor {
       throw new Error(`Unsupported language: ${language}`);
     }
     
-    // Real-time execution with Judge0
+    // Real execution with Judge0 CE API
     if (this.config.judge0.apiKey && this.config.judge0.apiKey !== 'demo-key') {
       return await this.executeWithJudge0(code, language, testCases, langConfig);
     }
     
-    // Fallback only if enabled
-    if (this.config.realtime.enableFallback) {
+    // Fallback mode for development
+    if (this.config.enableFallback) {
       return await this.executeWithFallback(code, language, testCases);
     }
     
@@ -342,7 +289,6 @@ class RealTimeExecutor {
   }
   
   async executeWithJudge0(code, language, testCases, langConfig) {
-    const problemType = detectProblemType(testCases);
     const results = [];
     
     for (let i = 0; i < testCases.length; i++) {
@@ -351,42 +297,57 @@ class RealTimeExecutor {
       const expectedOutput = testCase.output || '';
       
       try {
-        const wrappedCode = this.templateGenerator.generateForLanguage(language, code, input, problemType);
+        // Generate LeetCode-style template
+        const wrappedCode = this.templateGenerator.generateTemplate(
+          language, code, input, expectedOutput
+        );
         
-        // Submit to Judge0 with dynamic configuration
-        const submissionResponse = await fetch(`${this.config.judge0.endpoint}/submissions?base64_encoded=true&wait=false`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-RapidAPI-Key': this.config.judge0.apiKey,
-            'X-RapidAPI-Host': this.config.judge0.host
-          },
-          body: JSON.stringify({
-            language_id: langConfig.id,
-            source_code: Buffer.from(wrappedCode).toString('base64'),
-            stdin: ''
-          })
-        });
+        // Create submission using Judge0 CE API specification
+        const submissionData = {
+          language_id: langConfig.id,
+          source_code: Buffer.from(wrappedCode).toString('base64'),
+          stdin: Buffer.from('').toString('base64'), // No stdin needed for LeetCode style
+          expected_output: Buffer.from(expectedOutput).toString('base64'),
+          // Apply default execution limits
+          cpu_time_limit: this.config.judge0.defaultLimits.cpu_time_limit,
+          memory_limit: this.config.judge0.defaultLimits.memory_limit,
+          wall_time_limit: this.config.judge0.defaultLimits.wall_time_limit,
+          stack_limit: this.config.judge0.defaultLimits.stack_limit
+        };
+
+        const submissionResponse = await fetch(
+          `${this.config.judge0.endpoint}/submissions?base64_encoded=true&wait=false`, 
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-RapidAPI-Key': this.config.judge0.apiKey,
+              'X-RapidAPI-Host': this.config.judge0.host
+            },
+            body: JSON.stringify(submissionData)
+          }
+        );
         
         if (!submissionResponse.ok) {
-          throw new Error(`Judge0 API error: ${submissionResponse.statusText}`);
+          throw new Error(`Judge0 API error: ${submissionResponse.status} ${submissionResponse.statusText}`);
         }
         
-        const submissionData = await submissionResponse.json();
-        const token = submissionData.token;
+        const submission = await submissionResponse.json();
+        const token = submission.token;
         
         if (!token) {
-          throw new Error('Failed to get submission token');
+          throw new Error('Failed to get submission token from Judge0');
         }
         
-        // Poll for results with dynamic configuration
+        // Poll for results according to Judge0 specification
         const result = await this.pollForResult(token);
         
-        // Process result
+        // Process result according to Judge0 status codes
         const processedResult = this.processExecutionResult(result, input, expectedOutput);
         results.push(processedResult);
         
       } catch (error) {
+        console.error(`Execution error for test case ${i + 1}:`, error);
         results.push({
           input,
           expected: expectedOutput,
@@ -394,7 +355,8 @@ class RealTimeExecutor {
           passed: false,
           error: `Execution failed: ${error.message}`,
           executionTime: '',
-          memoryUsed: ''
+          memoryUsed: '',
+          status: 'execution_error'
         });
       }
     }
@@ -409,53 +371,137 @@ class RealTimeExecutor {
       await new Promise(resolve => setTimeout(resolve, this.config.judge0.pollInterval));
       attempts++;
       
-      const resultResponse = await fetch(`${this.config.judge0.endpoint}/submissions/${token}?base64_encoded=true`, {
-        headers: {
-          'X-RapidAPI-Key': this.config.judge0.apiKey,
-          'X-RapidAPI-Host': this.config.judge0.host
+      try {
+        const resultResponse = await fetch(
+          `${this.config.judge0.endpoint}/submissions/${token}?base64_encoded=true&fields=*`, 
+          {
+            headers: {
+              'X-RapidAPI-Key': this.config.judge0.apiKey,
+              'X-RapidAPI-Host': this.config.judge0.host
+            }
+          }
+        );
+        
+        if (!resultResponse.ok) {
+          console.warn(`Poll attempt ${attempts}: HTTP ${resultResponse.status}`);
+          continue;
         }
-      });
-      
-      if (!resultResponse.ok) continue;
-      
-      const resultData = await resultResponse.json();
-      
-      if (resultData.status?.id >= 3) {
-        return resultData;
+        
+        const resultData = await resultResponse.json();
+        
+        // Judge0 status codes: 1=In Queue, 2=Processing, 3=Accepted, >=4=Various errors
+        if (resultData.status?.id >= 3) {
+          return resultData;
+        }
+        
+      } catch (error) {
+        console.warn(`Poll attempt ${attempts} failed:`, error.message);
       }
     }
     
-    throw new Error('Execution timeout');
+    throw new Error(`Execution timeout after ${this.config.judge0.maxAttempts} attempts`);
   }
   
   processExecutionResult(result, input, expectedOutput) {
     let actualOutput = '';
     let error = '';
+    let status = 'unknown';
     
+    // Decode base64 output if present
     if (result.stdout) {
       actualOutput = Buffer.from(result.stdout, 'base64').toString().trim();
     }
     
-    if (result.status?.id === 6) {
-      error = 'Compilation Error';
-      if (result.compile_output) {
-        const compileError = Buffer.from(result.compile_output, 'base64').toString();
-        error = `Compilation Error: ${compileError.trim()}`;
+    // Handle ERROR prefix in output
+    if (actualOutput.startsWith('ERROR: ')) {
+      error = actualOutput;
+      status = 'runtime_error_user';
+      actualOutput = '';
+    } else {
+      // Process according to official Judge0 CE status codes
+      switch (result.status?.id) {
+        case 1:
+          status = 'in_queue';
+          error = 'Submission is in queue';
+          break;
+        case 2:
+          status = 'processing';
+          error = 'Submission is being processed';
+          break;
+        case 3:
+          status = 'accepted';
+          // No error for accepted submissions
+          break;
+        case 4:
+          status = 'wrong_answer';
+          error = 'Wrong Answer';
+          break;
+        case 5:
+          status = 'time_limit_exceeded';
+          error = 'Time Limit Exceeded';
+          break;
+        case 6:
+          status = 'compilation_error';
+          error = 'Compilation Error';
+          if (result.compile_output) {
+            const compileError = Buffer.from(result.compile_output, 'base64').toString();
+            error = `Compilation Error: ${compileError.trim()}`;
+          }
+          break;
+        case 7:
+          status = 'runtime_error_sigsegv';
+          error = 'Runtime Error (SIGSEGV)';
+          break;
+        case 8:
+          status = 'runtime_error_sigxfsz';
+          error = 'Runtime Error (SIGXFSZ)';
+          break;
+        case 9:
+          status = 'runtime_error_sigfpe';
+          error = 'Runtime Error (SIGFPE) - Division by zero or arithmetic error';
+          break;
+        case 10:
+          status = 'runtime_error_sigabrt';
+          error = 'Runtime Error (SIGABRT)';
+          break;
+        case 11:
+          status = 'runtime_error_nzec';
+          error = 'Runtime Error (NZEC) - Non-zero exit code';
+          break;
+        case 12:
+          status = 'runtime_error_other';
+          error = 'Runtime Error (Other)';
+          break;
+        case 13:
+          status = 'internal_error';
+          error = 'Internal Error';
+          break;
+        case 14:
+          status = 'exec_format_error';
+          error = 'Exec Format Error';
+          break;
+        default:
+          status = 'unknown_error';
+          error = `Unknown Error: ${result.status?.description || 'Unrecognized status'}`;
       }
-    } else if (result.status?.id === 5) {
-      error = 'Time Limit Exceeded';
-    } else if (result.status?.id !== 3) {
-      error = `Runtime Error: ${result.status?.description || 'Unknown'}`;
     }
     
-    if (result.stderr) {
+    // Add stderr information if available and no specific error set
+    if (result.stderr && !error) {
       const stderrText = Buffer.from(result.stderr, 'base64').toString();
       if (stderrText.trim()) {
-        error = error || `Runtime Error: ${stderrText.trim()}`;
+        error = `Runtime Error: ${stderrText.trim()}`;
+        status = 'runtime_error_stderr';
       }
     }
     
-    const passed = !error && actualOutput === expectedOutput.trim();
+    // For wrong answer, add specific information
+    if (status === 'wrong_answer' && result.expected_output) {
+      const expectedDecoded = Buffer.from(result.expected_output, 'base64').toString().trim();
+      error = `Wrong Answer - Expected: "${expectedDecoded}", Got: "${actualOutput}"`;
+    }
+    
+    const passed = status === 'accepted' && actualOutput === expectedOutput.trim();
     
     return {
       input,
@@ -463,79 +509,144 @@ class RealTimeExecutor {
       actual: actualOutput,
       passed,
       error,
+      status,
       executionTime: result.time ? `${result.time}s` : '',
-      memoryUsed: result.memory ? `${result.memory}KB` : ''
+      memoryUsed: result.memory ? `${Math.round(result.memory / 1024)}MB` : '',
+      wallTime: result.wall_time ? `${result.wall_time}s` : '',
+      // Additional Judge0 information
+      statusId: result.status?.id || 0,
+      statusDescription: result.status?.description || 'Unknown',
+      token: result.token,
+      createdAt: result.created_at,
+      finishedAt: result.finished_at
     };
   }
   
   async executeWithFallback(code, language, testCases) {
-    // Minimal fallback for development only
-    console.log('Using fallback execution mode...');
+    console.log('Using fallback execution mode - configure Judge0 API key for real execution');
     
-    const results = testCases.map(testCase => ({
+    const results = testCases.map((testCase, index) => ({
       input: testCase.input || '',
       expected: testCase.output || '',
-      actual: 'Fallback mode active',
+      actual: `Fallback mode (Test ${index + 1})`,
       passed: false,
-      error: 'Fallback execution - configure Judge0 for real execution',
+      error: 'Fallback execution - configure Judge0 API key for real code execution',
+      status: 'fallback_mode',
       executionTime: '0.1s',
-      memoryUsed: '1MB'
+      memoryUsed: '1MB',
+      statusId: -1,
+      statusDescription: 'Fallback Mode'
     }));
     
     return results;
   }
 }
 
+// API endpoint for getting supported languages
+export async function GET(req) {
+  try {
+    const config = createExecutionConfig();
+    
+    // Return available languages with their Judge0 CE IDs
+    return NextResponse.json({
+      languages: config.languages,
+      judge0Config: {
+        endpoint: config.judge0.endpoint,
+        hasApiKey: !!(config.judge0.apiKey && config.judge0.apiKey !== 'demo-key'),
+        defaultLimits: config.judge0.defaultLimits
+      },
+      fallbackEnabled: config.enableFallback,
+      executionStyle: 'leetcode' // Indicate LeetCode-style execution
+    });
+    
+  } catch (error) {
+    console.error('Error getting language configuration:', error);
+    return NextResponse.json({
+      error: 'Failed to get language configuration',
+      details: error.message
+    }, { status: 500 });
+  }
+}
+
+// Main code execution endpoint
 export async function POST(req) {
   try {
-    const { code, language, testCases } = await req.json();
+    const { code, language, testCases, limits } = await req.json();
     
+    // Validate required parameters
     if (!code || !language || !Array.isArray(testCases)) {
       return NextResponse.json({ 
         error: 'Missing required parameters: code, language, or testCases' 
       }, { status: 400 });
     }
     
-    // Create dynamic configuration
+    if (testCases.length === 0) {
+      return NextResponse.json({ 
+        error: 'At least one test case is required' 
+      }, { status: 400 });
+    }
+    
+    // Create configuration
     const config = createExecutionConfig();
+    
+    // Apply custom limits if provided
+    if (limits) {
+      Object.assign(config.judge0.defaultLimits, limits);
+    }
     
     // Validate language support
     if (!config.languages[language]) {
       return NextResponse.json({ 
-        error: `Unsupported language: ${language}. Supported: ${Object.keys(config.languages).join(', ')}` 
+        error: `Unsupported language: ${language}`,
+        supportedLanguages: Object.keys(config.languages),
+        suggestion: 'Use GET /api/execute to see all supported languages'
       }, { status: 400 });
     }
     
-    // Initialize real-time executor
-    const executor = new RealTimeExecutor(config);
+    // Initialize executor
+    const executor = new Judge0Executor(config);
     
     // Execute code
+    const startTime = Date.now();
     const results = await executor.execute(code, language, testCases);
+    const executionDuration = Date.now() - startTime;
     
-    // Determine problem type for response
-    const problemType = detectProblemType(testCases);
+    // Calculate statistics
+    const passedCount = results.filter(r => r.passed).length;
+    const failedCount = results.length - passedCount;
+    const hasCompilationError = results.some(r => r.status === 'compilation_error');
+    const hasRuntimeError = results.some(r => r.status?.startsWith('runtime_error'));
     
-    // Return results with execution info
+    // Return comprehensive results
     return NextResponse.json({
       results,
       executionInfo: {
-        problemType,
         language: config.languages[language],
         timestamp: new Date().toISOString(),
         totalTestCases: testCases.length,
-        passedTestCases: results.filter(r => r.passed).length
+        passedTestCases: passedCount,
+        failedTestCases: failedCount,
+        executionDuration: `${executionDuration}ms`,
+        hasCompilationError,
+        hasRuntimeError,
+        executionStyle: 'leetcode',
+        judge0Config: {
+          endpoint: config.judge0.endpoint,
+          limits: config.judge0.defaultLimits
+        }
       },
       notice: config.judge0.apiKey && config.judge0.apiKey !== 'demo-key' 
-        ? `✅ Real-time execution (${problemType} problem type detected)`
-        : '⚠️ Configure Judge0 API key for real-time execution'
+        ? `✅ Code execution completed using Judge0 CE API (LeetCode-style)`
+        : '⚠️ Using fallback mode - configure Judge0 API key for real execution'
     });
     
   } catch (error) {
-    console.error('Real-time execution error:', error);
+    console.error('Judge0 execution error:', error);
     return NextResponse.json({
-      error: 'Real-time execution failed',
+      error: 'Code execution failed',
       details: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      suggestion: 'Check your Judge0 API key configuration and network connection'
     }, { status: 500 });
   }
 } 

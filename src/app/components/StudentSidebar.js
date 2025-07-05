@@ -41,7 +41,7 @@ export default function StudentSidebar({ onLogout }) {
       {/* Logo / App Name */}
       <div className="flex items-center justify-center md:justify-start h-16 px-4 border-b border-indigo-100">
         <Code2 className="h-8 w-8 text-indigo-600" />
-        <span className="hidden md:inline ml-2 text-xl font-bold text-indigo-700 tracking-tight">CodeMaster</span>
+        <span className="hidden md:inline ml-2 text-xl font-bold text-indigo-700 tracking-tight">Zenith Mentor</span>
       </div>
       {/* Profile Section */}
       <div className="hidden md:flex items-center gap-3 px-4 py-5 border-b border-indigo-50">
