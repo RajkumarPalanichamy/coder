@@ -229,13 +229,13 @@ export default function AdminDashboard() {
             <BookOpen className="h-8 w-8 text-indigo-600 mb-2" />
             <span className="font-semibold text-lg">Problems</span>
           </button>
-          <button
+          {/* <button
             onClick={() => router.push('/admin/mcqs')}
             className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"
           >
             <Edit className="h-8 w-8 text-indigo-600 mb-2" />
             <span className="font-semibold text-lg">MCQs</span>
-          </button>
+          </button> */}
           <button
             onClick={() => router.push('/admin/tests')}
             className="bg-white shadow rounded-lg p-6 flex flex-col items-center hover:bg-indigo-50 transition cursor-pointer"

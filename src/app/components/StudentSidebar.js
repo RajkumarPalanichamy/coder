@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { LayoutDashboard, BookOpen, Trophy, LogOut, Code2, ListChecks, UserCircle, FileText } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -40,7 +41,7 @@ export default function StudentSidebar({ onLogout }) {
     <aside className="sticky top-0 h-screen w-20 md:w-64 bg-white shadow-lg flex flex-col z-30 transition-all duration-200">
       {/* Logo / App Name */}
       <div className="flex items-center justify-center md:justify-start h-16 px-4 border-b border-indigo-100">
-        <Code2 className="h-8 w-8 text-indigo-600" />
+        <Image src="/logo.jpg" alt="Logo" width={32} height={32} className="h-8 w-8 rounded" />
         <span className="hidden md:inline ml-2 text-xl font-bold text-indigo-700 tracking-tight">Zenith Mentor</span>
       </div>
       {/* Profile Section */}

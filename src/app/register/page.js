@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Code } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -83,7 +84,7 @@ export default function Register() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
-            <Code className="h-12 w-12 text-indigo-600" />
+            <Image src="/logo.jpg" alt="Logo" width={48} height={48} className="h-12 w-12 rounded" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Create your account
