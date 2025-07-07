@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, ArrowLeft, Code2, Trash2, AlertCircle, CheckCircle2, FileCode, BookOpen, Hash, Info, Lock, PlusCircle } from 'lucide-react';
 import AdminSidebar from '../../../components/AdminSidebar';
 
 export default function AdminProblemCreatePage() {
@@ -108,129 +108,349 @@ export default function AdminProblemCreatePage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="flex-1 bg-gray-50">
-        <div className="max-w-lg mx-auto py-8">
-          <Link href="/admin/problems" className="inline-flex items-center text-indigo-600 hover:underline mb-4">
-            &#8592; Back to Problems
-          </Link>
-          <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-lg w-full space-y-8 bg-white p-8 rounded shadow">
-              <div className="flex items-center justify-center">
-                <Plus className="h-8 w-8 text-indigo-600" />
+      <main className="flex-1 overflow-auto">
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <Link 
+              href="/admin/problems" 
+              className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Problems
+            </Link>
+            <div className="flex items-center gap-2">
+              <Code2 className="h-5 w-5 text-indigo-600" />
+              <h1 className="text-xl font-bold text-gray-900">Create New Problem</h1>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <FileCode className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Problem Details</h2>
+                  <p className="text-sm text-gray-500">Create a new coding challenge</p>
+                </div>
               </div>
-              <h2 className="mt-2 text-center text-2xl font-extrabold text-gray-900">Add New Problem</h2>
-              <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded">{error}</div>}
-                {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded">{success}</div>}
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
-                  <input id="title" name="title" type="text" required value={formData.title} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
-                </div>
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea id="description" name="description" required value={formData.description} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" rows={4} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">Difficulty</label>
-                    <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
-                    </select>
+
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                {error && (
+                  <div className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-3 rounded-lg">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                    <p className="text-sm">{error}</p>
                   </div>
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-                    <input id="category" name="category" type="text" required value={formData.category} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="constraints" className="block text-sm font-medium text-gray-700">Constraints</label>
-                  <textarea id="constraints" name="constraints" required value={formData.constraints} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
-                </div>
-                <div>
-                  <label htmlFor="starterCode" className="block text-sm font-medium text-gray-700">Starter Code</label>
-                  <textarea id="starterCode" name="starterCode" required value={formData.starterCode} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={3} />
-                </div>
-                <div>
-                  <label htmlFor="solution" className="block text-sm font-medium text-gray-700">Solution</label>
-                  <textarea id="solution" name="solution" required value={formData.solution} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={3} />
-                </div>
-                <div>
-                  <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (comma separated)</label>
-                  <input id="tags" name="tags" type="text" value={formData.tags} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
-                </div>
+                )}
                 
-                {/* Test Cases Section */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Test Cases</h3>
-                  {formData.testCases.map((tc, index) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-md mb-4 space-y-2 relative">
-                      <button
-                        type="button"
-                        onClick={() => removeTestCase(index)}
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                {success && (
+                  <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-3 rounded-lg">
+                    <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+                    <p className="text-sm">{success}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                      Problem Title
+                    </label>
+                    <input
+                      id="title"
+                      name="title"
+                      type="text"
+                      required
+                      value={formData.title}
+                      onChange={handleChange}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      placeholder="e.g., Two Sum"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                      Problem Description
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      required
+                      value={formData.description}
+                      onChange={handleChange}
+                      rows={4}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      placeholder="Describe the problem and its requirements..."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
+                        Difficulty Level
+                      </label>
+                      <select
+                        id="difficulty"
+                        name="difficulty"
+                        value={formData.difficulty}
+                        onChange={handleChange}
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
                       >
-                        &times;
-                      </button>
-                      <div>
-                        <label htmlFor={`testCase-input-${index}`} className="block text-sm font-medium text-gray-700">Input</label>
-                        <textarea id={`testCase-input-${index}`} name="input" value={tc.input} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
-                      <div>
-                        <label htmlFor={`testCase-output-${index}`} className="block text-sm font-medium text-gray-700">Expected Output</label>
-                        <textarea id={`testCase-output-${index}`} name="output" value={tc.output} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
-                      <div className="flex items-center">
-                        <input id={`testCase-hidden-${index}`} name="isHidden" type="checkbox" checked={tc.isHidden} onChange={(e) => handleTestCaseChange(index, e)} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                        <label htmlFor={`testCase-hidden-${index}`} className="ml-2 block text-sm text-gray-900">Hidden</label>
-                        <span className="ml-1 text-xs text-gray-400" title="Hidden test cases are not shown to the user.">?</span>
-                      </div>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
                     </div>
-                  ))}
-                  <button type="button" onClick={addTestCase} className="w-full py-2 px-4 border border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
-                    Add Test Case
-                  </button>
+                    <div>
+                      <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                        Category
+                      </label>
+                      <input
+                        id="category"
+                        name="category"
+                        type="text"
+                        required
+                        value={formData.category}
+                        onChange={handleChange}
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                        placeholder="e.g., Arrays & Strings"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="constraints" className="block text-sm font-medium text-gray-700 mb-1">
+                      Constraints
+                    </label>
+                    <textarea
+                      id="constraints"
+                      name="constraints"
+                      required
+                      value={formData.constraints}
+                      onChange={handleChange}
+                      rows={2}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono"
+                      placeholder="List the constraints and limitations..."
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="starterCode" className="block text-sm font-medium text-gray-700 mb-1">
+                      Starter Code
+                    </label>
+                    <textarea
+                      id="starterCode"
+                      name="starterCode"
+                      required
+                      value={formData.starterCode}
+                      onChange={handleChange}
+                      rows={3}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono"
+                      placeholder="function solution() {\n  // Write your code here\n}"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="solution" className="block text-sm font-medium text-gray-700 mb-1">
+                      Solution
+                    </label>
+                    <textarea
+                      id="solution"
+                      name="solution"
+                      required
+                      value={formData.solution}
+                      onChange={handleChange}
+                      rows={3}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono"
+                      placeholder="// Provide the solution implementation"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
+                      Tags
+                    </label>
+                    <input
+                      id="tags"
+                      name="tags"
+                      type="text"
+                      value={formData.tags}
+                      onChange={handleChange}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      placeholder="arrays, strings, algorithms (comma separated)"
+                    />
+                  </div>
+                </div>
+
+                {/* Test Cases Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-5 w-5 text-indigo-600" />
+                      <h3 className="text-lg font-medium text-gray-900">Test Cases</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addTestCase}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Add Case
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {formData.testCases.map((tc, index) => (
+                      <div key={index} className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Test Case #{index + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeTestCase(index)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor={`testCase-input-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              Input
+                            </label>
+                            <textarea
+                              id={`testCase-input-${index}`}
+                              name="input"
+                              value={tc.input}
+                              onChange={(e) => handleTestCaseChange(index, e)}
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor={`testCase-output-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              Expected Output
+                            </label>
+                            <textarea
+                              id={`testCase-output-${index}`}
+                              name="output"
+                              value={tc.output}
+                              onChange={(e) => handleTestCaseChange(index, e)}
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            id={`testCase-hidden-${index}`}
+                            name="isHidden"
+                            type="checkbox"
+                            checked={tc.isHidden}
+                            onChange={(e) => handleTestCaseChange(index, e)}
+                            className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                          />
+                          <label htmlFor={`testCase-hidden-${index}`} className="text-sm text-gray-700">
+                            Hidden test case
+                          </label>
+                          <Info className="h-4 w-4 text-gray-400" title="Hidden test cases are not shown to users" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Examples Section */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Examples</h3>
-                  {formData.examples.map((ex, index) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-md mb-4 space-y-2 relative">
-                      <button
-                        type="button"
-                        onClick={() => removeExample(index)}
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                      >
-                        &times;
-                      </button>
-                      <div>
-                        <label htmlFor={`example-input-${index}`} className="block text-sm font-medium text-gray-700">Input</label>
-                        <textarea id={`example-input-${index}`} name="input" value={ex.input} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
-                      <div>
-                        <label htmlFor={`example-output-${index}`} className="block text-sm font-medium text-gray-700">Expected Output</label>
-                        <textarea id={`example-output-${index}`} name="output" value={ex.output} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
-                      <div>
-                        <label htmlFor={`example-explanation-${index}`} className="block text-sm font-medium text-gray-700">Explanation</label>
-                        <textarea id={`example-explanation-${index}`} name="explanation" value={ex.explanation} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-indigo-600" />
+                      <h3 className="text-lg font-medium text-gray-900">Examples</h3>
                     </div>
-                  ))}
-                  <button type="button" onClick={addExample} className="w-full py-2 px-4 border border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
-                    Add Example
-                  </button>
+                    <button
+                      type="button"
+                      onClick={addExample}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      Add Example
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {formData.examples.map((ex, index) => (
+                      <div key={index} className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Example #{index + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeExample(index)}
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div>
+                            <label htmlFor={`example-input-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              Input
+                            </label>
+                            <textarea
+                              id={`example-input-${index}`}
+                              name="input"
+                              value={ex.input}
+                              onChange={(e) => handleExampleChange(index, e)}
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor={`example-output-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              Expected Output
+                            </label>
+                            <textarea
+                              id={`example-output-${index}`}
+                              name="output"
+                              value={ex.output}
+                              onChange={(e) => handleExampleChange(index, e)}
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor={`example-explanation-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              Explanation
+                            </label>
+                            <textarea
+                              id={`example-explanation-${index}`}
+                              name="explanation"
+                              value={ex.explanation}
+                              onChange={(e) => handleExampleChange(index, e)}
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <button type="submit" disabled={loading} className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50">
-                  {loading ? 'Creating...' : 'Create Problem'}
-                </button>
-                <div className="text-center mt-2">
-                  <Link href="/admin/dashboard?tab=problems" className="text-indigo-600 hover:underline">Back to Problems</Link>
+                <div className="flex items-center justify-end gap-4 pt-6">
+                  <Link
+                    href="/admin/problems"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white text-sm font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
+                  >
+                    {loading ? 'Creating...' : 'Create Problem'}
+                  </button>
                 </div>
               </form>
             </div>
