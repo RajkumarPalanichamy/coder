@@ -620,22 +620,35 @@ export async function POST(req) {
     // This is a placeholder for the actual execution logic
     const result = await executeCode(template, language);
 
-    return NextResponse.json(result);
+    if (result.error) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      output: result.output,
+      executionTime: result.executionTime,
+      memoryUsed: result.memoryUsed
+    });
   } catch (error) {
     console.error('Execution error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to execute code' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
 }
 
-async function executeCode(code, language) {
-  // This is a placeholder for your actual code execution logic
-  // You would typically use a service like Judge0 or a sandboxed environment
+async function executeCode(template, language) {
+  // This is where you would integrate with your code execution engine
+  // For example, using Judge0 API or similar service
+  
+  // Placeholder implementation
   return {
-    output: 'Code execution placeholder',
-    status: 'success',
-    executionTime: 0
+    output: "Sample output",
+    executionTime: "100ms",
+    memoryUsed: "10MB"
   };
 } 
