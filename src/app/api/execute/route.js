@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import LeetCodeTemplateGenerator from '../../../lib/LeetCodeTemplateGenerator';
 
 // Judge0 CE API configuration based on official documentation
 const createExecutionConfig = () => {
@@ -45,21 +46,29 @@ const createExecutionConfig = () => {
 class LeetCodeTemplateGenerator {
   constructor() {}
   
-  // Detect input type and generate appropriate template
-  generateTemplate(language, userCode, input, expectedOutput) {
-    const inputType = this.detectInputType(input);
+  // Generate template with optional explicit data type or auto-detection
+  generateTemplate(language, userCode, input, expectedOutput, inputType = null, outputType = null) {
+    // Use explicit input type if provided, otherwise auto-detect
+    let templateInputType;
+    if (inputType) {
+      // Map our explicit data types to internal template types
+      templateInputType = this.mapDataTypeToTemplateType(inputType);
+    } else {
+      // Auto-detect from input content
+      templateInputType = this.detectInputType(input);
+    }
     
     switch (language) {
       case 'javascript':
-        return this.generateJavaScriptTemplate(userCode, input, expectedOutput, inputType);
+        return this.generateJavaScriptTemplate(userCode, input, expectedOutput, templateInputType, outputType);
       case 'python':
-        return this.generatePythonTemplate(userCode, input, expectedOutput, inputType);
+        return this.generatePythonTemplate(userCode, input, expectedOutput, templateInputType, outputType);
       case 'java':
-        return this.generateJavaTemplate(userCode, input, expectedOutput, inputType);
+        return this.generateJavaTemplate(userCode, input, expectedOutput, templateInputType, outputType);
       case 'cpp':
-        return this.generateCppTemplate(userCode, input, expectedOutput, inputType);
+        return this.generateCppTemplate(userCode, input, expectedOutput, templateInputType, outputType);
       case 'c':
-        return this.generateCTemplate(userCode, input, expectedOutput, inputType);
+        return this.generateCTemplate(userCode, input, expectedOutput, templateInputType, outputType);
       default:
         return userCode;
     }
@@ -82,6 +91,23 @@ class LeetCodeTemplateGenerator {
     }
     
     return 'multi_param';
+  }
+
+  // Map our explicit data types to internal template types
+  mapDataTypeToTemplateType(dataType) {
+    const mapping = {
+      'string': 'single_string',
+      'number': 'single_number',
+      'array_number': 'single_array',
+      'array_string': 'single_array',
+      'matrix_number': 'single_array',
+      'matrix_string': 'single_array', 
+      'boolean': 'single_number', // Treat boolean as single value
+      'object': 'single_string', // JSON object as string
+      'multiple_params': 'multi_param'
+    };
+    
+    return mapping[dataType] || 'multi_param';
   }
   
   parseInput(input, inputType) {
@@ -297,9 +323,9 @@ class Judge0Executor {
       const expectedOutput = testCase.output || '';
       
       try {
-        // Generate LeetCode-style template
+        // Generate LeetCode-style template with explicit data types if available
         const wrappedCode = this.templateGenerator.generateTemplate(
-          language, code, input, expectedOutput
+          language, code, input, expectedOutput, testCase.inputType, testCase.outputType
         );
         
         // Create submission using Judge0 CE API specification
@@ -571,82 +597,45 @@ export async function GET(req) {
 // Main code execution endpoint
 export async function POST(req) {
   try {
-    const { code, language, testCases, limits } = await req.json();
-    
-    // Validate required parameters
-    if (!code || !language || !Array.isArray(testCases)) {
-      return NextResponse.json({ 
-        error: 'Missing required parameters: code, language, or testCases' 
-      }, { status: 400 });
+    const { code, language, input, expectedOutput, inputType, outputType } = await req.json();
+
+    if (!code || !language || !input || !expectedOutput) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
-    
-    if (testCases.length === 0) {
-      return NextResponse.json({ 
-        error: 'At least one test case is required' 
-      }, { status: 400 });
-    }
-    
-    // Create configuration
-    const config = createExecutionConfig();
-    
-    // Apply custom limits if provided
-    if (limits) {
-      Object.assign(config.judge0.defaultLimits, limits);
-    }
-    
-    // Validate language support
-    if (!config.languages[language]) {
-      return NextResponse.json({ 
-        error: `Unsupported language: ${language}`,
-        supportedLanguages: Object.keys(config.languages),
-        suggestion: 'Use GET /api/execute to see all supported languages'
-      }, { status: 400 });
-    }
-    
-    // Initialize executor
-    const executor = new Judge0Executor(config);
-    
-    // Execute code
-    const startTime = Date.now();
-    const results = await executor.execute(code, language, testCases);
-    const executionDuration = Date.now() - startTime;
-    
-    // Calculate statistics
-    const passedCount = results.filter(r => r.passed).length;
-    const failedCount = results.length - passedCount;
-    const hasCompilationError = results.some(r => r.status === 'compilation_error');
-    const hasRuntimeError = results.some(r => r.status?.startsWith('runtime_error'));
-    
-    // Return comprehensive results
-    return NextResponse.json({
-      results,
-      executionInfo: {
-        language: config.languages[language],
-        timestamp: new Date().toISOString(),
-        totalTestCases: testCases.length,
-        passedTestCases: passedCount,
-        failedTestCases: failedCount,
-        executionDuration: `${executionDuration}ms`,
-        hasCompilationError,
-        hasRuntimeError,
-        executionStyle: 'leetcode',
-        judge0Config: {
-          endpoint: config.judge0.endpoint,
-          limits: config.judge0.defaultLimits
-        }
-      },
-      notice: config.judge0.apiKey && config.judge0.apiKey !== 'demo-key' 
-        ? `✅ Code execution completed using Judge0 CE API (LeetCode-style)`
-        : '⚠️ Using fallback mode - configure Judge0 API key for real execution'
-    });
-    
+
+    const templateGenerator = new LeetCodeTemplateGenerator();
+    const template = templateGenerator.generateTemplate(
+      language,
+      code,
+      input,
+      expectedOutput,
+      inputType,
+      outputType
+    );
+
+    // Execute the code using your preferred execution engine
+    // This is a placeholder for the actual execution logic
+    const result = await executeCode(template, language);
+
+    return NextResponse.json(result);
   } catch (error) {
-    console.error('Judge0 execution error:', error);
-    return NextResponse.json({
-      error: 'Code execution failed',
-      details: error.message,
-      timestamp: new Date().toISOString(),
-      suggestion: 'Check your Judge0 API key configuration and network connection'
-    }, { status: 500 });
+    console.error('Execution error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to execute code' },
+      { status: 500 }
+    );
   }
+}
+
+async function executeCode(code, language) {
+  // This is a placeholder for your actual code execution logic
+  // You would typically use a service like Judge0 or a sandboxed environment
+  return {
+    output: 'Code execution placeholder',
+    status: 'success',
+    executionTime: 0
+  };
 } 

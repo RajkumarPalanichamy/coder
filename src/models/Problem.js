@@ -9,6 +9,16 @@ const testCaseSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  inputType: {
+    type: String,
+    enum: ['string', 'number', 'array_number', 'array_string', 'matrix_number', 'matrix_string', 'boolean', 'object', 'multiple_params'],
+    default: 'string'
+  },
+  outputType: {
+    type: String,
+    enum: ['string', 'number', 'array_number', 'array_string', 'matrix_number', 'matrix_string', 'boolean', 'object'],
+    default: 'string'
+  },
   isHidden: {
     type: Boolean,
     default: false
@@ -27,21 +37,42 @@ const problemSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
+    required: true,
     enum: ['easy', 'medium', 'hard'],
-    required: true
+    default: 'easy'
   },
   category: {
     type: String,
     required: true,
-    trim: true
+    enum: ['javascript', 'python', 'java', 'cpp', 'c'],
+    default: 'javascript'
   },
   constraints: {
-    type: String
+    type: String,
+    required: true
   },
   examples: [{
-    input: String,
-    output: String,
-    explanation: String
+    input: {
+      type: String,
+      required: true
+    },
+    output: {
+      type: String,
+      required: true
+    },
+    explanation: String,
+    inputType: {
+      type: String,
+      required: true,
+      enum: ['string', 'number', 'array_number', 'array_string', 'matrix_number', 'matrix_string', 'boolean', 'object', 'multiple_params'],
+      default: 'string'
+    },
+    outputType: {
+      type: String,
+      required: true,
+      enum: ['string', 'number', 'array_number', 'array_string', 'matrix_number', 'matrix_string', 'boolean', 'object'],
+      default: 'string'
+    }
   }],
   testCases: [testCaseSchema],
   starterCode: {
@@ -49,7 +80,8 @@ const problemSchema = new mongoose.Schema({
     required: true
   },
   solution: {
-    type: String
+    type: String,
+    required: true
   },
   timeLimit: {
     type: Number,
@@ -71,14 +103,21 @@ const problemSchema = new mongoose.Schema({
   tags: [{
     type: String,
     trim: true
-  }]
-}, {
-  timestamps: true
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 // Index for better search performance
 problemSchema.index({ title: 'text', description: 'text', category: 'text' });
 problemSchema.index({ difficulty: 1, category: 1, isActive: 1 });
+problemSchema.index({ tags: 1 });
 
 const Problem = mongoose.models.Problem || mongoose.model('Problem', problemSchema);
 

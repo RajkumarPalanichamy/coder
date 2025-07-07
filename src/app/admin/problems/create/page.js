@@ -5,42 +5,90 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import AdminSidebar from '../../../components/AdminSidebar';
+import { 
+  DATA_TYPES, 
+  DATA_TYPE_LABELS, 
+  DATA_TYPE_EXAMPLES, 
+  DATA_TYPE_DESCRIPTIONS,
+  validateDataType,
+  autoDetectDataType 
+} from '../../../../lib/dataTypeHelpers';
+import { PROGRAMMING_LANGUAGES, DIFFICULTY_LEVELS } from '../../../../lib/constants';
 
 export default function AdminProblemCreatePage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     difficulty: 'easy',
-    category: '',
+    category: 'javascript',
     constraints: '',
     starterCode: '',
     solution: '',
     tags: '',
-    examples: [{ input: '', output: '', explanation: '' }],
-    testCases: [{ input: '', output: '', isHidden: false }],
+    examples: [{ input: '', output: '', explanation: '', inputType: 'string', outputType: 'string' }],
+    testCases: [{ input: '', output: '', inputType: 'string', outputType: 'string', isHidden: false }],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
   const router = useRouter();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      
+      // Update starter code template when category changes
+      if (name === 'category') {
+        const template = newData.testCases.some(tc => tc.inputType === 'multiple_params') 
+          ? PROGRAMMING_LANGUAGES[value].multiParamTemplate
+          : PROGRAMMING_LANGUAGES[value].defaultTemplate;
+        newData.starterCode = template;
+      }
+      
+      return newData;
     });
   };
 
   const handleTestCaseChange = (index, e) => {
     const newTestCases = [...formData.testCases];
-    newTestCases[index][e.target.name] = e.target.name === 'isHidden' ? e.target.checked : e.target.value;
+    if (e.target.name === 'isHidden') {
+      newTestCases[index][e.target.name] = e.target.checked;
+    } else {
+      newTestCases[index][e.target.name] = e.target.value;
+      
+      // Auto-detect data type when input/output changes
+      if (e.target.name === 'input' && e.target.value.trim()) {
+        const detectedType = autoDetectDataType(e.target.value);
+        if (DATA_TYPES.INPUT.includes(detectedType)) {
+          newTestCases[index].inputType = detectedType;
+        }
+      } else if (e.target.name === 'output' && e.target.value.trim()) {
+        const detectedType = autoDetectDataType(e.target.value);
+        if (DATA_TYPES.OUTPUT.includes(detectedType)) {
+          newTestCases[index].outputType = detectedType;
+        }
+      }
+    }
+    
     setFormData({ ...formData, testCases: newTestCases });
+    
+    // Clear validation errors for this field
+    const errorKey = `testCase_${index}_${e.target.name}`;
+    if (validationErrors[errorKey]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
+    }
   };
 
   const addTestCase = () => {
     setFormData({
       ...formData,
-      testCases: [...formData.testCases, { input: '', output: '', isHidden: false }],
+      testCases: [...formData.testCases, { input: '', output: '', inputType: 'string', outputType: 'string', isHidden: false }],
     });
   };
 
@@ -52,13 +100,37 @@ export default function AdminProblemCreatePage() {
   const handleExampleChange = (index, e) => {
     const newExamples = [...formData.examples];
     newExamples[index][e.target.name] = e.target.value;
+    
+    // Auto-detect data type when input/output changes
+    if (e.target.name === 'input' && e.target.value.trim()) {
+      const detectedType = autoDetectDataType(e.target.value);
+      if (DATA_TYPES.INPUT.includes(detectedType)) {
+        newExamples[index].inputType = detectedType;
+      }
+    } else if (e.target.name === 'output' && e.target.value.trim()) {
+      const detectedType = autoDetectDataType(e.target.value);
+      if (DATA_TYPES.OUTPUT.includes(detectedType)) {
+        newExamples[index].outputType = detectedType;
+      }
+    }
+    
     setFormData({ ...formData, examples: newExamples });
+    
+    // Clear validation errors for this field
+    const errorKey = `example_${index}_${e.target.name}`;
+    if (validationErrors[errorKey]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
+    }
   };
 
   const addExample = () => {
     setFormData({
       ...formData,
-      examples: [...formData.examples, { input: '', output: '', explanation: '' }],
+      examples: [...formData.examples, { input: '', output: '', explanation: '', inputType: 'string', outputType: 'string' }],
     });
   };
 
@@ -67,11 +139,60 @@ export default function AdminProblemCreatePage() {
     setFormData({ ...formData, examples: newExamples });
   };
 
+  const validateForm = () => {
+    const errors = {};
+    
+    // Validate test cases
+    formData.testCases.forEach((tc, index) => {
+      if (tc.input.trim()) {
+        const inputValidation = validateDataType(tc.input, tc.inputType);
+        if (!inputValidation.isValid) {
+          errors[`testCase_${index}_input`] = inputValidation.error;
+        }
+      }
+      
+      if (tc.output.trim()) {
+        const outputValidation = validateDataType(tc.output, tc.outputType);
+        if (!outputValidation.isValid) {
+          errors[`testCase_${index}_output`] = outputValidation.error;
+        }
+      }
+    });
+    
+    // Validate examples
+    formData.examples.forEach((ex, index) => {
+      if (ex.input.trim()) {
+        const inputValidation = validateDataType(ex.input, ex.inputType);
+        if (!inputValidation.isValid) {
+          errors[`example_${index}_input`] = inputValidation.error;
+        }
+      }
+      
+      if (ex.output.trim()) {
+        const outputValidation = validateDataType(ex.output, ex.outputType);
+        if (!outputValidation.isValid) {
+          errors[`example_${index}_output`] = outputValidation.error;
+        }
+      }
+    });
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
+    
+    // Validate data types first
+    if (!validateForm()) {
+      setError('Please fix the validation errors below.');
+      setLoading(false);
+      return;
+    }
+    
     // Validation for test cases
     const validTestCases = formData.testCases.filter(tc => tc.input.trim() && tc.output.trim());
     if (validTestCases.length === 0) {
@@ -79,6 +200,7 @@ export default function AdminProblemCreatePage() {
       setLoading(false);
       return;
     }
+    
     try {
       const response = await fetch('/api/admin/problems', {
         method: 'POST',
@@ -106,6 +228,28 @@ export default function AdminProblemCreatePage() {
       setLoading(false);
     }
   };
+
+  const DataTypeSelector = ({ value, onChange, types, name, label }) => (
+    <div className="mb-2">
+      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full text-xs px-2 py-1 border border-gray-300 rounded-md focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        title={DATA_TYPE_DESCRIPTIONS[value]}
+      >
+        {types.map(type => (
+          <option key={type} value={type}>
+            {DATA_TYPE_LABELS[type]}
+          </option>
+        ))}
+      </select>
+      <div className="text-xs text-gray-400 mt-1">
+        Example: <code className="bg-gray-100 px-1 rounded">{DATA_TYPE_EXAMPLES[value]}</code>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen">
@@ -135,15 +279,35 @@ export default function AdminProblemCreatePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">Difficulty</label>
-                    <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
+                    <select 
+                      id="difficulty" 
+                      name="difficulty" 
+                      value={formData.difficulty} 
+                      onChange={handleChange} 
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                      {Object.entries(DIFFICULTY_LEVELS).map(([value, { label }]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-                    <input id="category" name="category" type="text" required value={formData.category} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Programming Language</label>
+                    <select 
+                      id="category" 
+                      name="category" 
+                      value={formData.category} 
+                      onChange={handleChange} 
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                      {Object.entries(PROGRAMMING_LANGUAGES).map(([value, { label }]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div>
@@ -167,31 +331,85 @@ export default function AdminProblemCreatePage() {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Test Cases</h3>
                   {formData.testCases.map((tc, index) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-md mb-4 space-y-2 relative">
+                    <div key={index} className="p-4 border border-gray-200 rounded-md mb-4 space-y-3 relative">
                       <button
                         type="button"
                         onClick={() => removeTestCase(index)}
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                        className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl font-bold"
                       >
                         &times;
                       </button>
-                      <div>
-                        <label htmlFor={`testCase-input-${index}`} className="block text-sm font-medium text-gray-700">Input</label>
-                        <textarea id={`testCase-input-${index}`} name="input" value={tc.input} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Input Section */}
+                        <div>
+                          <label htmlFor={`testCase-input-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Input</label>
+                          <DataTypeSelector
+                            value={tc.inputType}
+                            onChange={(e) => handleTestCaseChange(index, e)}
+                            types={DATA_TYPES.INPUT}
+                            name="inputType"
+                            label="Input Type"
+                          />
+                          <textarea 
+                            id={`testCase-input-${index}`} 
+                            name="input" 
+                            value={tc.input} 
+                            onChange={(e) => handleTestCaseChange(index, e)} 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md font-mono text-sm ${
+                              validationErrors[`testCase_${index}_input`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                            rows={3}
+                            placeholder={DATA_TYPE_EXAMPLES[tc.inputType]}
+                          />
+                          {validationErrors[`testCase_${index}_input`] && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors[`testCase_${index}_input`]}</p>
+                          )}
+                        </div>
+
+                        {/* Output Section */}
+                        <div>
+                          <label htmlFor={`testCase-output-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Expected Output</label>
+                          <DataTypeSelector
+                            value={tc.outputType}
+                            onChange={(e) => handleTestCaseChange(index, e)}
+                            types={DATA_TYPES.OUTPUT}
+                            name="outputType"
+                            label="Output Type"
+                          />
+                          <textarea 
+                            id={`testCase-output-${index}`} 
+                            name="output" 
+                            value={tc.output} 
+                            onChange={(e) => handleTestCaseChange(index, e)} 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md font-mono text-sm ${
+                              validationErrors[`testCase_${index}_output`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                            rows={3}
+                            placeholder={DATA_TYPE_EXAMPLES[tc.outputType]}
+                          />
+                          {validationErrors[`testCase_${index}_output`] && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors[`testCase_${index}_output`]}</p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <label htmlFor={`testCase-output-${index}`} className="block text-sm font-medium text-gray-700">Expected Output</label>
-                        <textarea id={`testCase-output-${index}`} name="output" value={tc.output} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
-                      <div className="flex items-center">
-                        <input id={`testCase-hidden-${index}`} name="isHidden" type="checkbox" checked={tc.isHidden} onChange={(e) => handleTestCaseChange(index, e)} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-                        <label htmlFor={`testCase-hidden-${index}`} className="ml-2 block text-sm text-gray-900">Hidden</label>
-                        <span className="ml-1 text-xs text-gray-400" title="Hidden test cases are not shown to the user.">?</span>
+
+                      <div className="flex items-center pt-2">
+                        <input 
+                          id={`testCase-hidden-${index}`} 
+                          name="isHidden" 
+                          type="checkbox" 
+                          checked={tc.isHidden} 
+                          onChange={(e) => handleTestCaseChange(index, e)} 
+                          className="h-4 w-4 text-indigo-600 border-gray-300 rounded" 
+                        />
+                        <label htmlFor={`testCase-hidden-${index}`} className="ml-2 block text-sm text-gray-900">Hidden from students</label>
+                        <span className="ml-1 text-xs text-gray-400" title="Hidden test cases are not shown to students but are used for evaluation.">?</span>
                       </div>
                     </div>
                   ))}
                   <button type="button" onClick={addTestCase} className="w-full py-2 px-4 border border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
-                    Add Test Case
+                    + Add Test Case
                   </button>
                 </div>
 
@@ -199,30 +417,86 @@ export default function AdminProblemCreatePage() {
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Examples</h3>
                   {formData.examples.map((ex, index) => (
-                    <div key={index} className="p-4 border border-gray-200 rounded-md mb-4 space-y-2 relative">
+                    <div key={index} className="p-4 border border-gray-200 rounded-md mb-4 space-y-3 relative">
                       <button
                         type="button"
                         onClick={() => removeExample(index)}
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                        className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl font-bold"
                       >
                         &times;
                       </button>
-                      <div>
-                        <label htmlFor={`example-input-${index}`} className="block text-sm font-medium text-gray-700">Input</label>
-                        <textarea id={`example-input-${index}`} name="input" value={ex.input} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Input Section */}
+                        <div>
+                          <label htmlFor={`example-input-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Input</label>
+                          <DataTypeSelector
+                            value={ex.inputType}
+                            onChange={(e) => handleExampleChange(index, e)}
+                            types={DATA_TYPES.INPUT}
+                            name="inputType"
+                            label="Input Type"
+                          />
+                          <textarea 
+                            id={`example-input-${index}`} 
+                            name="input" 
+                            value={ex.input} 
+                            onChange={(e) => handleExampleChange(index, e)} 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md font-mono text-sm ${
+                              validationErrors[`example_${index}_input`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                            rows={3}
+                            placeholder={DATA_TYPE_EXAMPLES[ex.inputType]}
+                          />
+                          {validationErrors[`example_${index}_input`] && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors[`example_${index}_input`]}</p>
+                          )}
+                        </div>
+
+                        {/* Output Section */}
+                        <div>
+                          <label htmlFor={`example-output-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Expected Output</label>
+                          <DataTypeSelector
+                            value={ex.outputType}
+                            onChange={(e) => handleExampleChange(index, e)}
+                            types={DATA_TYPES.OUTPUT}
+                            name="outputType"
+                            label="Output Type"
+                          />
+                          <textarea 
+                            id={`example-output-${index}`} 
+                            name="output" 
+                            value={ex.output} 
+                            onChange={(e) => handleExampleChange(index, e)} 
+                            className={`mt-1 block w-full px-3 py-2 border rounded-md font-mono text-sm ${
+                              validationErrors[`example_${index}_output`] ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
+                            rows={3}
+                            placeholder={DATA_TYPE_EXAMPLES[ex.outputType]}
+                          />
+                          {validationErrors[`example_${index}_output`] && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors[`example_${index}_output`]}</p>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Explanation Section - Full width */}
                       <div>
-                        <label htmlFor={`example-output-${index}`} className="block text-sm font-medium text-gray-700">Expected Output</label>
-                        <textarea id={`example-output-${index}`} name="output" value={ex.output} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
-                      </div>
-                      <div>
-                        <label htmlFor={`example-explanation-${index}`} className="block text-sm font-medium text-gray-700">Explanation</label>
-                        <textarea id={`example-explanation-${index}`} name="explanation" value={ex.explanation} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                        <label htmlFor={`example-explanation-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Explanation</label>
+                        <textarea 
+                          id={`example-explanation-${index}`} 
+                          name="explanation" 
+                          value={ex.explanation} 
+                          onChange={(e) => handleExampleChange(index, e)} 
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm" 
+                          rows={2}
+                          placeholder="Explain how the input produces the output..."
+                        />
                       </div>
                     </div>
                   ))}
                   <button type="button" onClick={addExample} className="w-full py-2 px-4 border border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50">
-                    Add Example
+                    + Add Example
                   </button>
                 </div>
 
