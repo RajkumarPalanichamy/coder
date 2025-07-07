@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Play, Save, ArrowLeft, CheckCircle, XCircle, Copy } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { PROGRAMMING_LANGUAGES } from '../../../lib/constants';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
@@ -53,15 +52,14 @@ export default function ProblemPage() {
     setCanSubmit(false);
     setRunTestResults(null);
     setRunError('');
-    setResult(null);
-    setSubmissionTestResults(null);
-    
+    setResult(null); // Clear previous submission results
+    setSubmissionTestResults(null); // Clear previous submission test results
+    // Only use non-hidden test cases
     const sampleTestCases = (problem.testCases || []).filter(tc => !tc.isHidden);
     if (!sampleTestCases.length) {
       setRunError('No sample test cases available.');
       return;
     }
-
     try {
       const response = await fetch('/api/execute', {
         method: 'POST',
@@ -69,13 +67,9 @@ export default function ProblemPage() {
         body: JSON.stringify({
           code,
           language,
-          input: sampleTestCases[0].input,
-          expectedOutput: sampleTestCases[0].output,
-          inputType: sampleTestCases[0].inputType,
-          outputType: sampleTestCases[0].outputType
+          testCases: sampleTestCases
         })
       });
-
       const data = await response.json();
       if (!response.ok) {
         setRunError(data.error || 'Code execution failed.');
@@ -84,18 +78,9 @@ export default function ProblemPage() {
         }
         return;
       }
-
-      // Format test results
-      const results = [{
-        input: sampleTestCases[0].input,
-        expected: sampleTestCases[0].output,
-        actual: data.output,
-        passed: data.output === sampleTestCases[0].output,
-        error: data.error
-      }];
-
-      setRunTestResults(results);
+      setRunTestResults(data.results); // [{input, expected, actual, passed, error}]
       
+      // Display notice if present
       if (data.notice) {
         setRunResult({
           status: 'info',
@@ -103,7 +88,8 @@ export default function ProblemPage() {
         });
       }
       
-      setCanSubmit(results.every(r => r.passed));
+      // If all passed, allow submit
+      setCanSubmit(data.results.every(r => r.passed));
     } catch (err) {
       console.error('Error running code:', err);
       setRunError('Error running code. Please check your network connection and try again.');
@@ -222,325 +208,420 @@ export default function ProblemPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Left Panel - Problem Description */}
-      <div className="w-2/5 p-6 border-r border-gray-200 overflow-y-auto">
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="flex items-center text-indigo-600 hover:text-indigo-500 mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Problems
-        </button>
-        
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{problem.title}</h1>
-        
-        <div className="flex items-center gap-2 mb-4">
-          <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
-            {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
-          </span>
-          <span className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-xs font-medium">
-            {PROGRAMMING_LANGUAGES[problem.category]?.label || problem.category}
-          </span>
-        </div>
-
-        <div className="prose max-w-none mb-6">
-          <div className="text-gray-700 mb-6">{problem.description}</div>
-          
-          {problem.constraints && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">Constraints:</h3>
-              <div className="text-sm text-gray-600">{problem.constraints}</div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="flex items-center text-gray-700 hover:text-indigo-600 mr-4"
+              >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back
+              </button>
+              <h1 className="text-xl font-bold text-gray-900">{problem.title}</h1>
             </div>
-          )}
-
-          {problem.examples && problem.examples.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">Examples:</h3>
-              {problem.examples.map((ex, idx) => (
-                <div key={idx} className="bg-gray-50 rounded p-3 mb-2">
-                  <p className="text-sm text-gray-600 mb-1">
-                    <strong>Input:</strong> {ex.input}
-                    <span className="text-xs text-gray-500 ml-2">({ex.inputType})</span>
-                  </p>
-                  <p className="text-sm text-gray-600 mb-1">
-                    <strong>Output:</strong> {ex.output}
-                    <span className="text-xs text-gray-500 ml-2">({ex.outputType})</span>
-                  </p>
-                  {ex.explanation && (
-                    <p className="text-sm text-gray-600">
-                      <strong>Explanation:</strong> {ex.explanation}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-900 mb-2">Sample Test Cases:</h3>
-              {problem.testCases.filter(tc => !tc.isHidden).map((tc, idx) => (
-                <div key={idx} className="bg-gray-50 rounded p-3 mb-2">
-                  <p className="text-sm text-gray-600 mb-1">
-                    <strong>Input:</strong> {tc.input}
-                    <span className="text-xs text-gray-500 ml-2">({tc.inputType})</span>
-                  </p>
-                  <p className="text-sm text-gray-600 mb-1">
-                    <strong>Output:</strong> {tc.output}
-                    <span className="text-xs text-gray-500 ml-2">({tc.outputType})</span>
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Right Panel - Code Editor */}
-      <div className="flex-1 flex flex-col">
-        <div className="border-b border-gray-200 p-4 bg-white">
-          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <select
-                value={language}
-                onChange={(e) => {
-                  setLanguage(e.target.value);
-                  // Update code to the appropriate template
-                  const template = problem.testCases.some(tc => tc.inputType === 'multiple_params')
-                    ? PROGRAMMING_LANGUAGES[e.target.value].multiParamTemplate
-                    : PROGRAMMING_LANGUAGES[e.target.value].defaultTemplate;
-                  setCode(template);
-                }}
-                className="border border-gray-300 rounded px-3 py-1.5 text-sm"
-              >
-                {Object.entries(PROGRAMMING_LANGUAGES).map(([value, { label }]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              
-              <button
-                onClick={handleCopy}
-                className="text-gray-600 hover:text-gray-800"
-                title="Copy code"
-              >
-                <Copy className="h-4 w-4" />
-                {copied && <span className="ml-1 text-xs">Copied!</span>}
-              </button>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleRun}
-                disabled={!code.trim()}
-                className="flex items-center px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 text-sm"
-              >
-                <Play className="h-4 w-4 mr-1" />
-                Run
-              </button>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit || submitting}
-                className="flex items-center px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm"
-              >
-                <Save className="h-4 w-4 mr-1" />
-                {submitting ? 'Submitting...' : 'Submit'}
-              </button>
+              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(problem.difficulty)}`}>
+                {problem.difficulty}
+              </span>
+              <span className="text-sm text-gray-500">{problem.category}</span>
             </div>
           </div>
         </div>
+      </header>
 
-        <div className="flex-1 overflow-hidden">
-          <MonacoEditor
-            height="100%"
-            defaultLanguage={language}
-            value={code}
-            onChange={setCode}
-            theme="vs-dark"
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: 'on',
-              automaticLayout: true,
-            }}
-            onMount={(editor) => {
-              codeRef.current = editor;
-            }}
-          />
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Problem Description */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Problem Description</h2>
+            <div className="prose max-w-none">
+              <p className="text-gray-700 mb-4">{problem.description}</p>
+              
+              {problem.constraints && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Constraints:</h3>
+                  <p className="text-sm text-gray-600">{problem.constraints}</p>
+                </div>
+              )}
 
-        {/* Results Panel */}
-        <div className="border-t border-gray-200 bg-white">
-          {runError && (
-            <div className="p-4 bg-red-50 border-b border-red-200">
-              <div className="flex items-center text-red-700">
-                <XCircle className="h-5 w-5 mr-2" />
-                {runError}
-              </div>
-            </div>
-          )}
-
-          {runTestResults && (
-            <div className="p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Test Results</h3>
-              <div className="space-y-3">
-                {runTestResults.map((result, idx) => (
-                  <div key={idx} className={`p-4 rounded-md border ${
-                    result.passed 
-                      ? 'bg-green-50 border-green-200' 
-                      : 'bg-red-50 border-red-200'
-                  }`}>
-                    <div className="flex items-center mb-2">
-                      {result.passed ? (
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500 mr-2" />
-                      )}
-                      <span className={`font-medium ${
-                        result.passed ? 'text-green-700' : 'text-red-700'
-                      }`}>
-                        Test Case {idx + 1}: {result.passed ? 'Passed' : 'Failed'}
-                      </span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="font-medium text-gray-700">Input:</p>
-                        <pre className="mt-1 p-2 bg-gray-100 rounded">{result.input}</pre>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-700">Expected Output:</p>
-                        <pre className="mt-1 p-2 bg-gray-100 rounded">{result.expected}</pre>
-                      </div>
-                      {!result.passed && (
-                        <div className="col-span-2">
-                          <p className="font-medium text-gray-700">Your Output:</p>
-                          <pre className="mt-1 p-2 bg-gray-100 rounded">{result.actual}</pre>
-                        </div>
-                      )}
-                      {result.error && (
-                        <div className="col-span-2">
-                          <p className="font-medium text-red-700">Error:</p>
-                          <pre className="mt-1 p-2 bg-red-50 rounded text-red-700">{result.error}</pre>
-                        </div>
+              {problem.examples && problem.examples.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Examples:</h3>
+                  {problem.examples.map((example, index) => (
+                    <div key={index} className="bg-gray-50 rounded p-3 mb-2">
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Input:</strong> {example.input}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Output:</strong> {example.output}
+                      </p>
+                      {example.explanation && (
+                        <p className="text-sm text-gray-600">
+                          <strong>Explanation:</strong> {example.explanation}
+                        </p>
                       )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  ))}
+                </div>
+              )}
 
-          {result && (
-            <div className="p-4">
-              <div className={`flex items-center mb-3 ${
-                result.status === 'success' ? 'text-green-700' : 'text-red-700'
-              }`}>
-                {result.status === 'success' ? (
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                ) : (
-                  <XCircle className="h-5 w-5 mr-2" />
-                )}
-                <span className="font-medium">{result.message}</span>
-              </div>
-
-              {result.submission && (
-                <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                  <div className={`p-3 rounded ${
-                    result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
-                    <p className="font-medium text-gray-700">Score</p>
-                    <p className={`text-lg font-bold ${
-                      result.status === 'success' ? 'text-green-700' : 'text-red-700'
-                    }`}>
-                      {result.submission.score}%
-                    </p>
-                  </div>
-                  <div className={`p-3 rounded ${
-                    result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
-                    <p className="font-medium text-gray-700">Test Cases</p>
-                    <p className={`text-lg font-bold ${
-                      result.status === 'success' ? 'text-green-700' : 'text-red-700'
-                    }`}>
-                      {result.passedCount || result.submission.testCasesPassed}/{result.totalCount || result.submission.totalTestCases}
-                    </p>
-                  </div>
+              {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).length > 0 && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Sample Test Cases:</h3>
+                  {problem.testCases.filter(tc => !tc.isHidden).map((tc, idx) => (
+                    <div key={idx} className="bg-gray-50 rounded p-3 mb-2">
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Input:</strong> {tc.input}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>Expected Output:</strong> {tc.output}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          )}
+          </div>
 
-          {submissionTestResults && (
+          {/* Code Editor */}
+          <div className="bg-white rounded-lg shadow flex flex-col">
+            <div className="border-b border-gray-200 p-4 flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
+                <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-700 capitalize">{language}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1 text-sm text-black bg-white"
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                  <option value="cpp">C++</option>
+                  <option value="c">C</option>
+                </select>
+                <button
+                  onClick={handleCopy}
+                  className={`flex items-center px-2 py-1 rounded text-xs border ${copied ? 'bg-green-100 border-green-300 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-700'} hover:bg-gray-200 transition`}
+                  title="Copy code"
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <div className="p-0 flex-1 min-h-[384px]">
+              <MonacoEditor
+                height="384px"
+                defaultLanguage={language}
+                language={language === 'cpp' ? 'cpp' : language}
+                value={code}
+                theme="vs-light"
+                options={{
+                  fontSize: 14,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  automaticLayout: true,
+                  lineNumbers: 'on',
+                  tabSize: 2,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  smoothScrolling: true,
+                  scrollbar: { vertical: 'auto', horizontal: 'auto' },
+                  suggestOnTriggerCharacters: false,
+                  quickSuggestions: false,
+                  wordBasedSuggestions: false,
+                  parameterHints: { enabled: false },
+                  tabCompletion: 'off',
+                  acceptSuggestionOnEnter: 'off',
+                  suggestSelection: 'first',
+                  snippetSuggestions: 'none',
+                }}
+                onChange={(value) => setCode(value || '')}
+                onMount={(editor) => { codeRef.current = editor; }}
+              />
+            </div>
             <div className="p-4">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Submission Test Results
-                <span className="ml-2 text-sm font-normal text-gray-500">
-                  (All test cases including hidden ones)
-                </span>
-              </h3>
-              <div className="space-y-3">
-                {submissionTestResults.map((result, idx) => {
-                  const isHidden = problem.testCases && problem.testCases[idx] && problem.testCases[idx].isHidden;
-                  
-                  return (
-                    <div key={idx} className={`p-4 rounded-md border ${
+              {/* Error message for run code */}
+              {runError && (
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+                  {runError}
+                </div>
+              )}
+              {/* Run Test Results */}
+              {runTestResults && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Test Results</h3>
+                  {runTestResults.map((result, idx) => (
+                    <div key={idx} className={`mb-3 p-4 rounded-md border ${
                       result.passed 
                         ? 'bg-green-50 border-green-200' 
                         : 'bg-red-50 border-red-200'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          {result.passed ? (
-                            <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                          ) : (
-                            <XCircle className="h-5 w-5 text-red-500 mr-2" />
+                        <span className="font-medium text-sm text-gray-700">
+                          Test Case {idx + 1}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {result.executionTime && (
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                              {result.executionTime}
+                            </span>
                           )}
-                          <span className={`font-medium ${
-                            result.passed ? 'text-green-700' : 'text-red-700'
+                          {result.memoryUsed && (
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                              {result.memoryUsed}
+                            </span>
+                          )}
+                          <span className={`text-xs px-2 py-1 rounded font-medium ${
+                            result.passed 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-red-100 text-red-700'
                           }`}>
-                            Test Case {idx + 1}: {result.passed ? 'Passed' : 'Failed'}
+                            {result.passed ? '✓ PASS' : '✗ FAIL'}
                           </span>
                         </div>
-                        {isHidden && (
-                          <span className="text-xs text-gray-500 italic">Hidden Test Case</span>
-                        )}
                       </div>
-                      
-                      {!isHidden && (
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="font-medium text-gray-700">Input:</p>
-                            <pre className="mt-1 p-2 bg-gray-100 rounded">{result.input}</pre>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-700">Expected Output:</p>
-                            <pre className="mt-1 p-2 bg-gray-100 rounded">{result.expected}</pre>
-                          </div>
-                          {!result.passed && (
-                            <div className="col-span-2">
-                              <p className="font-medium text-gray-700">Your Output:</p>
-                              <pre className="mt-1 p-2 bg-gray-100 rounded">{result.actual}</pre>
-                            </div>
-                          )}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-600">Input:</span>
+                          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                            {result.input || '(empty)'}
+                          </pre>
                         </div>
-                      )}
-                      
+                        <div>
+                          <span className="font-medium text-gray-600">Expected:</span>
+                          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                            {result.expected}
+                          </pre>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-600">Your Output:</span>
+                          <pre className={`p-2 rounded mt-1 text-xs font-mono overflow-x-auto ${
+                            result.passed ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
+                            {result.actual || '(no output)'}
+                          </pre>
+                        </div>
+                      </div>
                       {result.error && (
                         <div className="mt-2">
-                          <p className="font-medium text-red-700">Error:</p>
-                          <pre className="mt-1 p-2 bg-red-50 rounded text-red-700">{result.error}</pre>
+                          <span className="font-medium text-red-600">Error:</span>
+                          <div className="bg-red-100 p-2 rounded mt-1 text-xs text-red-700">
+                            {result.error}
+                          </div>
                         </div>
                       )}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+              )}
+              <div className="mt-4 flex space-x-4">
+                <button
+                  onClick={handleRun}
+                  disabled={submitting}
+                  className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
+                  title="Run your code against sample test cases"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Run Code
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit || submitting}
+                  className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
+                  title="Submit your solution for full evaluation"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Submit Solution
+                </button>
               </div>
+              {/* Run Result Notice */}
+              {runResult && (
+                <div className={`mt-4 p-3 rounded-md ${
+                  runResult.status === 'info' 
+                    ? 'bg-blue-50 border border-blue-200' 
+                    : runResult.status === 'success'
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <p className={`text-sm ${
+                    runResult.status === 'info' ? 'text-blue-800' :
+                    runResult.status === 'success' ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    ℹ️ {runResult.message}
+                  </p>
+                </div>
+              )}
+              {/* Submission Result */}
+              {result && (
+                <div className={`mt-4 p-4 rounded-md ${
+                  result.status === 'success' 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <div className="flex items-center">
+                    {result.status === 'success' ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                    )}
+                    <p className={`text-sm font-medium ${
+                      result.status === 'success' ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {result.message}
+                    </p>
+                  </div>
+                  {result.submission && (
+                    <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                      <div className={`p-3 rounded ${
+                        result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
+                      }`}>
+                        <p className="font-medium text-gray-700">Score</p>
+                        <p className={`text-lg font-bold ${
+                          result.status === 'success' ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {result.submission.score}%
+                        </p>
+                      </div>
+                      <div className={`p-3 rounded ${
+                        result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
+                      }`}>
+                        <p className="font-medium text-gray-700">Test Cases</p>
+                        <p className={`text-lg font-bold ${
+                          result.status === 'success' ? 'text-green-700' : 'text-red-700'
+                        }`}>
+                          {result.passedCount || result.submission.testCasesPassed}/{result.totalCount || result.submission.totalTestCases}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {result.submission && result.submission.status && (
+                    <div className="mt-2">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        result.submission.status === 'accepted' 
+                          ? 'bg-green-100 text-green-800'
+                          : result.submission.status === 'wrong_answer'
+                          ? 'bg-red-100 text-red-800'
+                          : result.submission.status === 'runtime_error'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {result.submission.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Detailed Submission Test Results */}
+              {submissionTestResults && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">
+                    Submission Test Results
+                    <span className="ml-2 text-sm font-normal text-gray-500">
+                      (All test cases including hidden ones)
+                    </span>
+                  </h3>
+                  <div className="space-y-3">
+                    {submissionTestResults.map((result, idx) => {
+                      // Determine if this is a hidden test case
+                      const isHidden = problem.testCases && problem.testCases[idx] && problem.testCases[idx].isHidden;
+                      
+                      return (
+                        <div key={idx} className={`p-4 rounded-md border ${
+                          result.passed 
+                            ? 'bg-green-50 border-green-200' 
+                            : 'bg-red-50 border-red-200'
+                        }`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm text-gray-700">
+                                Test Case {idx + 1}
+                              </span>
+                              {isHidden && (
+                                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                                  Hidden
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {result.executionTime && (
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                  {result.executionTime}
+                                </span>
+                              )}
+                              {result.memoryUsed && (
+                                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                  {result.memoryUsed}
+                                </span>
+                              )}
+                              <span className={`text-xs px-2 py-1 rounded font-medium ${
+                                result.passed 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-red-100 text-red-700'
+                              }`}>
+                                {result.passed ? '✓ PASS' : '✗ FAIL'}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Show input/output details only for failed cases or sample cases */}
+                          {(!result.passed || !isHidden) && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                              <div>
+                                <span className="font-medium text-gray-600">Input:</span>
+                                <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                                  {result.input || '(empty)'}
+                                </pre>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-600">Expected:</span>
+                                <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
+                                  {result.expected}
+                                </pre>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-600">Your Output:</span>
+                                <pre className={`p-2 rounded mt-1 text-xs font-mono overflow-x-auto ${
+                                  result.passed ? 'bg-green-100' : 'bg-red-100'
+                                }`}>
+                                  {result.actual || '(no output)'}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* For hidden test cases that passed, just show that they passed */}
+                          {result.passed && isHidden && (
+                            <div className="text-sm text-green-700">
+                              ✓ Hidden test case passed successfully
+                            </div>
+                          )}
+                          
+                          {result.error && (
+                            <div className="mt-2">
+                              <span className="font-medium text-red-600">Error:</span>
+                              <div className="bg-red-100 p-2 rounded mt-1 text-xs text-red-700">
+                                {result.error}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
