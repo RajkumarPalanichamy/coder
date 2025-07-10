@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import StudentSidebar from '../../components/StudentSidebar';
 import ProblemCard from '../../components/ProblemCard';
 import { BookOpen, Filter } from 'lucide-react';
 
@@ -16,9 +15,9 @@ const LANGUAGES = [
 ];
 const DIFFICULTIES = [
   { label: 'All', value: '' },
-  { label: 'Easy', value: 'easy' },
-  { label: 'Medium', value: 'medium' },
-  { label: 'Hard', value: 'hard' },
+  { label: 'Level 1', value: 'level1' },
+  { label: 'Level 2', value: 'level2' },
+  { label: 'Level 3', value: 'level3' },
 ];
 const CATEGORIES = [
   { label: 'All', value: '' },
@@ -65,13 +64,11 @@ export default function StudentProblemsPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <StudentSidebar onLogout={handleLogout} />
-      <main className="flex-1 p-8">
-        <div className="flex items-center gap-2 mb-6">
-          <BookOpen className="h-6 w-6 text-indigo-500" />
-          <h1 className="text-2xl font-bold">Problems</h1>
-        </div>
+    <>
+      <div className="flex items-center gap-2 mb-6">
+        <BookOpen className="h-6 w-6 text-indigo-500" />
+        <h1 className="text-2xl font-bold">Problems</h1>
+      </div>
         {/* Filter Bar */}
         <div className="flex flex-wrap gap-4 mb-8 items-center bg-white p-4 rounded shadow">
           <Filter className="h-5 w-5 text-indigo-500" />
@@ -98,7 +95,6 @@ export default function StudentProblemsPage() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+    </>
   );
 } 

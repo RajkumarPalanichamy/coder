@@ -4,8 +4,10 @@ import { LayoutDashboard, BookOpen, Trophy, LogOut, Code2, ListChecks, UserCircl
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import StudentProfileCard from './StudentProfileCard';
 
 const navItems = [
+  { label: 'Profile', href: '/dashboard/profile', icon: UserCircle },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Problems', href: '/dashboard/problems', icon: Code2 },
   { label: 'Tests', href: '/dashboard/tests', icon: Trophy },
@@ -45,23 +47,17 @@ export default function StudentSidebar({ onLogout }) {
         <span className="hidden md:inline ml-3 text-xl font-bold text-white tracking-tight">Zenith Mentor</span>
       </div>
       {/* Profile Section */}
-      <div className="hidden md:flex items-center gap-4 px-6 py-4 border-b border-gray-100 bg-indigo-50">
-        {user ? (
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-lg font-bold text-white shadow-md">
-            {initials}
-          </div>
-        ) : (
-          <UserCircle className="w-10 h-10 text-indigo-600" />
+      <div className="hidden md:flex flex-col items-center px-4 pt-4 pb-2">
+        {user && (
+          <>
+            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg font-bold text-indigo-600 mb-2">
+              {user.firstName?.[0]?.toUpperCase()}
+            </div>
+            <span className="font-semibold text-indigo-700 text-base leading-tight text-center">
+              {user.firstName} {user.lastName}
+            </span>
+          </>
         )}
-        <div className="flex flex-col">
-          <span className="font-semibold text-indigo-700 text-base leading-tight">
-            {user ? `${user.firstName} ${user.lastName}` : 'Student'}
-          </span>
-          <div className="flex items-center gap-1 text-xs text-indigo-600/80">
-            <GraduationCap className="h-3.5 w-3.5" />
-            <span>Student</span>
-          </div>
-        </div>
       </div>
       {/* Navigation */}
       <nav className="flex-1 flex flex-col gap-1 py-6 px-3 md:px-4 bg-white">

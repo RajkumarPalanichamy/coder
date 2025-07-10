@@ -98,11 +98,12 @@ export default function AdminProblemsPage() {
                       <td className="px-6 py-4 text-black font-medium">{problem.title}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          problem.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
-                          problem.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
+                          problem.difficulty === 'level1' ? 'bg-green-100 text-green-800' :
+                          problem.difficulty === 'level2' ? 'bg-yellow-100 text-yellow-800' :
+                          problem.difficulty === 'level3' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
                         }`}>
-                          {problem.difficulty}
+                          {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-700">{problem.category}</td>

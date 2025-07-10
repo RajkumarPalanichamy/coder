@@ -27,7 +27,7 @@ const problemSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ['easy', 'medium', 'hard'],
+    enum: ['level1', 'level2', 'level3'],
     required: true
   },
   category: {

@@ -81,7 +81,7 @@ export default function Home() {
                 <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Practice Problems</p>
                 <p className="mt-2 ml-16 text-base text-gray-500">
                   Access a vast collection of coding problems with varying difficulty levels, 
-                  from easy to hard challenges.
+                  from level 1 to level 3 challenges.
                 </p>
               </div>
 

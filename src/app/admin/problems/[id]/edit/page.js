@@ -11,7 +11,7 @@ export default function AdminProblemEditPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    difficulty: 'easy',
+    difficulty: 'level1',
     category: '',
     constraints: '',
     starterCode: '',
@@ -172,9 +172,9 @@ export default function AdminProblemEditPage() {
                     <div>
                       <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">Difficulty</label>
                       <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
+                        <option value="level1">Level 1</option>
+                        <option value="level2">Level 2</option>
+                        <option value="level3">Level 3</option>
                       </select>
                     </div>
                     <div>

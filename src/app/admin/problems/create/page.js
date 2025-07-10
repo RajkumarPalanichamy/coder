@@ -10,7 +10,7 @@ export default function AdminProblemCreatePage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    difficulty: 'easy',
+    difficulty: 'level1',
     category: '',
     constraints: '',
     starterCode: '',
@@ -198,9 +198,9 @@ export default function AdminProblemCreatePage() {
                         onChange={handleChange}
                         className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
                       >
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
+                        <option value="level1">Level 1</option>
+                        <option value="level2">Level 2</option>
+                        <option value="level3">Level 3</option>
                       </select>
                     </div>
                     <div>
