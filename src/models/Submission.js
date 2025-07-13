@@ -62,28 +62,21 @@ const submissionSchema = new mongoose.Schema({
     default: Date.now
   },
   executionInfo: {
-    problemType: {
-      type: String,
-      enum: ['array_with_param', 'array', 'matrix', 'string', 'two_numbers', 'single_number', 'multiple_numbers', 'multiline', 'custom', 'unknown']
-    },
-    language: {
-      id: Number,
-      extension: String,
-      compiler: String
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now
-    },
-    totalTestCases: Number,
-    passedTestCases: Number,
-    executionEngine: {
-      type: String,
-      enum: ['judge0', 'mock', 'fallback'],
-      default: 'judge0'
-    },
-    error: String,
-    type: String
+    type: mongoose.Schema.Types.Mixed,
+    default: {
+      problemType: 'unknown',
+      language: {
+        id: 0,
+        extension: '',
+        compiler: ''
+      },
+      timestamp: Date.now(),
+      totalTestCases: 0,
+      passedTestCases: 0,
+      executionEngine: 'fallback',
+      error: '',
+      type: 'fallback'
+    }
   },
   performanceMetrics: {
     submissionTime: Date,

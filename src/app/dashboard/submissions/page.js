@@ -1,51 +1,271 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import SubmissionTable from '../../components/SubmissionTable';
+import { 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  Code, 
+  FileText,
+  BookOpen,
+  Trophy
+} from 'lucide-react';
 
 export default function StudentSubmissionsPage() {
+  const router = useRouter();
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetchAllSubmissions();
+    fetchSubmissions();
   }, []);
 
-  const fetchAllSubmissions = async () => {
-    setLoading(true);
+  const fetchSubmissions = async () => {
     try {
-      const [problemRes, testRes] = await Promise.all([
-        fetch('/api/submissions'),
-        fetch('/api/test-submissions')
-      ]);
-      const problemData = await problemRes.json();
-      const testData = await testRes.json();
-      // Add type for rendering
-      const problemSubs = (problemData.submissions || []).map(s => ({ ...s, type: 'problem' }));
-      const testSubs = (testData.submissions || []).map(s => ({ ...s, type: 'test' }));
-      setSubmissions([...problemSubs, ...testSubs]);
+      const response = await fetch('/api/submissions');
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmissions(data.submissions);
+        setLoading(false);
+      } else {
+        setError(data.error || 'Failed to fetch submissions');
+        setLoading(false);
+      }
     } catch (err) {
-      // handle error
-    } finally {
+      console.error('Error fetching submissions:', err);
+      setError('Network error. Please try again.');
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+  // Status styling helper
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'accepted':
+        return {
+          color: 'text-green-600 bg-green-50',
+          icon: CheckCircle,
+          text: 'Accepted'
+        };
+      case 'wrong_answer':
+        return {
+          color: 'text-red-600 bg-red-50',
+          icon: XCircle,
+          text: 'Wrong Answer'
+        };
+      case 'runtime_error':
+        return {
+          color: 'text-orange-600 bg-orange-50',
+          icon: Code,
+          text: 'Runtime Error'
+        };
+      case 'pending':
+        return {
+          color: 'text-blue-600 bg-blue-50',
+          icon: Clock,
+          text: 'Pending'
+        };
+      default:
+        return {
+          color: 'text-gray-600 bg-gray-50',
+          icon: FileText,
+          text: status.replace('_', ' ')
+        };
+    }
   };
 
+  // Navigate to details
+  const handleDetailsClick = (submission) => {
+    if (submission.type === 'problem') {
+      router.push(`/problems/${submission.problem?._id}`);
+    } else if (submission.type === 'test') {
+      router.push(`/dashboard/tests/${submission.test?._id}`);
+    }
+  };
+
+  // Filter submissions
+  const filteredSubmissions = submissions.filter(submission => {
+    if (filter === 'all') return true;
+    return submission.type === filter;
+  });
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-10 bg-gray-200 rounded w-1/2 mb-4"></div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="h-16 bg-gray-100 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-600 mb-4">{error}</p>
+        <button 
+          onClick={fetchSubmissions}
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-6">My Submissions</h1>
-        {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
-        ) : (
-          <SubmissionTable submissions={submissions} />
-        )}
-    </>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">My Submissions</h1>
+        
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+              filter === 'all' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter('problem')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center transition ${
+              filter === 'problem' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <BookOpen className="h-4 w-4 mr-2" /> Problems
+          </button>
+          <button
+            onClick={() => setFilter('test')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center transition ${
+              filter === 'test' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Trophy className="h-4 w-4 mr-2" /> Tests
+          </button>
+        </div>
+      </div>
+      
+      {filteredSubmissions.length === 0 ? (
+        <div className="bg-white p-6 rounded-lg shadow text-center">
+          <p className="text-gray-600 mb-4">No submissions yet.</p>
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={() => router.push('/dashboard/problems')}
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              Go to Problems
+            </button>
+            <button
+              onClick={() => router.push('/dashboard/tests')}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Go to Tests
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredSubmissions.map((submission) => {
+            // Determine title and icon based on submission type
+            const title = submission.type === 'problem' 
+              ? submission.problem?.title 
+              : submission.test?.title || 'Unknown';
+            const TypeIcon = submission.type === 'problem' ? BookOpen : Trophy;
+            
+            const StatusIcon = getStatusStyle(submission.status).icon;
+            const statusStyle = getStatusStyle(submission.status);
+            
+            return (
+              <div 
+                key={submission._id} 
+                className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center space-x-2">
+                    <TypeIcon className="h-5 w-5 text-gray-500" />
+                    <h3 
+                      className="text-lg font-semibold text-gray-800 cursor-pointer hover:text-indigo-600"
+                      onClick={() => handleDetailsClick(submission)}
+                    >
+                      {title}
+                    </h3>
+                    <span 
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        submission.type === 'problem' 
+                          ? 'bg-blue-50 text-blue-600' 
+                          : 'bg-green-50 text-green-600'
+                      }`}
+                    >
+                      {submission.type}
+                    </span>
+                  </div>
+                  <span 
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyle.color}`}
+                  >
+                    <StatusIcon className="h-4 w-4 inline-block mr-1 -mt-1" />
+                    {statusStyle.text}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm text-gray-600">
+                  <div>
+                    <span className="font-medium">Language:</span>
+                    <p className="capitalize">{submission.type === 'problem' ? submission.language : 'Multiple Choice'}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Score:</span>
+                    <p className={`font-bold ${
+                      submission.score === 100 
+                        ? 'text-green-600' 
+                        : submission.score > 50 
+                        ? 'text-yellow-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {submission.score}%
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Submitted:</span>
+                    <p>{new Date(submission.submittedAt).toLocaleString()}</p>
+                  </div>
+                  {submission.type === 'test' && (
+                    <>
+                      <div>
+                        <span className="font-medium">Total Questions:</span>
+                        <p>{submission.totalQuestions}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Correct Answers:</span>
+                        <p>{submission.correctAnswers}</p>
+                      </div>
+                      <div>
+                        <span className="font-medium">Time Taken:</span>
+                        <p>{submission.timeTaken} seconds</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 } 

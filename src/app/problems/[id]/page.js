@@ -16,6 +16,7 @@ export default function ProblemPage() {
   const [language, setLanguage] = useState('javascript');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [runningCode, setRunningCode] = useState(false);
   const [result, setResult] = useState(null);
   const [canSubmit, setCanSubmit] = useState(false);
   const [runResult, setRunResult] = useState(null);
@@ -48,6 +49,7 @@ export default function ProblemPage() {
   };
 
   const handleRun = async () => {
+    setRunningCode(true);
     setRunResult(null);
     setCanSubmit(false);
     setRunTestResults(null);
@@ -58,6 +60,7 @@ export default function ProblemPage() {
     const sampleTestCases = (problem.testCases || []).filter(tc => !tc.isHidden);
     if (!sampleTestCases.length) {
       setRunError('No sample test cases available.');
+      setRunningCode(false);
       return;
     }
     try {
@@ -98,6 +101,8 @@ export default function ProblemPage() {
     } catch (err) {
       console.error('Error running code:', err);
       setRunError('Error running code. Please check your network connection and try again.');
+    } finally {
+      setRunningCode(false);
     }
   };
 
@@ -431,12 +436,21 @@ export default function ProblemPage() {
               <div className="mt-4 flex space-x-4">
                 <button
                   onClick={handleRun}
-                  disabled={submitting}
+                  disabled={submitting || runningCode}
                   className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
                   title="Run your code against sample test cases"
                 >
-                  <Play className="h-4 w-4 mr-2" />
-                  Run Code
+                  {runningCode ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Running...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Run Code
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={handleSubmit}
