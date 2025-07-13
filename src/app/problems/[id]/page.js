@@ -61,6 +61,9 @@ export default function ProblemPage() {
       return;
     }
     try {
+      // Real Judge0 execution
+      console.log('Running Judge0 execution for sample test cases');
+      
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,6 +73,7 @@ export default function ProblemPage() {
           testCases: sampleTestCases
         })
       });
+      
       const data = await response.json();
       if (!response.ok) {
         setRunError(data.error || 'Code execution failed.');
@@ -78,9 +82,10 @@ export default function ProblemPage() {
         }
         return;
       }
-      setRunTestResults(data.results); // [{input, expected, actual, passed, error}]
       
-      // Display notice if present
+      setRunTestResults(data.results);
+      
+      // Display Judge0 notice
       if (data.notice) {
         setRunResult({
           status: 'info',

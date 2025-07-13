@@ -4,7 +4,7 @@ A competitive programming platform similar to LeetCode and CodeChef, built with 
 
 ## Features
 
-- 🔥 **Real Code Execution**: Execute code in multiple languages using HackerEarth API
+- 🔥 **Real Code Execution**: Execute code in multiple languages using Judge0 CE API
 - 🏆 **Competitive Programming**: LeetCode-style problems with hidden test cases
 - 📊 **Performance Metrics**: Execution time and memory usage tracking
 - 👥 **User Management**: Student and admin roles with authentication
@@ -37,18 +37,18 @@ Create a `.env.local` file in the root directory:
 cp .env.example .env.local
 ```
 
-### 3. Configure HackerEarth API
+### 3. Configure Judge0 API
 
-1. **Register for HackerEarth API**:
-   - Go to [HackerEarth API Registration](https://www.hackerearth.com/api/register/)
-   - Sign up for a free account
-   - Create a new client application
-   - Copy your `client-secret`
+1. **Register for Judge0 CE API**:
+   - Go to [Judge0 CE on RapidAPI](https://rapidapi.com/judge0-official/api/judge0-ce)
+   - Subscribe to a plan
+   - Get your API key
 
 2. **Update Environment Variables**:
    ```bash
    # In .env.local
-   HACKEREARTH_CLIENT_SECRET=your_actual_client_secret_here
+   JUDGE0_API_KEY=your_rapidapi_key_here
+   JUDGE0_URL=https://judge0-ce.p.rapidapi.com
    ```
 
 ### 4. Database Setup
@@ -115,8 +115,8 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## API Quotas and Limits
 
-The HackerEarth free tier includes:
-- Limited API calls per month
+The Judge0 CE API includes:
+- Limited API calls per month (depends on your RapidAPI plan)
 - 5-second execution time limit
 - 256MB memory limit
 
@@ -139,7 +139,7 @@ For production use, consider upgrading to a paid plan for higher quotas.
 - **Backend**: Next.js API Routes, Node.js
 - **Database**: MongoDB with Mongoose
 - **Authentication**: JWT, NextAuth.js
-- **Code Execution**: HackerEarth API V4
+- **Code Execution**: Judge0 CE API via RapidAPI
 - **Deployment**: Vercel (recommended)
 
 ## Contributing
