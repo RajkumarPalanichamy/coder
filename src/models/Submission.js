@@ -79,14 +79,8 @@ const submissionSchema = new mongoose.Schema({
     passedTestCases: Number,
     executionEngine: {
       type: String,
-      enum: ['judge0', 'fallback', 'mock'],
+      enum: ['judge0', 'mock', 'fallback'],
       default: 'judge0'
-    },
-    judge0Config: {
-      endpoint: String,
-      languageId: Number,
-      timeout: Number,
-      pollInterval: Number
     },
     error: String,
     type: String

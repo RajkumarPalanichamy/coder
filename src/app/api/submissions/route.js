@@ -56,27 +56,30 @@ export async function POST(request) {
     console.log(`[REAL-TIME] Validating submission for problem: ${problem.title}`);
     console.log(`[REAL-TIME] Total test cases: ${problem.testCases?.length || 0}`);
 
-    // Real-time validation against ALL test cases
+    // Real-time validation against ALL test cases using Judge0
     try {
+      console.log(`[JUDGE0] Validating submission for problem: ${problem.title}`);
+      console.log(`[JUDGE0] Total test cases: ${problem.testCases?.length || 0}`);
+      
       // Build dynamic API URL for internal execution call
       const { headers } = request;
       const host = headers.get('host') || 'localhost:3000';
       const protocol = headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
       const baseUrl = `${protocol}://${host}`;
       
-      console.log(`[REAL-TIME] Making execution call to: ${baseUrl}/api/execute`);
+      console.log(`[JUDGE0] Making execution call to: ${baseUrl}/api/execute`);
       
       // Create dynamic timeout controller
-      const timeoutMs = parseInt(process.env.SUBMISSION_TIMEOUT) || 30000;
+      const timeoutMs = parseInt(process.env.SUBMISSION_TIMEOUT) || 60000; // Increased timeout for Judge0
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      // Execute with real-time engine
+      // Execute with Judge0 engine
       const execRes = await fetch(`${baseUrl}/api/execute`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'User-Agent': 'RealTime-Submission-Validator',
+          'User-Agent': 'Judge0-Submission-Validator',
           'X-Request-Source': 'submission-validation'
         },
         body: JSON.stringify({
@@ -91,26 +94,35 @@ export async function POST(request) {
 
       if (!execRes.ok) {
         const errorData = await execRes.json().catch(() => ({}));
-        console.error('[REAL-TIME] Execution API error:', errorData);
+        console.error('[JUDGE0] Execution API error:', errorData);
         return NextResponse.json({
-          error: 'Real-time code execution failed during validation',
+          error: 'Judge0 code execution failed during validation',
           details: errorData.error || 'Unknown execution error'
         }, { status: 400 });
       }
 
       const execData = await execRes.json();
-      console.log(`[REAL-TIME] Execution completed: ${execData.results?.length || 0} test cases processed`);
+      console.log(`[JUDGE0] Execution completed: ${execData.results?.length || 0} test cases processed`);
 
       // Real-time result analysis
       const allPassed = execData.results && execData.results.every(r => r.passed);
       const passedCount = execData.results ? execData.results.filter(r => r.passed).length : 0;
       const totalCount = execData.results ? execData.results.length : 0;
 
-      // Real-time submission processing
+      const judge0ExecutionInfo = {
+        language: execData.executionInfo?.language || { id: 1, extension: language, compiler: 'Judge0' },
+        timestamp: new Date().toISOString(),
+        totalTestCases: totalCount,
+        passedTestCases: passedCount,
+        executionEngine: 'judge0',
+        type: 'judge0_validation'
+      };
+
+      // Judge0 submission processing
       if (!allPassed) {
-        console.log(`[REAL-TIME] Submission rejected: ${passedCount}/${totalCount} test cases passed`);
+        console.log(`[JUDGE0] Submission rejected: ${passedCount}/${totalCount} test cases passed`);
         
-        // Create failed submission with real-time metadata
+        // Create failed submission with Judge0 metadata
         const failedSubmission = new Submission({
           user: userId,
           problem: problemId,
@@ -121,23 +133,23 @@ export async function POST(request) {
           testCasesPassed: passedCount,
           totalTestCases: totalCount,
           errorMessage: `Failed ${totalCount - passedCount} test case(s)`,
-          executionInfo: execData.executionInfo,
+          executionInfo: judge0ExecutionInfo,
           submittedAt: new Date()
         });
         await failedSubmission.save();
 
         return NextResponse.json({
-          error: `Real-time validation failed: ${passedCount}/${totalCount} test cases passed`,
+          error: `Judge0 validation failed: ${passedCount}/${totalCount} test cases passed`,
           testCaseResults: execData.results,
           submission: failedSubmission,
           passedCount,
           totalCount,
-          executionInfo: execData.executionInfo
+          executionInfo: judge0ExecutionInfo
         }, { status: 400 });
       }
 
       // All test cases passed - create successful submission
-      console.log(`[REAL-TIME] Submission accepted: All ${totalCount} test cases passed`);
+      console.log(`[JUDGE0] Submission accepted: All ${totalCount} test cases passed`);
       
       const submission = new Submission({
         user: userId,
@@ -148,32 +160,32 @@ export async function POST(request) {
         score: 100,
         testCasesPassed: totalCount,
         totalTestCases: totalCount,
-        executionInfo: execData.executionInfo,
+        executionInfo: judge0ExecutionInfo,
         submittedAt: new Date()
       });
       await submission.save();
 
       return NextResponse.json({
-        message: 'Real-time submission successful! All test cases passed.',
+        message: 'Judge0 submission successful! All test cases passed.',
         submission,
         testCaseResults: execData.results,
         passedCount: totalCount,
         totalCount,
-        executionInfo: execData.executionInfo
+        executionInfo: judge0ExecutionInfo
       }, { status: 201 });
 
-    } catch (fetchError) {
-      console.error('[REAL-TIME] Error during code execution validation:', fetchError);
+    } catch (validationError) {
+      console.error('[JUDGE0] Error during Judge0 validation:', validationError);
       
-      let errorMessage = 'Real-time execution failed during validation';
+      let errorMessage = 'Judge0 execution failed during validation';
       let status = 'runtime_error';
       
-      if (fetchError.name === 'AbortError') {
-        errorMessage = 'Real-time execution timed out';
+      if (validationError.name === 'AbortError') {
+        errorMessage = 'Judge0 execution timed out';
         status = 'time_limit_exceeded';
       }
       
-      // Create error submission record with real-time metadata
+      // Create error submission record with Judge0 metadata
       const errorSubmission = new Submission({
         user: userId,
         problem: problemId,
@@ -187,26 +199,27 @@ export async function POST(request) {
         submittedAt: new Date(),
         executionInfo: {
           timestamp: new Date().toISOString(),
-          error: fetchError.message,
-          type: 'validation_error'
+          error: validationError.message,
+          type: 'judge0_validation_error',
+          executionEngine: 'judge0'
         }
       });
       await errorSubmission.save();
 
       return NextResponse.json({
-        error: fetchError.name === 'AbortError' 
-          ? 'Real-time execution timed out. Your solution may be too slow or have an infinite loop.'
-          : 'Real-time code execution failed during validation. Please check your code and try again.',
-        details: fetchError.message,
+        error: validationError.name === 'AbortError' 
+          ? 'Judge0 execution timed out. Your solution may be too slow or have an infinite loop.'
+          : 'Judge0 code execution failed during validation. Please check your code and try again.',
+        details: validationError.message,
         submission: errorSubmission
       }, { status: 400 });
     }
 
   } catch (error) {
-    console.error('[REAL-TIME] Error creating submission:', error);
+    console.error('[JUDGE0] Error creating submission:', error);
     return NextResponse.json(
       { 
-        error: 'Internal server error during real-time submission processing',
+        error: 'Internal server error during Judge0 submission processing',
         timestamp: new Date().toISOString()
       },
       { status: 500 }
