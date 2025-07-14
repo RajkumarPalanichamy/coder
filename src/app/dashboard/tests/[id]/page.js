@@ -13,12 +13,28 @@ export default function TakeTestPage() {
       .then(setTest);
   }, [params.id]);
   const handleSubmit = async (answers) => {
-    await fetch(`/api/tests/${params.id}/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
-    });
-    router.push('/dashboard/tests');
+    try {
+      const response = await fetch(`/api/tests/${params.id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Test submission error:', {
+          status: response.status,
+          error: errorData.error || 'Unknown error'
+        });
+        alert(`Submission failed: ${errorData.error || 'Unknown error'}`);
+        return;
+      }
+
+      router.push('/dashboard/tests');
+    } catch (error) {
+      console.error('Network or submission error:', error);
+      alert('Failed to submit test. Please try again.');
+    }
   };
   if (!test) return <div>Loading...</div>;
   return (

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../lib/mongodb';
 import Test from '../../../../models/Test';
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
+  const { params } = context;
   await dbConnect();
   const test = await Test.findById(params.id).populate('mcqs');
   if (!test) return NextResponse.json({ error: 'Not found' }, { status: 404 });
