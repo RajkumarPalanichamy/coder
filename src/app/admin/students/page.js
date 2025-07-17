@@ -3,8 +3,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
+import { useRouter } from 'next/navigation';
 
 export default function AdminStudentsPage() {
+  const router = useRouter();
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  };
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,7 +50,7 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar />
+      <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 bg-gray-50 min-h-screen">
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">

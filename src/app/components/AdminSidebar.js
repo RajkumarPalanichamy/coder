@@ -6,8 +6,8 @@ import Image from 'next/image';
 const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Students', href: '/admin/students', icon: Users },
-  { label: 'Problems', href: '/admin/problems', icon: Code2 },
-  { label: 'Tests', href: '/admin/tests', icon: ListChecks },
+  { label: 'Course', href: '/admin/problems', icon: Code2 },
+  { label: 'Apptitude', href: '/admin/tests', icon: ListChecks },
   { label: 'Submissions', href: '/admin/submissions', icon: BookOpen },
 ];
 

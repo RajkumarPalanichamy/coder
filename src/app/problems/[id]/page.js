@@ -25,10 +25,31 @@ export default function ProblemPage() {
   const [submissionTestResults, setSubmissionTestResults] = useState(null);
   const codeRef = useRef(null);
   const [copied, setCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const timerRef = useRef();
 
   useEffect(() => {
     fetchProblem();
   }, [params.id]);
+
+  useEffect(() => {
+    if (problem && problem.timeLimit) {
+      setTimeLeft(problem.timeLimit);
+    }
+  }, [problem]);
+
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) return;
+    timerRef.current = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    return () => clearTimeout(timerRef.current);
+  }, [timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      handleSubmit();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft]);
 
   const fetchProblem = async () => {
     try {
@@ -242,6 +263,14 @@ export default function ProblemPage() {
           </div>
         </div>
       </header>
+      {/* Timer */}
+      {problem.timeLimit && timeLeft !== null && timeLeft > 0 && (
+        <div className="w-full bg-yellow-50 border-b border-yellow-200 py-2 flex justify-center items-center">
+          <span className="text-lg font-semibold text-yellow-800">
+            Time Left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')} min
+          </span>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -355,7 +384,25 @@ export default function ProblemPage() {
                   snippetSuggestions: 'none',
                 }}
                 onChange={(value) => setCode(value || '')}
-                onMount={(editor) => { codeRef.current = editor; }}
+                onMount={(editor) => {
+                  codeRef.current = editor;
+                  // Disable copy, cut, and paste
+                  editor.onKeyDown((e) => {
+                    if ((e.ctrlKey || e.metaKey) && (e.keyCode === 33 || e.keyCode === 35 || e.keyCode === 41)) {
+                      // 33: Ctrl+X, 35: Ctrl+C, 41: Ctrl+V
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  });
+                  editor.onDidPaste(() => {
+                    editor.setValue(code); // revert paste
+                  });
+                  // Also block context menu copy/paste
+                  editor.onContextMenu((e) => {
+                    e.event.preventDefault();
+                    e.event.stopPropagation();
+                  });
+                }}
               />
             </div>
             <div className="p-4">

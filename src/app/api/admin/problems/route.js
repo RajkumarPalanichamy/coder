@@ -74,6 +74,7 @@ export async function POST(request) {
       starterCode,
       solution: solution || '',
       tags: tags || [],
+      timeLimit: body.timeLimit,
       createdBy: user._id
     });
 

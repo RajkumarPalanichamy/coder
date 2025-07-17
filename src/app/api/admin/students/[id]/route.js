@@ -28,6 +28,9 @@ export async function PUT(request, { params }) {
     student.firstName = body.firstName;
     student.lastName = body.lastName;
     student.isActive = body.isActive;
+    if (body.password && body.password.length >= 6) {
+      student.password = body.password;
+    }
     await student.save();
     return NextResponse.json({ message: 'Student updated successfully', student });
   } catch (error) {
