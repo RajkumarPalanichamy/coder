@@ -1,6 +1,6 @@
 {
   "name": "coder",
-  "version": "4.1.2",
+  "version": "5.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
