@@ -39,8 +39,9 @@ export async function POST(request) {
       title, 
       description, 
       difficulty, 
-      category, 
-      constraints, 
+      category,
+      language,
+      constraints,
       examples, 
       testCases, 
       starterCode, 
@@ -49,9 +50,9 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!title || !description || !difficulty || !category || !starterCode) {
+    if (!title || !description || !difficulty || !category || !language || !starterCode) {
       return NextResponse.json(
-        { error: 'Title, description, difficulty, category, and starter code are required' },
+        { error: 'Title, description, difficulty, category, language, and starter code are required' },
         { status: 400 }
       );
     }
@@ -63,21 +64,21 @@ export async function POST(request) {
     }
 
     // Create new problem
-    const problem = new Problem({
+    const problem = await Problem.create({
       title,
       description,
       difficulty,
       category,
+      language,
       constraints: constraints || '',
       examples: examples || [],
       testCases: testCases || [],
       starterCode,
       solution: solution || '',
       tags: tags || [],
+      timeLimit: body.timeLimit,
       createdBy: user._id
     });
-
-    await problem.save();
 
     return NextResponse.json(
       { 

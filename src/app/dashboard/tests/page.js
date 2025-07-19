@@ -44,19 +44,6 @@ export default function TestListPage() {
     <>
       <div className="max-w-5xl mx-auto py-8 px-4 md:px-0">
         <h1 className="text-2xl font-bold mb-6 text-black">Available Tests</h1>
-        <div className="flex flex-wrap gap-4 mb-6 items-center bg-white p-4 rounded shadow">
-          <Filter className="h-5 w-5 text-indigo-500" />
-          <select value={language} onChange={e => setLanguage(e.target.value)} className="border rounded px-3 py-1">
-            {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-          </select>
-          {/* <input
-            type="text"
-            placeholder="Search tests by title..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full sm:w-72 px-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
-          /> */}
-        </div>
         {loading ? (
           <div>Loading...</div>
         ) : filteredTests.length === 0 ? (

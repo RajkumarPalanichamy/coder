@@ -5,27 +5,11 @@ import { useRouter } from 'next/navigation';
 import ProblemCard from '../../components/ProblemCard';
 import { BookOpen, Filter } from 'lucide-react';
 
-const LANGUAGES = [
-  { label: 'All', value: '' },
-  { label: 'JavaScript', value: 'javascript' },
-  { label: 'Python', value: 'python' },
-  { label: 'Java', value: 'java' },
-  { label: 'C++', value: 'cpp' },
-  { label: 'C', value: 'c' },
-];
 const DIFFICULTIES = [
   { label: 'All', value: '' },
   { label: 'Level 1', value: 'level1' },
   { label: 'Level 2', value: 'level2' },
   { label: 'Level 3', value: 'level3' },
-];
-const CATEGORIES = [
-  { label: 'All', value: '' },
-  { label: 'Math', value: 'Math' },
-  { label: 'String', value: 'String' },
-  { label: 'Array', value: 'Array' },
-  { label: 'Stack', value: 'Stack' },
-  { label: 'Hash Table', value: 'hash-table' },
 ];
 
 export default function StudentProblemsPage() {
@@ -34,11 +18,28 @@ export default function StudentProblemsPage() {
   const [language, setLanguage] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [category, setCategory] = useState('');
+  const [languages, setLanguages] = useState([]);
+  const [categories, setCategories] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    fetchMeta();
+  }, []);
 
   useEffect(() => {
     fetchProblems();
   }, [language, difficulty, category]);
+
+  const fetchMeta = async () => {
+    try {
+      const res = await fetch('/api/problems/meta');
+      const data = await res.json();
+      setLanguages(data.languages || []);
+      setCategories(data.categories || []);
+    } catch (err) {
+      // handle error
+    }
+  };
 
   const fetchProblems = async () => {
     setLoading(true);
@@ -73,13 +74,15 @@ export default function StudentProblemsPage() {
         <div className="flex flex-wrap gap-4 mb-8 items-center bg-white p-4 rounded shadow">
           <Filter className="h-5 w-5 text-indigo-500" />
           <select value={language} onChange={e => setLanguage(e.target.value)} className="border rounded px-3 py-1">
-            {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+            <option value="">All</option>
+            {languages.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
           <select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="border rounded px-3 py-1">
             {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
           </select>
           <select value={category} onChange={e => setCategory(e.target.value)} className="border rounded px-3 py-1">
-            {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            <option value="">All</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         {loading ? (

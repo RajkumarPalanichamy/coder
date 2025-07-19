@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import StudentStatsCards from '../components/StudentStatsCards';
 import ProblemCard from '../components/ProblemCard';
 import StudentProfileCard from '../components/StudentProfileCard';
+import ZenithMentorPromotion from '../components/ZenithMentorPromotion';
 import { UserCircle, ChevronDown, Code2, BookOpen, Filter } from 'lucide-react';
 
 const LANGUAGES = [
@@ -211,71 +212,11 @@ export default function Dashboard() {
         <MotivationCard />
       </div>
 
-      {/* Available Tests Section */}
-      <div className="max-w-7xl mx-auto px-4 md:px-0 mt-8">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-indigo-500" />
-            <h2 className="text-xl font-semibold tracking-tight">Available Tests</h2>
-          </div>
-          <button
-            onClick={() => router.push('/dashboard/tests')}
-            className="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition-colors"
-          >
-            View All Tests
-          </button>
-        </div>
-        {tests.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No tests available.</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tests.slice(0, 3).map(test => (
-              <div key={test._id} className="border rounded p-4 bg-white shadow hover:shadow-lg transition-shadow">
-                <div className="font-semibold text-lg text-black mb-1">{test.title}</div>
-                <div className="text-gray-600 mb-2 line-clamp-2">{test.description}</div>
-                <button
-                  onClick={() => router.push(`/tests/${test._id}`)}
-                  className="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm mt-2"
-                >
-                  Start Test
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="max-w-4xl mx-auto px-4 md:px-0 mt-6">
+        <ZenithMentorPromotion />
       </div>
 
       {/* Problems Section */}
-      <div className="max-w-7xl mx-auto px-4 md:px-0 mt-8">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-indigo-500" />
-            <h2 className="text-xl font-semibold tracking-tight">Available Problems</h2>
-          </div>
-          <button
-            onClick={() => router.push('/dashboard/problems')}
-            className="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 transition-colors"
-          >
-            View All Problems
-          </button>
-        </div>
-        {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
-        ) : problems.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No problems found for this language.</div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {problems.slice(0, 3).map((problem) => (
-              <div key={problem._id} className="transition-transform hover:-translate-y-1">
-                <ProblemCard
-                  problem={problem}
-                  href={`/problems/${problem._id}`}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </>
   );
 } 

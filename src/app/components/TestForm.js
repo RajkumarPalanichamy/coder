@@ -12,8 +12,6 @@ export default function TestForm({ initialData = {}, onSubmit }) {
   const [title, setTitle] = useState(initialData.title || '');
   const [description, setDescription] = useState(initialData.description || '');
   const [language, setLanguage] = useState(initialData.language || '');
-  const [availableFrom, setAvailableFrom] = useState(initialData.availableFrom ? initialData.availableFrom.slice(0, 16) : '');
-  const [availableTo, setAvailableTo] = useState(initialData.availableTo ? initialData.availableTo.slice(0, 16) : '');
   const [mcqs, setMcqs] = useState(initialData.mcqs || []);
   const [error, setError] = useState('');
   const [editingIdx, setEditingIdx] = useState(null);
@@ -66,8 +64,6 @@ export default function TestForm({ initialData = {}, onSubmit }) {
       title,
       description,
       language,
-      availableFrom: availableFrom ? new Date(availableFrom) : undefined,
-      availableTo: availableTo ? new Date(availableTo) : undefined,
       mcqs,
     });
   };
@@ -99,26 +95,6 @@ export default function TestForm({ initialData = {}, onSubmit }) {
           value={language}
           onChange={e => setLanguage(e.target.value)}
         />
-      </div>
-      <div className="flex gap-4">
-        <div>
-          <label className="block font-medium mb-1">Available From</label>
-          <input
-            type="datetime-local"
-            className="border px-3 py-2 rounded text-black"
-            value={availableFrom}
-            onChange={e => setAvailableFrom(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block font-medium mb-1">Available To</label>
-          <input
-            type="datetime-local"
-            className="border px-3 py-2 rounded text-black"
-            value={availableTo}
-            onChange={e => setAvailableTo(e.target.value)}
-          />
-        </div>
       </div>
       <div>
         <label className="block font-medium mb-1">MCQs for this Test</label>

@@ -10,8 +10,14 @@ import {
   ArrowUpDown 
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
+import { useRouter } from 'next/navigation';
 
 export default function AdminSubmissionsPage() {
+  const router = useRouter();
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  };
   const [problemSubmissions, setProblemSubmissions] = useState([]);
   const [testSubmissions, setTestSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -146,7 +152,7 @@ export default function AdminSubmissionsPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar />
+      <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Submissions</h1>
         

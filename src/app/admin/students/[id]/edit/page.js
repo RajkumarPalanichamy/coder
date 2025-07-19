@@ -12,8 +12,9 @@ export default function AdminStudentEditPage() {
     email: '',
     firstName: '',
     lastName: '',
-    isActive: true
+    isActive: true,
   });
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -57,10 +58,12 @@ export default function AdminStudentEditPage() {
     setError('');
     setSuccess('');
     try {
+      const updateData = { ...formData };
+      if (password) updateData.password = password;
       const response = await fetch(`/api/admin/students/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(updateData)
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Failed to update student');
@@ -103,6 +106,10 @@ export default function AdminStudentEditPage() {
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
               <input id="email" name="email" type="email" required value={formData.email} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password (leave blank to keep unchanged)</label>
+              <input id="password" name="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" autoComplete="new-password" />
             </div>
             <div className="flex items-center">
               <input id="isActive" name="isActive" type="checkbox" checked={formData.isActive} onChange={handleChange} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />

@@ -3,13 +3,21 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
+import { useRouter } from 'next/navigation';
 
 export default function AdminProblemsPage() {
+  const router = useRouter();
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  };
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [language, setLanguage] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [selected, setSelected] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     fetchProblems();
@@ -43,6 +51,35 @@ export default function AdminProblemsPage() {
     }
   };
 
+  const handleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selected.length === problems.length) {
+      setSelected([]);
+    } else {
+      setSelected(problems.map((p) => p._id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selected.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selected.length} problems?`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selected.map(id => fetch(`/api/admin/problems/${id}`, { method: 'DELETE' })));
+      setProblems(problems.filter((p) => !selected.includes(p._id)));
+      setSelected([]);
+    } catch {
+      alert('Failed to delete selected problems.');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const LANGUAGES = [
     { label: "All", value: "" },
     { label: "JavaScript", value: "javascript" },
@@ -54,7 +91,7 @@ export default function AdminProblemsPage() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar />
+      <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 bg-gray-50 min-h-screen">
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
@@ -74,6 +111,19 @@ export default function AdminProblemsPage() {
               </Link>
             </div>
           </div>
+          {/* Bulk Delete Button */}
+          {selected.length > 0 && (
+            <div className="mb-4 flex items-center gap-4">
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50"
+                disabled={bulkDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
+                {bulkDeleting ? 'Deleting...' : `Delete Selected (${selected.length})`}
+              </button>
+            </div>
+          )}
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading...</div>
           ) : error ? (
@@ -85,6 +135,14 @@ export default function AdminProblemsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selected.length === problems.length && problems.length > 0}
+                        onChange={handleSelectAll}
+                        aria-label="Select all problems"
+                      />
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
@@ -95,6 +153,14 @@ export default function AdminProblemsPage() {
                 <tbody className="bg-white divide-y divide-gray-100">
                   {problems.map((problem) => (
                     <tr key={problem._id} className="hover:bg-indigo-50 transition-colors">
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(problem._id)}
+                          onChange={() => handleSelect(problem._id)}
+                          aria-label={`Select problem ${problem.title}`}
+                        />
+                      </td>
                       <td className="px-6 py-4 text-black font-medium">{problem.title}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${

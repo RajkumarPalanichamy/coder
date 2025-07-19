@@ -3,8 +3,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
+import { useRouter } from 'next/navigation';
 
 export default function MCQListPage() {
+  const router = useRouter();
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  };
   const [mcqs, setMcqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,7 +50,7 @@ export default function MCQListPage() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar />
+      <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 bg-gray-50">
         <div className="max-w-4xl mx-auto py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">

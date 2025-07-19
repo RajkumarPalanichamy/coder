@@ -9,8 +9,8 @@ import StudentProfileCard from './StudentProfileCard';
 const navItems = [
   { label: 'Profile', href: '/dashboard/profile', icon: UserCircle },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Problems', href: '/dashboard/problems', icon: Code2 },
-  { label: 'Tests', href: '/dashboard/tests', icon: Trophy },
+  { label: 'Technical Courses', href: '/dashboard/problems', icon: Code2 },
+  { label: 'Apptitude', href: '/dashboard/tests', icon: Trophy },
   { label: 'My Submissions', href: '/dashboard/submissions', icon: FileText },
 ];
 

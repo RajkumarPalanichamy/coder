@@ -6,8 +6,8 @@ import Image from 'next/image';
 const navItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Students', href: '/admin/students', icon: Users },
-  { label: 'Problems', href: '/admin/problems', icon: Code2 },
-  { label: 'Tests', href: '/admin/tests', icon: ListChecks },
+  { label: 'Technical Courses', href: '/admin/problems', icon: Code2 },
+  { label: 'Apptitude', href: '/admin/tests', icon: ListChecks },
   { label: 'Submissions', href: '/admin/submissions', icon: BookOpen },
 ];
 
@@ -17,7 +17,7 @@ export default function AdminSidebar({ onLogout }) {
     <aside className="sticky top-0 h-screen w-20 md:w-64 bg-white shadow-xl flex flex-col z-30 transition-all duration-200">
       {/* Logo / App Name */}
       <div className="flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-gradient-to-r from-indigo-600 to-indigo-700">
-        <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="h-10 w-10 rounded-lg shadow-lg" />
+        <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="rounded-lg shadow-lg" />
         <span className="hidden md:inline ml-3 text-xl font-bold text-white tracking-tight">Zenith Mentor</span>
       </div>
       

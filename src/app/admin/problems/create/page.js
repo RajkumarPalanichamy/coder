@@ -12,12 +12,14 @@ export default function AdminProblemCreatePage() {
     description: '',
     difficulty: 'level1',
     category: '',
+    language: 'javascript',
     constraints: '',
     starterCode: '',
     solution: '',
     tags: '',
     examples: [{ input: '', output: '', explanation: '' }],
     testCases: [{ input: '', output: '', isHidden: false }],
+    timeLimit: 1, // minutes
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +29,7 @@ export default function AdminProblemCreatePage() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.type === 'number' ? Number(e.target.value) : e.target.value
     });
   };
 
@@ -85,6 +87,7 @@ export default function AdminProblemCreatePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          timeLimit: (Number(formData.timeLimit) || 1) * 60, // convert minutes to seconds
           tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
           examples: formData.examples.filter(
             (ex) => ex.input.trim() && ex.output.trim()
@@ -186,6 +189,24 @@ export default function AdminProblemCreatePage() {
                     />
                   </div>
 
+                  <div>
+                    <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700 mb-1">
+                      Time Limit (minutes)
+                    </label>
+                    <input
+                      id="timeLimit"
+                      name="timeLimit"
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={formData.timeLimit}
+                      onChange={handleChange}
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      placeholder="1"
+                      required
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 mb-1">
@@ -218,6 +239,25 @@ export default function AdminProblemCreatePage() {
                         placeholder="e.g., Arrays & Strings"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+                      Language
+                    </label>
+                    <select
+                      id="language"
+                      name="language"
+                      value={formData.language}
+                      onChange={handleChange}
+                      required
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                    >
+                      <option value="javascript">JavaScript</option>
+                      <option value="python">Python</option>
+                      <option value="java">Java</option>
+                      <option value="cpp">C++</option>
+                      <option value="c">C</option>
+                    </select>
                   </div>
 
                   <div>
