@@ -35,6 +35,11 @@ const problemSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  language: {
+    type: String,
+    required: true,
+    trim: true
+  },
   constraints: {
     type: String
   },

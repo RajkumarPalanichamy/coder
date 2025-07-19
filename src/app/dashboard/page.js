@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import StudentStatsCards from '../components/StudentStatsCards';
 import ProblemCard from '../components/ProblemCard';
 import StudentProfileCard from '../components/StudentProfileCard';
+import ZenithMentorPromotion from '../components/ZenithMentorPromotion';
 import { UserCircle, ChevronDown, Code2, BookOpen, Filter } from 'lucide-react';
 
 const LANGUAGES = [
@@ -209,6 +210,10 @@ export default function Dashboard() {
       {/* Motivation Card */}
       <div className="max-w-3xl mx-auto px-4 md:px-0 mt-6">
         <MotivationCard />
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 md:px-0 mt-6">
+        <ZenithMentorPromotion />
       </div>
 
       {/* Problems Section */}

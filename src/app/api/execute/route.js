@@ -78,6 +78,11 @@ class Judge0Executor {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Judge0 submission failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorText: errorText,
+      });
       throw new Error(`Judge0 submission failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
@@ -106,7 +111,12 @@ class Judge0Executor {
         });
 
         if (!response.ok) {
-          console.warn(`Poll attempt ${attempts}: HTTP ${response.status}`);
+          const errorText = await response.text();
+          console.warn(`Poll attempt ${attempts}: HTTP ${response.status}`, {
+            status: response.status,
+            statusText: response.statusText,
+            errorText: errorText,
+          });
           continue;
         }
 
