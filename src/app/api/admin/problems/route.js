@@ -7,12 +7,23 @@ export async function GET(request) {
   try {
     await connectDB();
     
+    // Check authentication
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language');
 
     let query = {};
     if (language) {
-      query.tags = language;
+      query.programmingLanguage = language;
     }
 
     const problems = await Problem.find(query)
@@ -69,7 +80,7 @@ export async function POST(request) {
       description,
       difficulty,
       category,
-      language,
+      programmingLanguage: language,
       constraints: constraints || '',
       examples: examples || [],
       testCases: testCases || [],

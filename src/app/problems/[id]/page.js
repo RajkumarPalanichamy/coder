@@ -59,6 +59,10 @@ export default function ProblemPage() {
       if (response.ok) {
         setProblem(data.problem);
         setCode(data.problem.starterCode || '');
+        // Set the language based on the problem's language field
+        if (data.problem.programmingLanguage) {
+          setLanguage(data.problem.programmingLanguage);
+        }
       } else {
         console.error('Error fetching problem:', data.error);
       }
@@ -259,6 +263,11 @@ export default function ProblemPage() {
                 {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
               </span>
               <span className="text-sm text-gray-500">{problem.category}</span>
+              {problem.programmingLanguage && (
+                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded capitalize">
+                  {problem.programmingLanguage}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -276,7 +285,14 @@ export default function ProblemPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Problem Description */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Problem Description</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Problem Description</h2>
+              {problem.programmingLanguage && (
+                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded capitalize">
+                  {problem.programmingLanguage}
+                </span>
+              )}
+            </div>
             <div className="prose max-w-none">
               <p className="text-gray-700 mb-4">{problem.description}</p>
               

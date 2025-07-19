@@ -28,7 +28,7 @@ export async function GET(request) {
     }
 
     if (language) {
-      query.language = language;
+      query.programmingLanguage = language;
     }
 
     const problems = await Problem.find(query)

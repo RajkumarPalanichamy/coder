@@ -29,7 +29,14 @@ export default function ProblemCard({ problem, href, showStatus, status }) {
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(problem.difficulty)}`}>
           {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
         </span>
-        <span className="text-sm text-gray-500">{problem.category}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">{problem.category}</span>
+          {problem.programmingLanguage && (
+            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded capitalize">
+              {problem.programmingLanguage}
+            </span>
+          )}
+        </div>
       </div>
       <Link
         href={href}

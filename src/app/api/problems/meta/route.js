@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await connectDB();
 
-    const languages = await Problem.distinct('language');
+    const languages = await Problem.distinct('programmingLanguage');
     const categories = await Problem.distinct('category');
 
     return NextResponse.json({ languages, categories });

@@ -87,6 +87,7 @@ export default function AdminProblemCreatePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          programmingLanguage: formData.language, // Map language to programmingLanguage
           timeLimit: (Number(formData.timeLimit) || 1) * 60, // convert minutes to seconds
           tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
           examples: formData.examples.filter(

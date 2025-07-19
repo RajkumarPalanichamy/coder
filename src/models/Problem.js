@@ -35,7 +35,7 @@ const problemSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  language: {
+  programmingLanguage: {
     type: String,
     required: true,
     trim: true

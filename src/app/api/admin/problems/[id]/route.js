@@ -29,6 +29,7 @@ export async function PUT(request, { params }) {
     problem.description = body.description;
     problem.difficulty = body.difficulty;
     problem.category = body.category;
+    problem.programmingLanguage = body.language;
     problem.constraints = body.constraints;
     problem.starterCode = body.starterCode;
     problem.solution = body.solution;

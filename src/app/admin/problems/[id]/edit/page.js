@@ -13,6 +13,7 @@ export default function AdminProblemEditPage() {
     description: '',
     difficulty: 'level1',
     category: '',
+    language: 'javascript',
     constraints: '',
     starterCode: '',
     solution: '',
@@ -41,6 +42,7 @@ export default function AdminProblemEditPage() {
         description: data.problem.description,
         difficulty: data.problem.difficulty,
         category: data.problem.category,
+        language: data.problem.programmingLanguage || 'javascript',
         constraints: data.problem.constraints,
         starterCode: data.problem.starterCode,
         solution: data.problem.solution,
@@ -122,6 +124,7 @@ export default function AdminProblemEditPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          programmingLanguage: formData.language, // Map language to programmingLanguage
           tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
           examples: formData.examples.filter(
             (ex) => ex.input.trim() && ex.output.trim()
@@ -181,6 +184,16 @@ export default function AdminProblemEditPage() {
                       <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
                       <input id="category" name="category" type="text" required value={formData.category} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
                     </div>
+                  </div>
+                  <div>
+                    <label htmlFor="language" className="block text-sm font-medium text-gray-700">Language</label>
+                    <select id="language" name="language" value={formData.language} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                      <option value="javascript">JavaScript</option>
+                      <option value="python">Python</option>
+                      <option value="java">Java</option>
+                      <option value="cpp">C++</option>
+                      <option value="c">C</option>
+                    </select>
                   </div>
                   <div>
                     <label htmlFor="constraints" className="block text-sm font-medium text-gray-700">Constraints</label>

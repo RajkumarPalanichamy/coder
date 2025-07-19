@@ -27,7 +27,9 @@ export default function AdminProblemsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/admin/problems${language ? `?language=${language}` : ""}`);
+      const res = await fetch(`/api/admin/problems${language ? `?language=${language}` : ""}`, {
+        credentials: 'include'
+      });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setProblems(data.problems || []);
@@ -42,7 +44,10 @@ export default function AdminProblemsPage() {
     if (!confirm("Are you sure you want to delete this problem?")) return;
     setDeletingId(id);
     try {
-      await fetch(`/api/admin/problems/${id}`, { method: "DELETE" });
+      await fetch(`/api/admin/problems/${id}`, { 
+        method: "DELETE",
+        credentials: 'include'
+      });
       setProblems(problems.filter((p) => p._id !== id));
     } catch {
       alert("Failed to delete problem.");
@@ -65,12 +70,15 @@ export default function AdminProblemsPage() {
     }
   };
 
-  const handleBulkDelete = async () => {
+    const handleBulkDelete = async () => {
     if (selected.length === 0) return;
     if (!confirm(`Are you sure you want to delete ${selected.length} problems?`)) return;
     setBulkDeleting(true);
     try {
-      await Promise.all(selected.map(id => fetch(`/api/admin/problems/${id}`, { method: 'DELETE' })));
+      await Promise.all(selected.map(id => fetch(`/api/admin/problems/${id}`, { 
+        method: 'DELETE',
+        credentials: 'include'
+      })));
       setProblems(problems.filter((p) => !selected.includes(p._id)));
       setSelected([]);
     } catch {
@@ -79,6 +87,8 @@ export default function AdminProblemsPage() {
       setBulkDeleting(false);
     }
   };
+
+
 
   const LANGUAGES = [
     { label: "All", value: "" },
@@ -106,6 +116,7 @@ export default function AdminProblemsPage() {
                   <option key={lang.value} value={lang.value}>{lang.label}</option>
                 ))}
               </select>
+
               <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
                 <Plus className="h-4 w-4" /> Add Problem
               </Link>
@@ -146,6 +157,7 @@ export default function AdminProblemsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -173,6 +185,13 @@ export default function AdminProblemsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-700">{problem.category}</td>
+                      <td className="px-6 py-4">
+                        {problem.programmingLanguage && (
+                          <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 capitalize">
+                            {problem.programmingLanguage}
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-gray-500">{(problem.tags || []).join(', ')}</td>
                       <td className="px-6 py-4 flex gap-2">
                         <Link href={`/admin/problems/${problem._id}/edit`} className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
