@@ -4,7 +4,7 @@ const ZenithMentorPromotion = () => {
   const modules = [
     { title: 'Aptitude Training', icon: <BarChart className="w-8 h-8 text-indigo-500" /> },
     { title: 'Technical Skills Training', icon: <Code className="w-8 h-8 text-green-500" /> },
-    { title: 'Combined Technical & Aptitude', icon: <Briefcase className="w-8 h-8 text-purple-500" /> },
+    { title: 'Non-Technical Courses', icon: <Briefcase className="w-8 h-8 text-purple-500" /> },
   ];
 
   const technicalCourses = [
@@ -184,7 +184,7 @@ const ZenithMentorPromotion = () => {
       <div className="mt-8 text-center">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Contact Us</h2>
         <p className="text-gray-700">Website: <a href="http://zenithmentor.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">zenithmentor.com</a></p>
-        <p className="text-gray-700">Call/WhatsApp: <a href="tel:9080284886" className="text-indigo-600 hover:underline">9080284886</a></p>
+        <p className="text-gray-700">Call/WhatsApp: <a href="tel:9361797372" className="text-indigo-600 hover:underline">9361797372</a></p>
         <p className="text-gray-700">Location: Coimbatore</p>
       </div>
     </div>
