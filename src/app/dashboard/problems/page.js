@@ -4,40 +4,51 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProblemCard from '../../components/ProblemCard';
 import LanguageCard from '../../components/LanguageCard';
-import { BookOpen, Filter, Code2 } from 'lucide-react';
-
-const DIFFICULTIES = [
-  { label: 'All', value: '' },
-  { label: 'Level 1', value: 'level1' },
-  { label: 'Level 2', value: 'level2' },
-  { label: 'Level 3', value: 'level3' },
-];
+import LevelCard from '../../components/LevelCard';
+import { BookOpen, Code2, Trophy } from 'lucide-react';
 
 export default function StudentProblemsPage() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState('');
-  const [difficulty, setDifficulty] = useState('');
-  const [category, setCategory] = useState('');
+  const [level, setLevel] = useState('');
   const [languages, setLanguages] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
   const [showLanguageCards, setShowLanguageCards] = useState(true);
+  const [showLevelCards, setShowLevelCards] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    fetchMeta();
+    fetchLanguages();
   }, []);
 
   useEffect(() => {
-    fetchProblems();
-  }, [language, difficulty, category]);
+    if (language && !level) {
+      fetchLevels();
+    }
+  }, [language]);
 
-  const fetchMeta = async () => {
+  useEffect(() => {
+    if (language && level) {
+      fetchProblems();
+    }
+  }, [language, level]);
+
+  const fetchLanguages = async () => {
     try {
       const res = await fetch('/api/problems/meta');
       const data = await res.json();
       setLanguages(data.languages || []);
-      setCategories(data.categories || []);
+    } catch (err) {
+      // handle error
+    }
+  };
+
+  const fetchLevels = async () => {
+    try {
+      const res = await fetch(`/api/problems/levels?language=${language}`);
+      const data = await res.json();
+      setLevels(data.levels || []);
     } catch (err) {
       // handle error
     }
@@ -45,14 +56,26 @@ export default function StudentProblemsPage() {
 
   const handleLanguageCardClick = (selectedLanguage) => {
     setLanguage(selectedLanguage);
+    setLevel('');
     setShowLanguageCards(false);
+    setShowLevelCards(true);
+  };
+
+  const handleLevelCardClick = (selectedLevel) => {
+    setLevel(selectedLevel);
+    setShowLevelCards(false);
   };
 
   const handleBackToLanguages = () => {
     setLanguage("");
-    setDifficulty("");
-    setCategory("");
+    setLevel("");
     setShowLanguageCards(true);
+    setShowLevelCards(false);
+  };
+
+  const handleBackToLevels = () => {
+    setLevel("");
+    setShowLevelCards(true);
   };
 
   const fetchProblems = async () => {
@@ -60,8 +83,7 @@ export default function StudentProblemsPage() {
     try {
       const params = [];
       if (language) params.push(`language=${language}`);
-      if (difficulty) params.push(`difficulty=${difficulty}`);
-      if (category) params.push(`category=${category}`);
+      if (level) params.push(`difficulty=${level}`);
       const query = params.length ? `?${params.join('&')}` : '';
       const res = await fetch(`/api/problems${query}`);
       const data = await res.json();
@@ -83,22 +105,28 @@ export default function StudentProblemsPage() {
       <div className="flex items-center gap-2 mb-6">
         {!showLanguageCards && (
           <button
-            onClick={handleBackToLanguages}
+            onClick={showLevelCards ? handleBackToLanguages : level ? handleBackToLevels : handleBackToLanguages}
             className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mr-4"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Languages
+            {showLevelCards ? 'Back to Languages' : level ? 'Back to Levels' : 'Back to Languages'}
           </button>
         )}
         <BookOpen className="h-6 w-6 text-indigo-500" />
         <h1 className="text-2xl font-bold">
-          {showLanguageCards ? 'Problems by Language' : 'Problems'}
+          {showLanguageCards 
+            ? 'Problems by Language' 
+            : showLevelCards 
+              ? 'Choose Difficulty Level' 
+              : 'Problems'
+          }
         </h1>
         {!showLanguageCards && language && (
           <span className="text-gray-600 text-lg">
             - {language.toUpperCase()}
+            {level && ` - ${level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : 'Level 3'}`}
           </span>
         )}
       </div>
@@ -127,29 +155,38 @@ export default function StudentProblemsPage() {
             </div>
           )}
         </div>
+      ) : showLevelCards ? (
+        <div>
+          <div className="flex items-center gap-2 mb-6">
+            <Trophy className="h-6 w-6 text-indigo-500" />
+            <h2 className="text-xl font-semibold text-gray-800">Choose Difficulty Level for {language.toUpperCase()}</h2>
+          </div>
+          {levels.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>No levels found for {language}. Check back later!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {levels.map((levelData) => (
+                <LevelCard
+                  key={levelData.level}
+                  level={levelData.level}
+                  problemCount={levelData.count}
+                  onClick={() => handleLevelCardClick(levelData.level)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <>
-          {/* Filter Bar */}
-          <div className="flex flex-wrap gap-4 mb-8 items-center bg-white p-4 rounded shadow">
-            <Filter className="h-5 w-5 text-indigo-500" />
-            <select value={language} onChange={e => setLanguage(e.target.value)} className="border rounded px-3 py-1">
-              <option value="">All Languages</option>
-              {languages.map(langData => <option key={langData.language} value={langData.language}>{langData.language}</option>)}
-            </select>
-            <select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="border rounded px-3 py-1">
-              {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-            </select>
-            <select value={category} onChange={e => setCategory(e.target.value)} className="border rounded px-3 py-1">
-              <option value="">All Categories</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading...</div>
           ) : problems.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No problems found for the selected filters.</p>
+              <p>No problems found for {language.toUpperCase()} - {level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : 'Level 3'}.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
