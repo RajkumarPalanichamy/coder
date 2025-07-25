@@ -6,38 +6,65 @@ import ProblemCard from '../../components/ProblemCard';
 import { BookOpen, Code, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-const LANGUAGES = [
-  { 
-    label: 'JavaScript', 
-    value: 'javascript', 
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    icon: '🟨'
-  },
-  { 
-    label: 'Python', 
-    value: 'python', 
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
-    icon: '🐍'
-  },
-  { 
-    label: 'Java', 
-    value: 'java', 
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
-    icon: '☕'
-  },
-  { 
-    label: 'C++', 
-    value: 'cpp', 
-    color: 'bg-purple-100 text-purple-800 border-purple-200',
-    icon: '⚡'
-  },
-  { 
-    label: 'C', 
-    value: 'c', 
-    color: 'bg-gray-100 text-gray-800 border-gray-200',
-    icon: '🔧'
-  },
-];
+// Function to get language configuration (color, icon) based on language name
+const getLanguageConfig = (language) => {
+  const configs = {
+    'javascript': { 
+      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      icon: '🟨'
+    },
+    'python': { 
+      color: 'bg-blue-100 text-blue-800 border-blue-200',
+      icon: '🐍'
+    },
+    'java': { 
+      color: 'bg-orange-100 text-orange-800 border-orange-200',
+      icon: '☕'
+    },
+    'cpp': { 
+      color: 'bg-purple-100 text-purple-800 border-purple-200',
+      icon: '⚡'
+    },
+    'c': { 
+      color: 'bg-gray-100 text-gray-800 border-gray-200',
+      icon: '🔧'
+    },
+    'rust': { 
+      color: 'bg-red-100 text-red-800 border-red-200',
+      icon: '🦀'
+    },
+    'go': { 
+      color: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+      icon: '🐹'
+    },
+    'kotlin': { 
+      color: 'bg-violet-100 text-violet-800 border-violet-200',
+      icon: '🚀'
+    },
+    'typescript': { 
+      color: 'bg-blue-100 text-blue-800 border-blue-200',
+      icon: '📘'
+    },
+    'php': { 
+      color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+      icon: '🐘'
+    },
+    'ruby': { 
+      color: 'bg-red-100 text-red-800 border-red-200',
+      icon: '💎'
+    },
+    'swift': { 
+      color: 'bg-orange-100 text-orange-800 border-orange-200',
+      icon: '🍎'
+    }
+  };
+  
+  // Return config if exists, otherwise return a default config
+  return configs[language.toLowerCase()] || {
+    color: 'bg-green-100 text-green-800 border-green-200',
+    icon: '⚙️'
+  };
+};
 
 const DIFFICULTIES = [
   { label: 'All', value: '' },
@@ -49,9 +76,11 @@ const DIFFICULTIES = [
 export default function StudentProblemsPage() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [languagesLoading, setLanguagesLoading] = useState(true);
   const [difficulty, setDifficulty] = useState('');
   const [category, setCategory] = useState('');
   const [categories, setCategories] = useState([]);
+  const [availableLanguages, setAvailableLanguages] = useState([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedLanguage = searchParams.get('language');
@@ -67,12 +96,16 @@ export default function StudentProblemsPage() {
   }, [selectedLanguage, difficulty, category]);
 
   const fetchMeta = async () => {
+    setLanguagesLoading(true);
     try {
       const res = await fetch('/api/problems/meta');
       const data = await res.json();
       setCategories(data.categories || []);
+      setAvailableLanguages(data.languages || []);
     } catch (err) {
-      // handle error
+      console.error('Error fetching meta:', err);
+    } finally {
+      setLanguagesLoading(false);
     }
   };
 
@@ -88,7 +121,7 @@ export default function StudentProblemsPage() {
       const data = await res.json();
       setProblems(data.problems || []);
     } catch (err) {
-      // handle error
+      console.error('Error fetching problems:', err);
     } finally {
       setLoading(false);
     }
@@ -112,33 +145,45 @@ export default function StudentProblemsPage() {
           <h1 className="text-2xl font-bold">Choose Programming Language</h1>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {LANGUAGES.map((language) => (
-            <div
-              key={language.value}
-              onClick={() => handleLanguageClick(language.value)}
-              className={`${language.color} border-2 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-4xl">{language.icon}</div>
-                <Code className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">{language.label}</h3>
-              <p className="text-sm opacity-80">
-                Practice {language.label} programming problems
-              </p>
-              <div className="mt-4 flex items-center justify-end">
-                <span className="text-sm font-medium">View Problems →</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {languagesLoading ? (
+          <div className="text-center py-12 text-gray-500">Loading languages...</div>
+        ) : availableLanguages.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <p>No programming languages available.</p>
+            <p className="text-sm mt-2">Please contact your administrator to add problems.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {availableLanguages.map((language) => {
+              const config = getLanguageConfig(language);
+              return (
+                <div
+                  key={language}
+                  onClick={() => handleLanguageClick(language)}
+                  className={`${config.color} border-2 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-4xl">{config.icon}</div>
+                    <Code className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 capitalize">{language}</h3>
+                  <p className="text-sm opacity-80">
+                    Practice {language} programming problems
+                  </p>
+                  <div className="mt-4 flex items-center justify-end">
+                    <span className="text-sm font-medium">View Problems →</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </>
     );
   }
 
   // If language is selected, show filtered problems
-  const currentLanguage = LANGUAGES.find(lang => lang.value === selectedLanguage);
+  const currentLanguageConfig = getLanguageConfig(selectedLanguage);
   
   return (
     <>
@@ -151,8 +196,8 @@ export default function StudentProblemsPage() {
           <span>Back</span>
         </Link>
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{currentLanguage?.icon}</span>
-          <h1 className="text-2xl font-bold">{currentLanguage?.label} Problems</h1>
+          <span className="text-2xl">{currentLanguageConfig.icon}</span>
+          <h1 className="text-2xl font-bold capitalize">{selectedLanguage} Problems</h1>
         </div>
       </div>
 
@@ -171,7 +216,7 @@ export default function StudentProblemsPage() {
         <div className="text-center py-12 text-gray-500">Loading...</div>
       ) : problems.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          <p>No {currentLanguage?.label} problems found.</p>
+          <p>No {selectedLanguage} problems found.</p>
           <Link 
             href="/dashboard/problems" 
             className="text-indigo-500 hover:text-indigo-700 mt-2 inline-block"
