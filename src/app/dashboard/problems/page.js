@@ -5,66 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import ProblemCard from '../../components/ProblemCard';
 import { BookOpen, Code, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-
-// Function to get language configuration (color, icon) based on language name
-const getLanguageConfig = (language) => {
-  const configs = {
-    'javascript': { 
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      icon: '🟨'
-    },
-    'python': { 
-      color: 'bg-blue-100 text-blue-800 border-blue-200',
-      icon: '🐍'
-    },
-    'java': { 
-      color: 'bg-orange-100 text-orange-800 border-orange-200',
-      icon: '☕'
-    },
-    'cpp': { 
-      color: 'bg-purple-100 text-purple-800 border-purple-200',
-      icon: '⚡'
-    },
-    'c': { 
-      color: 'bg-gray-100 text-gray-800 border-gray-200',
-      icon: '🔧'
-    },
-    'rust': { 
-      color: 'bg-red-100 text-red-800 border-red-200',
-      icon: '🦀'
-    },
-    'go': { 
-      color: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-      icon: '🐹'
-    },
-    'kotlin': { 
-      color: 'bg-violet-100 text-violet-800 border-violet-200',
-      icon: '🚀'
-    },
-    'typescript': { 
-      color: 'bg-blue-100 text-blue-800 border-blue-200',
-      icon: '📘'
-    },
-    'php': { 
-      color: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-      icon: '🐘'
-    },
-    'ruby': { 
-      color: 'bg-red-100 text-red-800 border-red-200',
-      icon: '💎'
-    },
-    'swift': { 
-      color: 'bg-orange-100 text-orange-800 border-orange-200',
-      icon: '🍎'
-    }
-  };
-  
-  // Return config if exists, otherwise return a default config
-  return configs[language.toLowerCase()] || {
-    color: 'bg-green-100 text-green-800 border-green-200',
-    icon: '⚙️'
-  };
-};
+import { getLanguageConfig } from '@/lib/languageConfig';
 
 const DIFFICULTIES = [
   { label: 'All', value: '' },
@@ -166,9 +107,9 @@ export default function StudentProblemsPage() {
                     <div className="text-4xl">{config.icon}</div>
                     <Code className="h-6 w-6" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 capitalize">{language}</h3>
+                  <h3 className="text-xl font-bold mb-2">{config.displayName}</h3>
                   <p className="text-sm opacity-80">
-                    Practice {language} programming problems
+                    Practice {config.displayName} programming problems
                   </p>
                   <div className="mt-4 flex items-center justify-end">
                     <span className="text-sm font-medium">View Problems →</span>
@@ -197,7 +138,7 @@ export default function StudentProblemsPage() {
         </Link>
         <div className="flex items-center gap-2">
           <span className="text-2xl">{currentLanguageConfig.icon}</span>
-          <h1 className="text-2xl font-bold capitalize">{selectedLanguage} Problems</h1>
+          <h1 className="text-2xl font-bold">{currentLanguageConfig.displayName} Problems</h1>
         </div>
       </div>
 
@@ -216,7 +157,7 @@ export default function StudentProblemsPage() {
         <div className="text-center py-12 text-gray-500">Loading...</div>
       ) : problems.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          <p>No {selectedLanguage} problems found.</p>
+          <p>No {currentLanguageConfig.displayName} problems found.</p>
           <Link 
             href="/dashboard/problems" 
             className="text-indigo-500 hover:text-indigo-700 mt-2 inline-block"

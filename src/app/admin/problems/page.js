@@ -4,39 +4,7 @@ import Link from 'next/link';
 import { Plus, Edit, Trash2, Code, ArrowLeft } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useRouter, useSearchParams } from 'next/navigation';
-
-const LANGUAGES = [
-  { 
-    label: 'JavaScript', 
-    value: 'javascript', 
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    icon: '🟨'
-  },
-  { 
-    label: 'Python', 
-    value: 'python', 
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
-    icon: '🐍'
-  },
-  { 
-    label: 'Java', 
-    value: 'java', 
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
-    icon: '☕'
-  },
-  { 
-    label: 'C++', 
-    value: 'cpp', 
-    color: 'bg-purple-100 text-purple-800 border-purple-200',
-    icon: '⚡'
-  },
-  { 
-    label: 'C', 
-    value: 'c', 
-    color: 'bg-gray-100 text-gray-800 border-gray-200',
-    icon: '🔧'
-  },
-];
+import { getLanguageConfig } from '@/lib/languageConfig';
 
 export default function AdminProblemsPage() {
   const router = useRouter();
@@ -50,16 +18,38 @@ export default function AdminProblemsPage() {
   
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [languagesLoading, setLanguagesLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [availableLanguages, setAvailableLanguages] = useState([]);
+
+  useEffect(() => {
+    fetchMeta();
+  }, []);
 
   useEffect(() => {
     if (selectedLanguage) {
       fetchProblems();
     }
   }, [selectedLanguage]);
+
+  const fetchMeta = async () => {
+    setLanguagesLoading(true);
+    try {
+      const res = await fetch('/api/admin/problems/meta', {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setAvailableLanguages(data.languages || []);
+    } catch (err) {
+      console.error('Error fetching meta:', err);
+    } finally {
+      setLanguagesLoading(false);
+    }
+  };
 
   const fetchProblems = async () => {
     setLoading(true);
@@ -146,27 +136,39 @@ export default function AdminProblemsPage() {
             
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Choose Programming Language</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {LANGUAGES.map((language) => (
-                  <div
-                    key={language.value}
-                    onClick={() => handleLanguageClick(language.value)}
-                    className={`${language.color} border-2 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-4xl">{language.icon}</div>
-                      <Code className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">{language.label}</h3>
-                    <p className="text-sm opacity-80">
-                      Manage {language.label} programming problems
-                    </p>
-                    <div className="mt-4 flex items-center justify-end">
-                      <span className="text-sm font-medium">Manage Problems →</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {languagesLoading ? (
+                <div className="text-center py-12 text-gray-500">Loading languages...</div>
+              ) : availableLanguages.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <p>No programming languages available.</p>
+                  <p className="text-sm mt-2">Create some problems to see language options.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {availableLanguages.map((language) => {
+                    const config = getLanguageConfig(language);
+                    return (
+                      <div
+                        key={language}
+                        onClick={() => handleLanguageClick(language)}
+                        className={`${config.color} border-2 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105`}
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="text-4xl">{config.icon}</div>
+                          <Code className="h-6 w-6" />
+                        </div>
+                                                 <h3 className="text-xl font-bold mb-2">{config.displayName}</h3>
+                         <p className="text-sm opacity-80">
+                           Manage {config.displayName} programming problems
+                         </p>
+                        <div className="mt-4 flex items-center justify-end">
+                          <span className="text-sm font-medium">Manage Problems →</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             
             <div className="bg-white rounded-lg p-6 shadow">
@@ -194,7 +196,7 @@ export default function AdminProblemsPage() {
   }
 
   // If language is selected, show filtered problems table
-  const currentLanguage = LANGUAGES.find(lang => lang.value === selectedLanguage);
+  const currentLanguageConfig = getLanguageConfig(selectedLanguage);
   const isAllLanguages = selectedLanguage === 'all';
   
   return (
@@ -211,12 +213,12 @@ export default function AdminProblemsPage() {
                 <ArrowLeft className="h-5 w-5" />
                 <span>Back</span>
               </Link>
-              <div className="flex items-center gap-2">
-                {!isAllLanguages && <span className="text-2xl">{currentLanguage?.icon}</span>}
-                <h1 className="text-3xl font-bold text-black">
-                  {isAllLanguages ? 'All Problems' : `${currentLanguage?.label} Problems`}
-                </h1>
-              </div>
+                              <div className="flex items-center gap-2">
+                  {!isAllLanguages && <span className="text-2xl">{currentLanguageConfig.icon}</span>}
+                  <h1 className="text-3xl font-bold text-black">
+                    {isAllLanguages ? 'All Problems' : `${currentLanguageConfig.displayName} Problems`}
+                  </h1>
+                </div>
             </div>
             <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
               <Plus className="h-4 w-4" /> Add Problem
@@ -243,7 +245,7 @@ export default function AdminProblemsPage() {
             <div className="text-center py-12 text-red-500">{error}</div>
           ) : problems.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              <p>No {isAllLanguages ? '' : currentLanguage?.label} problems found.</p>
+              <p>No {isAllLanguages ? '' : currentLanguageConfig.displayName} problems found.</p>
               <Link 
                 href="/admin/problems" 
                 className="text-indigo-500 hover:text-indigo-700 mt-2 inline-block"
