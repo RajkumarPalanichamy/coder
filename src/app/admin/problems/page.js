@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Code2 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
+import LanguageCard from '../../components/LanguageCard';
 import { useRouter } from 'next/navigation';
 
 export default function AdminProblemsPage() {
@@ -18,10 +19,31 @@ export default function AdminProblemsPage() {
   const [deletingId, setDeletingId] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [languages, setLanguages] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [showLanguageCards, setShowLanguageCards] = useState(true);
+
+  useEffect(() => {
+    fetchMeta();
+  }, []);
 
   useEffect(() => {
     fetchProblems();
   }, [language]);
+
+  const fetchMeta = async () => {
+    try {
+      const res = await fetch('/api/admin/problems/meta', {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setLanguages(data.languages || []);
+      setCategories(data.categories || []);
+    } catch (err) {
+      console.error('Error fetching meta:', err);
+    }
+  };
 
   const fetchProblems = async () => {
     setLoading(true);
@@ -90,6 +112,16 @@ export default function AdminProblemsPage() {
 
 
 
+  const handleLanguageCardClick = (selectedLanguage) => {
+    setLanguage(selectedLanguage);
+    setShowLanguageCards(false);
+  };
+
+  const handleBackToLanguages = () => {
+    setLanguage("");
+    setShowLanguageCards(true);
+  };
+
   const LANGUAGES = [
     { label: "All", value: "" },
     { label: "JavaScript", value: "javascript" },
@@ -105,36 +137,87 @@ export default function AdminProblemsPage() {
       <main className="flex-1 bg-gray-50 min-h-screen">
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
-            <h1 className="text-3xl font-bold text-black">Problems Management</h1>
+            <div className="flex items-center gap-3">
+              {!showLanguageCards && (
+                <button
+                  onClick={handleBackToLanguages}
+                  className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back to Languages
+                </button>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-black">
+                  {showLanguageCards ? 'Problems by Language' : 'Problems Management'}
+                </h1>
+                {!showLanguageCards && language && (
+                  <p className="text-gray-600 mt-1">
+                    Showing {language.toUpperCase()} problems
+                  </p>
+                )}
+              </div>
+            </div>
             <div className="flex gap-2 items-center">
-              <select
-                className="border rounded px-3 py-2 text-black"
-                value={language}
-                onChange={e => setLanguage(e.target.value)}
-              >
-                {LANGUAGES.map(lang => (
-                  <option key={lang.value} value={lang.value}>{lang.label}</option>
-                ))}
-              </select>
+              {!showLanguageCards && (
+                <select
+                  className="border rounded px-3 py-2 text-black"
+                  value={language}
+                  onChange={e => setLanguage(e.target.value)}
+                >
+                  {LANGUAGES.map(lang => (
+                    <option key={lang.value} value={lang.value}>{lang.label}</option>
+                  ))}
+                </select>
+              )}
 
               <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
                 <Plus className="h-4 w-4" /> Add Problem
               </Link>
             </div>
           </div>
-          {/* Bulk Delete Button */}
-          {selected.length > 0 && (
-            <div className="mb-4 flex items-center gap-4">
-              <button
-                onClick={handleBulkDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50"
-                disabled={bulkDeleting}
-              >
-                <Trash2 className="h-4 w-4" />
-                {bulkDeleting ? 'Deleting...' : `Delete Selected (${selected.length})`}
-              </button>
+          {/* Language Cards View */}
+          {showLanguageCards ? (
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <Code2 className="h-6 w-6 text-indigo-500" />
+                <h2 className="text-xl font-semibold text-gray-800">Choose a Programming Language</h2>
+              </div>
+              {languages.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Code2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No programming languages found. Create some problems first!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {languages.map((langData) => (
+                    <LanguageCard
+                      key={langData.language}
+                      language={langData.language}
+                      problemCount={langData.count}
+                      onClick={() => handleLanguageCardClick(langData.language)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          ) : (
+            <>
+              {/* Bulk Delete Button */}
+              {selected.length > 0 && (
+                <div className="mb-4 flex items-center gap-4">
+                  <button
+                    onClick={handleBulkDelete}
+                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50"
+                    disabled={bulkDeleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {bulkDeleting ? 'Deleting...' : `Delete Selected (${selected.length})`}
+                  </button>
+                </div>
+              )}
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading...</div>
           ) : error ? (
@@ -211,6 +294,8 @@ export default function AdminProblemsPage() {
                 </tbody>
               </table>
             </div>
+          )}
+            </>
           )}
         </div>
       </main>
