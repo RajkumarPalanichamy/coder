@@ -1,33 +1,71 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Code, ArrowLeft } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+const LANGUAGES = [
+  { 
+    label: 'JavaScript', 
+    value: 'javascript', 
+    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    icon: '🟨'
+  },
+  { 
+    label: 'Python', 
+    value: 'python', 
+    color: 'bg-blue-100 text-blue-800 border-blue-200',
+    icon: '🐍'
+  },
+  { 
+    label: 'Java', 
+    value: 'java', 
+    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    icon: '☕'
+  },
+  { 
+    label: 'C++', 
+    value: 'cpp', 
+    color: 'bg-purple-100 text-purple-800 border-purple-200',
+    icon: '⚡'
+  },
+  { 
+    label: 'C', 
+    value: 'c', 
+    color: 'bg-gray-100 text-gray-800 border-gray-200',
+    icon: '🔧'
+  },
+];
 
 export default function AdminProblemsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedLanguage = searchParams.get('language');
+  
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
   };
+  
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [language, setLanguage] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
-    fetchProblems();
-  }, [language]);
+    if (selectedLanguage) {
+      fetchProblems();
+    }
+  }, [selectedLanguage]);
 
   const fetchProblems = async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/admin/problems${language ? `?language=${language}` : ""}`, {
+      const res = await fetch(`/api/admin/problems${selectedLanguage ? `?language=${selectedLanguage}` : ""}`, {
         credentials: 'include'
       });
       const data = await res.json();
@@ -70,7 +108,7 @@ export default function AdminProblemsPage() {
     }
   };
 
-    const handleBulkDelete = async () => {
+  const handleBulkDelete = async () => {
     if (selected.length === 0) return;
     if (!confirm(`Are you sure you want to delete ${selected.length} problems?`)) return;
     setBulkDeleting(true);
@@ -88,40 +126,103 @@ export default function AdminProblemsPage() {
     }
   };
 
+  const handleLanguageClick = (languageValue) => {
+    router.push(`/admin/problems?language=${languageValue}`);
+  };
 
+  // If no language is selected, show language cards
+  if (!selectedLanguage) {
+    return (
+      <div className="flex min-h-screen">
+        <AdminSidebar onLogout={handleLogout} />
+        <main className="flex-1 bg-gray-50 min-h-screen">
+          <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
+              <h1 className="text-3xl font-bold text-black">Problems Management</h1>
+              <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
+                <Plus className="h-4 w-4" /> Add Problem
+              </Link>
+            </div>
+            
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Choose Programming Language</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {LANGUAGES.map((language) => (
+                  <div
+                    key={language.value}
+                    onClick={() => handleLanguageClick(language.value)}
+                    className={`${language.color} border-2 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-4xl">{language.icon}</div>
+                      <Code className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{language.label}</h3>
+                    <p className="text-sm opacity-80">
+                      Manage {language.label} programming problems
+                    </p>
+                    <div className="mt-4 flex items-center justify-end">
+                      <span className="text-sm font-medium">Manage Problems →</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg p-6 shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">All Languages</h3>
+              <div 
+                onClick={() => router.push('/admin/problems?language=all')}
+                className="bg-gray-100 text-gray-800 border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">📋</div>
+                    <div>
+                      <h4 className="font-semibold">All Problems</h4>
+                      <p className="text-sm opacity-80">View and manage all problems regardless of language</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-medium">Manage All →</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
-  const LANGUAGES = [
-    { label: "All", value: "" },
-    { label: "JavaScript", value: "javascript" },
-    { label: "Python", value: "python" },
-    { label: "Java", value: "java" },
-    { label: "C++", value: "cpp" },
-    { label: "C", value: "c" },
-  ];
-
+  // If language is selected, show filtered problems table
+  const currentLanguage = LANGUAGES.find(lang => lang.value === selectedLanguage);
+  const isAllLanguages = selectedLanguage === 'all';
+  
   return (
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 bg-gray-50 min-h-screen">
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
-            <h1 className="text-3xl font-bold text-black">Problems Management</h1>
-            <div className="flex gap-2 items-center">
-              <select
-                className="border rounded px-3 py-2 text-black"
-                value={language}
-                onChange={e => setLanguage(e.target.value)}
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/admin/problems" 
+                className="flex items-center gap-2 text-indigo-500 hover:text-indigo-700"
               >
-                {LANGUAGES.map(lang => (
-                  <option key={lang.value} value={lang.value}>{lang.label}</option>
-                ))}
-              </select>
-
-              <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
-                <Plus className="h-4 w-4" /> Add Problem
+                <ArrowLeft className="h-5 w-5" />
+                <span>Back</span>
               </Link>
+              <div className="flex items-center gap-2">
+                {!isAllLanguages && <span className="text-2xl">{currentLanguage?.icon}</span>}
+                <h1 className="text-3xl font-bold text-black">
+                  {isAllLanguages ? 'All Problems' : `${currentLanguage?.label} Problems`}
+                </h1>
+              </div>
             </div>
+            <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Add Problem
+            </Link>
           </div>
+          
           {/* Bulk Delete Button */}
           {selected.length > 0 && (
             <div className="mb-4 flex items-center gap-4">
@@ -135,12 +236,21 @@ export default function AdminProblemsPage() {
               </button>
             </div>
           )}
+          
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading...</div>
           ) : error ? (
             <div className="text-center py-12 text-red-500">{error}</div>
           ) : problems.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No problems found.</div>
+            <div className="text-center py-12 text-gray-500">
+              <p>No {isAllLanguages ? '' : currentLanguage?.label} problems found.</p>
+              <Link 
+                href="/admin/problems" 
+                className="text-indigo-500 hover:text-indigo-700 mt-2 inline-block"
+              >
+                Choose another language
+              </Link>
+            </div>
           ) : (
             <div className="overflow-x-auto rounded shadow bg-white mt-4">
               <table className="min-w-full divide-y divide-gray-200">

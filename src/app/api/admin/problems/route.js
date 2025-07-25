@@ -22,7 +22,7 @@ export async function GET(request) {
     const language = searchParams.get('language');
 
     let query = {};
-    if (language) {
+    if (language && language !== 'all') {
       query.programmingLanguage = language;
     }
 
