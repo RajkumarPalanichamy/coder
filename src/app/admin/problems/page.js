@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, Code2, Trophy } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import LanguageCard from '../../components/LanguageCard';
 import LevelCard from '../../components/LevelCard';
+import Loader from '../../components/Loader';
 import { useRouter } from 'next/navigation';
 
 export default function AdminProblemsPage() {
@@ -15,6 +16,8 @@ export default function AdminProblemsPage() {
   };
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [languagesLoading, setLanguagesLoading] = useState(true);
+  const [levelsLoading, setLevelsLoading] = useState(false);
   const [error, setError] = useState("");
   const [language, setLanguage] = useState("");
   const [level, setLevel] = useState("");
@@ -43,6 +46,7 @@ export default function AdminProblemsPage() {
   }, [language, level]);
 
   const fetchLanguages = async () => {
+    setLanguagesLoading(true);
     try {
       const res = await fetch('/api/admin/problems/meta', {
         credentials: 'include'
@@ -52,10 +56,13 @@ export default function AdminProblemsPage() {
       setLanguages(data.languages || []);
     } catch (err) {
       console.error('Error fetching languages:', err);
+    } finally {
+      setLanguagesLoading(false);
     }
   };
 
   const fetchLevels = async () => {
+    setLevelsLoading(true);
     try {
       const res = await fetch(`/api/admin/problems/levels?language=${language}`, {
         credentials: 'include'
@@ -65,6 +72,8 @@ export default function AdminProblemsPage() {
       setLevels(data.levels || []);
     } catch (err) {
       console.error('Error fetching levels:', err);
+    } finally {
+      setLevelsLoading(false);
     }
   };
 
@@ -209,7 +218,9 @@ export default function AdminProblemsPage() {
                 <Code2 className="h-6 w-6 text-indigo-500" />
                 <h2 className="text-xl font-semibold text-gray-800">Choose a Programming Language</h2>
               </div>
-              {languages.length === 0 ? (
+              {languagesLoading ? (
+                <Loader type="cards" />
+              ) : languages.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Code2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>No programming languages found. Create some problems first!</p>
@@ -233,7 +244,9 @@ export default function AdminProblemsPage() {
                 <Trophy className="h-6 w-6 text-indigo-500" />
                 <h2 className="text-xl font-semibold text-gray-800">Choose Difficulty Level for {language.toUpperCase()}</h2>
               </div>
-              {levels.length === 0 ? (
+              {levelsLoading ? (
+                <Loader type="cards" />
+              ) : levels.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>No levels found for {language}. Check back later!</p>
@@ -267,7 +280,7 @@ export default function AdminProblemsPage() {
                 </div>
               )}
           {loading ? (
-            <div className="text-center py-12 text-gray-500">Loading...</div>
+            <Loader type="table" />
           ) : error ? (
             <div className="text-center py-12 text-red-500">{error}</div>
           ) : problems.length === 0 ? (
