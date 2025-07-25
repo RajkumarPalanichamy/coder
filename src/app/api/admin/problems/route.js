@@ -20,10 +20,14 @@ export async function GET(request) {
     
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language');
+    const difficulty = searchParams.get('difficulty');
 
     let query = {};
     if (language) {
       query.programmingLanguage = language;
+    }
+    if (difficulty) {
+      query.difficulty = difficulty;
     }
 
     const problems = await Problem.find(query)

@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, Code2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Code2, Trophy } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import LanguageCard from '../../components/LanguageCard';
+import LevelCard from '../../components/LevelCard';
 import { useRouter } from 'next/navigation';
 
 export default function AdminProblemsPage() {
@@ -16,22 +17,32 @@ export default function AdminProblemsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [language, setLanguage] = useState("");
+  const [level, setLevel] = useState("");
   const [deletingId, setDeletingId] = useState(null);
   const [selected, setSelected] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [languages, setLanguages] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
   const [showLanguageCards, setShowLanguageCards] = useState(true);
+  const [showLevelCards, setShowLevelCards] = useState(false);
 
   useEffect(() => {
-    fetchMeta();
+    fetchLanguages();
   }, []);
 
   useEffect(() => {
-    fetchProblems();
+    if (language && !level) {
+      fetchLevels();
+    }
   }, [language]);
 
-  const fetchMeta = async () => {
+  useEffect(() => {
+    if (language && level) {
+      fetchProblems();
+    }
+  }, [language, level]);
+
+  const fetchLanguages = async () => {
     try {
       const res = await fetch('/api/admin/problems/meta', {
         credentials: 'include'
@@ -39,9 +50,21 @@ export default function AdminProblemsPage() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setLanguages(data.languages || []);
-      setCategories(data.categories || []);
     } catch (err) {
-      console.error('Error fetching meta:', err);
+      console.error('Error fetching languages:', err);
+    }
+  };
+
+  const fetchLevels = async () => {
+    try {
+      const res = await fetch(`/api/admin/problems/levels?language=${language}`, {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setLevels(data.levels || []);
+    } catch (err) {
+      console.error('Error fetching levels:', err);
     }
   };
 
@@ -49,7 +72,11 @@ export default function AdminProblemsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/admin/problems${language ? `?language=${language}` : ""}`, {
+      const params = [];
+      if (language) params.push(`language=${language}`);
+      if (level) params.push(`difficulty=${level}`);
+      const query = params.length ? `?${params.join('&')}` : '';
+      const res = await fetch(`/api/admin/problems${query}`, {
         credentials: 'include'
       });
       const data = await res.json();
@@ -110,26 +137,29 @@ export default function AdminProblemsPage() {
     }
   };
 
-
-
   const handleLanguageCardClick = (selectedLanguage) => {
     setLanguage(selectedLanguage);
+    setLevel('');
     setShowLanguageCards(false);
+    setShowLevelCards(true);
+  };
+
+  const handleLevelCardClick = (selectedLevel) => {
+    setLevel(selectedLevel);
+    setShowLevelCards(false);
   };
 
   const handleBackToLanguages = () => {
     setLanguage("");
+    setLevel("");
     setShowLanguageCards(true);
+    setShowLevelCards(false);
   };
 
-  const LANGUAGES = [
-    { label: "All", value: "" },
-    { label: "JavaScript", value: "javascript" },
-    { label: "Python", value: "python" },
-    { label: "Java", value: "java" },
-    { label: "C++", value: "cpp" },
-    { label: "C", value: "c" },
-  ];
+  const handleBackToLevels = () => {
+    setLevel("");
+    setShowLevelCards(true);
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -140,39 +170,33 @@ export default function AdminProblemsPage() {
             <div className="flex items-center gap-3">
               {!showLanguageCards && (
                 <button
-                  onClick={handleBackToLanguages}
+                  onClick={showLevelCards ? handleBackToLanguages : level ? handleBackToLevels : handleBackToLanguages}
                   className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
-                  Back to Languages
+                  {showLevelCards ? 'Back to Languages' : level ? 'Back to Levels' : 'Back to Languages'}
                 </button>
               )}
               <div>
                 <h1 className="text-3xl font-bold text-black">
-                  {showLanguageCards ? 'Problems by Language' : 'Problems Management'}
+                  {showLanguageCards 
+                    ? 'Problems by Language' 
+                    : showLevelCards 
+                      ? 'Choose Difficulty Level' 
+                      : 'Problems Management'
+                  }
                 </h1>
                 {!showLanguageCards && language && (
                   <p className="text-gray-600 mt-1">
                     Showing {language.toUpperCase()} problems
+                    {level && ` - ${level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : 'Level 3'}`}
                   </p>
                 )}
               </div>
             </div>
             <div className="flex gap-2 items-center">
-              {!showLanguageCards && (
-                <select
-                  className="border rounded px-3 py-2 text-black"
-                  value={language}
-                  onChange={e => setLanguage(e.target.value)}
-                >
-                  {LANGUAGES.map(lang => (
-                    <option key={lang.value} value={lang.value}>{lang.label}</option>
-                  ))}
-                </select>
-              )}
-
               <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
                 <Plus className="h-4 w-4" /> Add Problem
               </Link>
@@ -203,6 +227,30 @@ export default function AdminProblemsPage() {
                 </div>
               )}
             </div>
+          ) : showLevelCards ? (
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <Trophy className="h-6 w-6 text-indigo-500" />
+                <h2 className="text-xl font-semibold text-gray-800">Choose Difficulty Level for {language.toUpperCase()}</h2>
+              </div>
+              {levels.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Trophy className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No levels found for {language}. Check back later!</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {levels.map((levelData) => (
+                    <LevelCard
+                      key={levelData.level}
+                      level={levelData.level}
+                      problemCount={levelData.count}
+                      onClick={() => handleLevelCardClick(levelData.level)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
             <>
               {/* Bulk Delete Button */}
@@ -223,7 +271,9 @@ export default function AdminProblemsPage() {
           ) : error ? (
             <div className="text-center py-12 text-red-500">{error}</div>
           ) : problems.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No problems found.</div>
+            <div className="text-center py-12 text-gray-500">
+              No problems found for {language.toUpperCase()} - {level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : 'Level 3'}.
+            </div>
           ) : (
             <div className="overflow-x-auto rounded shadow bg-white mt-4">
               <table className="min-w-full divide-y divide-gray-200">
