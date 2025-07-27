@@ -21,6 +21,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language');
     const difficulty = searchParams.get('difficulty');
+    const category = searchParams.get('category');
 
     let query = {};
     if (language) {
@@ -28,6 +29,9 @@ export async function GET(request) {
     }
     if (difficulty) {
       query.difficulty = difficulty;
+    }
+    if (category) {
+      query.category = category;
     }
 
     const problems = await Problem.find(query)
