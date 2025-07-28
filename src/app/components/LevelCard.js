@@ -60,10 +60,10 @@ export default function LevelCard({ level, problemCount, onClick }) {
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
             {getLevelIcon(level)}
-            <div className="text-right">
+            {/* <div className="text-right">
               <div className="text-2xl font-bold">{problemCount}</div>
               <div className="text-sm opacity-90">Problems</div>
-            </div>
+            </div> */}
           </div>
           <div className="flex items-center justify-between">
             <div>
