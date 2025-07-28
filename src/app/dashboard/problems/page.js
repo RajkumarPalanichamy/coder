@@ -5,20 +5,25 @@ import { useRouter } from 'next/navigation';
 import ProblemCard from '../../components/ProblemCard';
 import LanguageCard from '../../components/LanguageCard';
 import CategoryCard from '../../components/CategoryCard';
+import LevelCard from '../../components/LevelCard';
 import Loader from '../../components/Loader';
-import { BookOpen, Code2, FolderOpen } from 'lucide-react';
+import { BookOpen, Code2, FolderOpen, Target } from 'lucide-react';
 
 export default function StudentProblemsPage() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [languagesLoading, setLanguagesLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [levelsLoading, setLevelsLoading] = useState(false);
   const [language, setLanguage] = useState('');
   const [category, setCategory] = useState('');
+  const [level, setLevel] = useState('');
   const [languages, setLanguages] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
   const [showLanguageCards, setShowLanguageCards] = useState(true);
   const [showCategoryCards, setShowCategoryCards] = useState(false);
+  const [showLevelCards, setShowLevelCards] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,10 +37,16 @@ export default function StudentProblemsPage() {
   }, [language]);
 
   useEffect(() => {
-    if (language && category) {
-      fetchProblems();
+    if (language && category && !level) {
+      fetchLevels();
     }
   }, [language, category]);
+
+  useEffect(() => {
+    if (language && category && level) {
+      fetchProblems();
+    }
+  }, [language, category, level]);
 
   const fetchLanguages = async () => {
     setLanguagesLoading(true);
@@ -63,28 +74,59 @@ export default function StudentProblemsPage() {
     }
   };
 
+  const fetchLevels = async () => {
+    setLevelsLoading(true);
+    try {
+      const res = await fetch(`/api/problems/levels?language=${language}&category=${category}`);
+      const data = await res.json();
+      setLevels(data.levels || []);
+    } catch (err) {
+      // handle error
+    } finally {
+      setLevelsLoading(false);
+    }
+  };
+
   const handleLanguageCardClick = (selectedLanguage) => {
     setLanguage(selectedLanguage);
     setCategory('');
+    setLevel('');
     setShowLanguageCards(false);
     setShowCategoryCards(true);
+    setShowLevelCards(false);
   };
 
   const handleCategoryCardClick = (selectedCategory) => {
     setCategory(selectedCategory);
+    setLevel('');
     setShowCategoryCards(false);
+    setShowLevelCards(true);
+  };
+
+  const handleLevelCardClick = (selectedLevel) => {
+    setLevel(selectedLevel);
+    setShowLevelCards(false);
   };
 
   const handleBackToLanguages = () => {
     setLanguage("");
     setCategory("");
+    setLevel("");
     setShowLanguageCards(true);
     setShowCategoryCards(false);
+    setShowLevelCards(false);
   };
 
   const handleBackToCategories = () => {
     setCategory("");
+    setLevel("");
     setShowCategoryCards(true);
+    setShowLevelCards(false);
+  };
+
+  const handleBackToLevels = () => {
+    setLevel("");
+    setShowLevelCards(true);
   };
 
   const fetchProblems = async () => {
