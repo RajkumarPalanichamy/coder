@@ -135,6 +135,7 @@ export default function StudentProblemsPage() {
       const params = [];
       if (language) params.push(`language=${language}`);
       if (category) params.push(`category=${category}`);
+      if (level) params.push(`difficulty=${level}`);
       const query = params.length ? `?${params.join('&')}` : '';
       const res = await fetch(`/api/problems${query}`);
       const data = await res.json();
@@ -156,13 +157,23 @@ export default function StudentProblemsPage() {
       <div className="flex items-center gap-2 mb-6">
         {!showLanguageCards && (
           <button
-            onClick={showCategoryCards ? handleBackToLanguages : category ? handleBackToCategories : handleBackToLanguages}
+            onClick={
+              showCategoryCards ? handleBackToLanguages : 
+              showLevelCards ? handleBackToCategories : 
+              level ? handleBackToLevels : 
+              category ? handleBackToCategories : 
+              handleBackToLanguages
+            }
             className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mr-4"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            {showCategoryCards ? 'Back to Languages' : category ? 'Back to Categories' : 'Back to Languages'}
+            {showCategoryCards ? 'Back to Languages' : 
+             showLevelCards ? 'Back to Categories' : 
+             level ? 'Back to Levels' : 
+             category ? 'Back to Categories' : 
+             'Back to Languages'}
           </button>
         )}
         <BookOpen className="h-6 w-6 text-indigo-500" />
@@ -171,13 +182,16 @@ export default function StudentProblemsPage() {
             ? 'Problems by Language' 
             : showCategoryCards 
               ? 'Choose Problem Category' 
-              : 'Problems'
+              : showLevelCards
+                ? 'Choose Difficulty Level'
+                : 'Problems'
           }
         </h1>
         {!showLanguageCards && language && (
           <span className="text-gray-600 text-lg">
             - {language.toUpperCase()}
             {category && ` - ${category}`}
+            {level && ` - ${level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : level === 'level3' ? 'Level 3' : level}`}
           </span>
         )}
       </div>
@@ -234,6 +248,32 @@ export default function StudentProblemsPage() {
             </div>
           )}
         </div>
+      ) : showLevelCards ? (
+        <div>
+          <div className="flex items-center gap-2 mb-6">
+            <Target className="h-6 w-6 text-indigo-500" />
+            <h2 className="text-xl font-semibold text-gray-800">Choose Difficulty Level for {language.toUpperCase()} - {category}</h2>
+          </div>
+          {levelsLoading ? (
+            <Loader type="cards" />
+          ) : levels.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>No difficulty levels found for {language} - {category}. Check back later!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {levels.map((levelData) => (
+                <LevelCard
+                  key={levelData.level}
+                  level={levelData.level}
+                  problemCount={levelData.count}
+                  onClick={() => handleLevelCardClick(levelData.level)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <>
           {loading ? (
@@ -244,7 +284,7 @@ export default function StudentProblemsPage() {
           ) : problems.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No problems found for {language.toUpperCase()} - {category}.</p>
+              <p>No problems found for {language.toUpperCase()} - {category} - {level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : level === 'level3' ? 'Level 3' : level}.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
