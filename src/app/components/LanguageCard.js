@@ -55,10 +55,10 @@ export default function LanguageCard({ language, problemCount, href, onClick }) 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-4">
           {getLanguageIcon(language)}
-          <div className="text-right">
+          {/* <div className="text-right">
             <div className="text-2xl font-bold">{problemCount}</div>
             <div className="text-sm opacity-90">Problems</div>
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">{formatLanguageName(language)}</h3>
