@@ -8,17 +8,19 @@ export async function GET(request) {
     
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language');
+    const category = searchParams.get('category');
 
-    if (!language) {
+    if (!language || !category) {
       return NextResponse.json(
-        { error: 'Language parameter is required' },
+        { error: 'Language and category parameters are required' },
         { status: 400 }
       );
     }
 
-    // Get all unique levels for the specified language
+    // Get all unique difficulty levels for the specified language and category
     const levels = await Problem.distinct('difficulty', { 
       programmingLanguage: language,
+      category: category,
       isActive: true 
     });
     
@@ -27,6 +29,7 @@ export async function GET(request) {
       levels.map(async (level) => {
         const count = await Problem.countDocuments({ 
           programmingLanguage: language, 
+          category: category,
           difficulty: level,
           isActive: true 
         });
@@ -35,10 +38,10 @@ export async function GET(request) {
     );
 
     // Sort levels in order: level1, level2, level3
-    const sortedLevels = levelsWithCounts.sort((a, b) => {
-      const order = { 'level1': 1, 'level2': 2, 'level3': 3 };
-      return order[a.level] - order[b.level];
-    });
+    const levelOrder = ['level1', 'level2', 'level3'];
+    const sortedLevels = levelsWithCounts.sort((a, b) => 
+      levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level)
+    );
 
     return NextResponse.json({ levels: sortedLevels });
   } catch (error) {

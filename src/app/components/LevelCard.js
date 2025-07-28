@@ -1,15 +1,15 @@
-import { Trophy, Star, Crown } from 'lucide-react';
+import { Award, Star, Trophy, Target } from 'lucide-react';
 
 const getLevelIcon = (level) => {
   switch (level) {
     case 'level1':
       return <Star className="h-8 w-8 text-green-500" />;
     case 'level2':
-      return <Trophy className="h-8 w-8 text-yellow-500" />;
+      return <Award className="h-8 w-8 text-yellow-500" />;
     case 'level3':
-      return <Crown className="h-8 w-8 text-red-500" />;
+      return <Trophy className="h-8 w-8 text-red-500" />;
     default:
-      return <Star className="h-8 w-8 text-gray-500" />;
+      return <Target className="h-8 w-8 text-gray-500" />;
   }
 };
 
