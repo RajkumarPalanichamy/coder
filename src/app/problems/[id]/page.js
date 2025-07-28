@@ -725,7 +725,7 @@ export default function ProblemPage() {
                 </div>
               </button>
             ) : (
-              <div className="w-[240px]"></div> {/* Placeholder for alignment */}
+              <div className="w-[240px]"></div>
             )}
 
             {navigation.totalProblems > 1 && (
@@ -754,7 +754,7 @@ export default function ProblemPage() {
                 <ChevronRight className="h-5 w-5 ml-2" />
               </button>
             ) : (
-              <div className="w-[240px]"></div> {/* Placeholder for alignment */}
+              <div className="w-[240px]"></div>
             )}
           </div>
         </div>
