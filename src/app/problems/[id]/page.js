@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Play, Save, ArrowLeft, CheckCircle, XCircle, Copy } from 'lucide-react';
+import { Play, Save, ArrowLeft, CheckCircle, XCircle, Copy, ChevronLeft, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
@@ -12,6 +12,7 @@ export default function ProblemPage() {
   const params = useParams();
   const router = useRouter();
   const [problem, setProblem] = useState(null);
+  const [navigation, setNavigation] = useState(null);
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [loading, setLoading] = useState(true);
@@ -58,6 +59,7 @@ export default function ProblemPage() {
       
       if (response.ok) {
         setProblem(data.problem);
+        setNavigation(data.navigation);
         setCode(data.problem.starterCode || '');
         // Set the language based on the problem's language field
         if (data.problem.programmingLanguage) {
@@ -706,6 +708,57 @@ export default function ProblemPage() {
           </div>
         </div>
       </div>
+
+      {/* Navigation buttons */}
+      {navigation && (navigation.previous || navigation.next) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-center items-center space-x-6">
+            {navigation.previous ? (
+              <button
+                onClick={() => router.push(`/problems/${navigation.previous.id}`)}
+                className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
+              >
+                <ChevronLeft className="h-5 w-5 mr-2" />
+                <div className="text-left">
+                  <div className="text-sm text-gray-500">Previous</div>
+                  <div className="truncate max-w-[200px]">{navigation.previous.title}</div>
+                </div>
+              </button>
+            ) : (
+              <div className="w-[240px]"></div>
+            )}
+
+            {navigation.totalProblems > 1 && (
+              <div className="text-center">
+                <div className="text-sm text-gray-500 mb-1">
+                  Problem {navigation.currentPosition} of {navigation.totalProblems}
+                </div>
+                <div className="w-48 bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(navigation.currentPosition / navigation.totalProblems) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {navigation.next ? (
+              <button
+                onClick={() => router.push(`/problems/${navigation.next.id}`)}
+                className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
+              >
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">Next</div>
+                  <div className="truncate max-w-[200px]">{navigation.next.title}</div>
+                </div>
+                <ChevronRight className="h-5 w-5 ml-2" />
+              </button>
+            ) : (
+              <div className="w-[240px]"></div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
