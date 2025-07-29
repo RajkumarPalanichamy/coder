@@ -32,8 +32,8 @@ export async function GET(req, context) {
     const currentIndex = problemsInLevel.findIndex(p => p._id.toString() === id);
     
     if (currentIndex !== -1) {
-      const nextProblem = currentIndex > 0 ? problemsInLevel[currentIndex - 1] : null;
-      const previousProblem = currentIndex < problemsInLevel.length - 1 ? problemsInLevel[currentIndex + 1] : null;
+      const nextProblem = currentIndex < problemsInLevel.length - 1 ? problemsInLevel[currentIndex + 1] : null;
+      const previousProblem = currentIndex > 0 ? problemsInLevel[currentIndex - 1] : null;
       
       navigation = {
         next: nextProblem ? {
