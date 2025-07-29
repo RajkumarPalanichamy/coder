@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Code, FileCode, Coffee, Laptop, Hash, Terminal, ChevronRight } from 'lucide-react';
+import { Code, FileCode, Coffee, Laptop, Hash, Terminal } from 'lucide-react';
 
 const getLanguageIcon = (language) => {
   switch (language.toLowerCase()) {
@@ -89,14 +89,7 @@ export default function LanguageCard({ language, problemCount, href, onClick }) 
             </div>
           )}
         </div>
-        
-        {/* Arrow indicator */}
-        <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-          <div className="flex items-center space-x-2 bg-white bg-opacity-20 px-4 py-2 rounded-full backdrop-blur-sm">
-            <span className="text-sm font-medium">Explore</span>
-            <ChevronRight className="w-4 h-4" />
-          </div>
-        </div>
+
       </div>
     </div>
   );
