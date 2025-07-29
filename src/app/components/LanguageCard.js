@@ -4,18 +4,18 @@ import { Code, FileCode, Coffee, Laptop, Hash, Terminal } from 'lucide-react';
 const getLanguageIcon = (language) => {
   switch (language.toLowerCase()) {
     case 'javascript':
-      return <FileCode className="h-16 w-16 text-yellow-500" />;
+      return <FileCode className="h-12 w-12 text-yellow-500" />;
     case 'python':
-      return <Code className="h-16 w-16 text-blue-500" />;
+      return <Code className="h-12 w-12 text-blue-500" />;
     case 'java':
-      return <Coffee className="h-16 w-16 text-red-500" />;
+      return <Coffee className="h-12 w-12 text-red-500" />;
     case 'cpp':
     case 'c++':
-      return <Terminal className="h-16 w-16 text-blue-600" />;
+      return <Terminal className="h-12 w-12 text-blue-600" />;
     case 'c':
-      return <Hash className="h-16 w-16 text-gray-600" />;
+      return <Hash className="h-12 w-12 text-gray-600" />;
     default:
-      return <Laptop className="h-16 w-16 text-gray-500" />;
+      return <Laptop className="h-12 w-12 text-gray-500" />;
   }
 };
 
@@ -68,28 +68,21 @@ const formatLanguageName = (language) => {
 
 export default function LanguageCard({ language, problemCount, href, onClick }) {
   const CardContent = () => (
-    <div className={`relative overflow-hidden bg-gradient-to-br ${getLanguageColor(language)} text-white rounded-2xl p-8 hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-2xl cursor-pointer group border-2 ${getBorderColor(language)}`}>
+    <div className={`relative overflow-hidden bg-gradient-to-br ${getLanguageColor(language)} text-white rounded-xl p-6 hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-2xl cursor-pointer group border-2 ${getBorderColor(language)} h-32`}>
       {/* Background decorative elements */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-16 -mt-16 transition-transform duration-500 group-hover:scale-125"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-5 rounded-full -ml-12 -mb-12 transition-transform duration-500 group-hover:scale-110"></div>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-125"></div>
+      <div className="absolute bottom-0 left-0 w-16 h-16 bg-white bg-opacity-5 rounded-full -ml-8 -mb-8 transition-transform duration-500 group-hover:scale-110"></div>
       
-      <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-        {/* Large Icon */}
-        <div className="p-4 bg-white bg-opacity-20 rounded-2xl backdrop-blur-sm group-hover:bg-opacity-30 transition-all duration-300">
+      <div className="relative z-10 flex items-center space-x-4 h-full">
+        {/* Icon */}
+        <div className="p-3 bg-white bg-opacity-20 rounded-xl backdrop-blur-sm group-hover:bg-opacity-30 transition-all duration-300 flex-shrink-0">
           {getLanguageIcon(language)}
         </div>
         
         {/* Language Name */}
-        <div className="space-y-2">
-          <h3 className="text-2xl font-bold tracking-wide">{formatLanguageName(language)}</h3>
-          {problemCount !== undefined && (
-            <div className="text-white text-opacity-90">
-              <span className="text-lg font-semibold">{problemCount}</span>
-              <span className="text-sm ml-1">Problem{problemCount !== 1 ? 's' : ''}</span>
-            </div>
-          )}
+        <div className="flex-1">
+          <h3 className="text-xl font-bold tracking-wide">{formatLanguageName(language)}</h3>
         </div>
-
       </div>
     </div>
   );
