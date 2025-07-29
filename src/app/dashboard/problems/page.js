@@ -233,7 +233,7 @@ export default function StudentProblemsPage() {
             </div>
           )}
         </div>
-      ) : showLevelCards ? (
+      ) : (
         <div>
           <div className="flex items-center gap-2 mb-6">
             <Target className="h-6 w-6 text-indigo-500" />
