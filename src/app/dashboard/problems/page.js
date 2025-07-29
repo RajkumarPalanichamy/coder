@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ProblemCard from '../../components/ProblemCard';
 import LanguageCard from '../../components/LanguageCard';
 import CategoryCard from '../../components/CategoryCard';
 import LevelCard from '../../components/LevelCard';
@@ -10,8 +9,6 @@ import Loader from '../../components/Loader';
 import { BookOpen, Code2, FolderOpen, Target } from 'lucide-react';
 
 export default function StudentProblemsPage() {
-  const [problems, setProblems] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [languagesLoading, setLanguagesLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [levelsLoading, setLevelsLoading] = useState(false);
@@ -42,11 +39,7 @@ export default function StudentProblemsPage() {
     }
   }, [language, category]);
 
-  useEffect(() => {
-    if (language && category && level) {
-      fetchProblems();
-    }
-  }, [language, category, level]);
+
 
   const fetchLanguages = async () => {
     setLanguagesLoading(true);
@@ -103,9 +96,26 @@ export default function StudentProblemsPage() {
     setShowLevelCards(true);
   };
 
-  const handleLevelCardClick = (selectedLevel) => {
+  const handleLevelCardClick = async (selectedLevel) => {
     setLevel(selectedLevel);
     setShowLevelCards(false);
+    
+    // Fetch the latest problem and redirect to it
+    try {
+      const response = await fetch(`/api/problems/latest?language=${language}&category=${category}&difficulty=${selectedLevel}`);
+      const data = await response.json();
+      
+      if (response.ok && data.problemId) {
+        router.push(`/problems/${data.problemId}`);
+      } else {
+        // If no problems found, show error message
+        console.error('No problems found for selected criteria:', data.error);
+        // Could show a toast/notification here
+      }
+    } catch (error) {
+      console.error('Error fetching latest problem:', error);
+      // Could show a toast/notification here
+    }
   };
 
   const handleBackToLanguages = () => {
@@ -124,28 +134,9 @@ export default function StudentProblemsPage() {
     setShowLevelCards(false);
   };
 
-  const handleBackToLevels = () => {
-    setLevel("");
-    setShowLevelCards(true);
-  };
 
-  const fetchProblems = async () => {
-    setLoading(true);
-    try {
-      const params = [];
-      if (language) params.push(`language=${language}`);
-      if (category) params.push(`category=${category}`);
-      if (level) params.push(`difficulty=${level}`);
-      const query = params.length ? `?${params.join('&')}` : '';
-      const res = await fetch(`/api/problems${query}`);
-      const data = await res.json();
-      setProblems(data.problems || []);
-    } catch (err) {
-      // handle error
-    } finally {
-      setLoading(false);
-    }
-  };
+
+
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -160,8 +151,6 @@ export default function StudentProblemsPage() {
             onClick={
               showCategoryCards ? handleBackToLanguages : 
               showLevelCards ? handleBackToCategories : 
-              level ? handleBackToLevels : 
-              category ? handleBackToCategories : 
               handleBackToLanguages
             }
             className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mr-4"
@@ -171,8 +160,6 @@ export default function StudentProblemsPage() {
             </svg>
             {showCategoryCards ? 'Back to Languages' : 
              showLevelCards ? 'Back to Categories' : 
-             level ? 'Back to Levels' : 
-             category ? 'Back to Categories' : 
              'Back to Languages'}
           </button>
         )}
@@ -182,9 +169,7 @@ export default function StudentProblemsPage() {
             ? 'Problems by Language' 
             : showCategoryCards 
               ? 'Choose Problem Category' 
-              : showLevelCards
-                ? 'Choose Difficulty Level'
-                : 'Problems'
+              : 'Choose Difficulty Level'
           }
         </h1>
         {!showLanguageCards && language && (
@@ -248,7 +233,7 @@ export default function StudentProblemsPage() {
             </div>
           )}
         </div>
-      ) : showLevelCards ? (
+      ) : (
         <div>
           <div className="flex items-center gap-2 mb-6">
             <Target className="h-6 w-6 text-indigo-500" />
@@ -274,30 +259,6 @@ export default function StudentProblemsPage() {
             </div>
           )}
         </div>
-      ) : (
-        <>
-          {loading ? (
-            <Loader 
-              type="problems" 
-              message={`Loading ${language.toUpperCase()} problems...`}
-            />
-          ) : problems.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No problems found for {language.toUpperCase()} - {category} - {level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : level === 'level3' ? 'Level 3' : level}.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {problems.map((problem) => (
-                <ProblemCard
-                  key={problem._id}
-                  problem={problem}
-                  href={`/problems/${problem._id}`}
-                />
-              ))}
-            </div>
-          )}
-        </>
       )}
     </>
   );
