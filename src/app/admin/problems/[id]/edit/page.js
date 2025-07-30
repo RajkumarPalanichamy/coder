@@ -186,14 +186,20 @@ export default function AdminProblemEditPage() {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="language" className="block text-sm font-medium text-gray-700">Language</label>
-                    <select id="language" name="language" value={formData.language} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
-                      <option value="javascript">JavaScript</option>
-                      <option value="python">Python</option>
-                      <option value="java">Java</option>
-                      <option value="cpp">C++</option>
-                      <option value="c">C</option>
-                    </select>
+                    <label htmlFor="language" className="block text-sm font-medium text-gray-700">Programming Language</label>
+                    <input 
+                      id="language" 
+                      name="language" 
+                      type="text"
+                      value={formData.language} 
+                      onChange={handleChange} 
+                      required
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      placeholder="e.g., JavaScript, Python, Java, C++, Go, Rust, etc."
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Enter any programming language name (case sensitive)
+                    </p>
                   </div>
                   <div>
                     <label htmlFor="constraints" className="block text-sm font-medium text-gray-700">Constraints</label>
