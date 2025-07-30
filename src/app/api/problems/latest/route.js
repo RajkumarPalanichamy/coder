@@ -17,25 +17,25 @@ export async function GET(req) {
   }
 
   try {
-    // Find the latest problem (most recently created) for the given criteria
-    const latestProblem = await Problem.findOne({
+    // Find the first problem (oldest/earliest created) for the given criteria
+    const firstProblem = await Problem.findOne({
       isActive: true,
       programmingLanguage: language,
       category: category,
       difficulty: difficulty
     })
     .select('_id title')
-    .sort({ createdAt: -1 }); // Sort by creation date descending to get the latest
+    .sort({ createdAt: 1 }); // Sort by creation date ascending to get the first
 
-    if (!latestProblem) {
+    if (!firstProblem) {
       return NextResponse.json({ 
         error: 'No problems found for the specified criteria' 
       }, { status: 404 });
     }
 
     return NextResponse.json({ 
-      problemId: latestProblem._id,
-      title: latestProblem.title 
+      problemId: firstProblem._id,
+      title: firstProblem.title 
     });
 
   } catch (error) {
