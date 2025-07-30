@@ -40,7 +40,7 @@ export default function TakeTestPage() {
   return (
     <div className="max-w-3xl mx-auto py-8">
       <h1 className="text-2xl font-bold mb-4 text-black">{test.title}</h1>
-      <div className="mb-4 text-gray-700">{test.description}</div>
+      <div className="mb-4 text-gray-700 whitespace-pre-wrap">{test.description}</div>
       <TestTaking test={test} onSubmit={handleSubmit} />
     </div>
   );

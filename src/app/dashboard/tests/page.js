@@ -57,7 +57,7 @@ export default function TestListPage() {
                     <BookOpen className="h-5 w-5 text-indigo-500" />
                     <span className="font-semibold text-lg text-black line-clamp-1">{test.title}</span>
                   </div>
-                  <div className="text-gray-600 mb-3 line-clamp-2 min-h-[40px]">{test.description}</div>
+                  <div className="text-gray-600 mb-3 line-clamp-2 min-h-[40px] whitespace-pre-wrap">{test.description}</div>
                   <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
                     <span className="flex items-center gap-1"><BookOpen className="h-4 w-4" /> {test.mcqs?.length ?? 0} Questions</span>
                     {test.duration && (

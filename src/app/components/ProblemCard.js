@@ -24,7 +24,7 @@ export default function ProblemCard({ problem, href, showStatus, status }) {
           </span>
         )}
       </div>
-      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{problem.description}</p>
+      <p className="text-sm text-gray-600 mb-4 line-clamp-2 whitespace-pre-wrap">{problem.description}</p>
       <div className="flex justify-between items-center mb-4">
         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(problem.difficulty)}`}>
           {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
