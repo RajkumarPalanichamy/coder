@@ -296,12 +296,12 @@ export default function ProblemPage() {
               )}
             </div>
             <div className="prose max-w-none">
-              <p className="text-gray-700 mb-4">{problem.description}</p>
+              <p className="text-gray-700 mb-4 whitespace-pre-wrap">{problem.description}</p>
               
               {problem.constraints && (
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-900 mb-2">Constraints:</h3>
-                  <p className="text-sm text-gray-600">{problem.constraints}</p>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{problem.constraints}</p>
                 </div>
               )}
 
@@ -317,7 +317,7 @@ export default function ProblemPage() {
                         <strong>Output:</strong> {example.output}
                       </p>
                       {example.explanation && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 whitespace-pre-wrap">
                           <strong>Explanation:</strong> {example.explanation}
                         </p>
                       )}
