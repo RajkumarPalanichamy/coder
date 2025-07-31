@@ -12,10 +12,18 @@ export default function TestForm({ initialData = {}, onSubmit }) {
   const [title, setTitle] = useState(initialData.title || '');
   const [description, setDescription] = useState(initialData.description || '');
   const [language, setLanguage] = useState(initialData.language || '');
+  const [category, setCategory] = useState(initialData.category || '');
   const [mcqs, setMcqs] = useState(initialData.mcqs || []);
   const [error, setError] = useState('');
   const [editingIdx, setEditingIdx] = useState(null);
   const [mcqDraft, setMcqDraft] = useState(emptyMCQ());
+
+  // Predefined categories for quick selection
+  const predefinedCategories = [
+    'OOPs', 'C++', 'C#', 'Java', 'Python', 'JavaScript', 
+    'Data Structures', 'Algorithms', 'Web Development', 
+    'Database', 'Software Engineering', 'System Design'
+  ];
 
   const handleAddOrUpdateMCQ = () => {
     if (!mcqDraft.question.trim() || mcqDraft.options.some(opt => !opt.trim())) {
@@ -56,21 +64,22 @@ export default function TestForm({ initialData = {}, onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!title.trim() || mcqs.length === 0) {
-      setError('Title and at least one MCQ are required.');
+    if (!title.trim() || !category.trim() || mcqs.length === 0) {
+      setError('Title, category, and at least one MCQ are required.');
       return;
     }
     onSubmit({
       title,
       description,
       language,
+      category,
       mcqs,
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="text-red-500">{error}</div>}
+      {error && <div className="text-red-500 bg-red-50 p-3 rounded border">{error}</div>}
       <div>
         <label className="block font-medium mb-1">Title</label>
         <input
@@ -95,6 +104,34 @@ export default function TestForm({ initialData = {}, onSubmit }) {
           value={language}
           onChange={e => setLanguage(e.target.value)}
         />
+      </div>
+      <div>
+        <label className="block font-medium mb-1">Category</label>
+        <div className="space-y-2">
+          <input
+            className="w-full border px-3 py-2 rounded text-black"
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            placeholder="Enter category or select from below"
+            required
+          />
+          <div className="flex flex-wrap gap-2">
+            {predefinedCategories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                className={`px-3 py-1 text-sm rounded border transition-colors ${
+                  category === cat 
+                    ? 'bg-indigo-100 border-indigo-300 text-indigo-700' 
+                    : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
       <div>
         <label className="block font-medium mb-1">MCQs for this Test</label>

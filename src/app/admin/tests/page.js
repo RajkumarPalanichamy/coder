@@ -1,24 +1,50 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Edit, Trash2, Plus, BarChart3 } from 'lucide-react';
+import { Edit, Trash2, Plus, BarChart3, ArrowLeft } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
+import TestCategoryCard from '../../components/TestCategoryCard';
 
 export default function AdminTestsPage() {
   const [tests, setTests] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [showCategories, setShowCategories] = useState(true);
 
   useEffect(() => {
-    fetchTests();
-  }, []);
+    if (showCategories) {
+      fetchCategories();
+    }
+  }, [showCategories]);
 
-  const fetchTests = async () => {
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchTestsByCategory();
+    }
+  }, [selectedCategory]);
+
+  const fetchCategories = async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch('/api/admin/tests');
+      const res = await fetch('/api/tests/categories');
+      const data = await res.json();
+      setCategories(data || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTestsByCategory = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/tests/category/${selectedCategory}`);
       const data = await res.json();
       setTests(data || []);
     } catch (err) {
@@ -26,6 +52,16 @@ export default function AdminTestsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setShowCategories(false);
+  };
+
+  const handleBackToCategories = () => {
+    setSelectedCategory("");
+    setShowCategories(true);
   };
 
   const handleDelete = async (id) => {
@@ -41,60 +77,120 @@ export default function AdminTestsPage() {
     }
   };
 
+  const formatCategoryName = (category) => {
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 bg-gray-50 min-h-screen">
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
-            <h1 className="text-3xl font-bold text-black">Tests Management</h1>
+            <div className="flex items-center gap-4">
+              {!showCategories && (
+                <button
+                  onClick={handleBackToCategories}
+                  className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Categories
+                </button>
+              )}
+              <h1 className="text-3xl font-bold text-black">
+                {showCategories 
+                  ? 'Test Categories Management' 
+                  : `${formatCategoryName(selectedCategory)} Tests`
+                }
+              </h1>
+            </div>
             <Link href="/admin/tests/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
               <Plus className="h-4 w-4" /> Add Test
             </Link>
           </div>
+
           {loading ? (
-            <div className="text-center py-12 text-gray-500">Loading...</div>
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
           ) : error ? (
             <div className="text-center py-12 text-red-500">{error}</div>
-          ) : tests.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No tests found.</div>
-          ) : (
-            <div className="overflow-x-auto rounded shadow bg-white mt-4">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {tests.map((test) => (
-                    <tr key={test._id} className="hover:bg-indigo-50 transition-colors">
-                      <td className="px-6 py-4 text-black font-medium">{test.title}</td>
-                      <td className="px-6 py-4 text-gray-700 whitespace-pre-wrap">{test.description}</td>
-                      <td className="px-6 py-4 text-gray-700">{test.language}</td>
-                      <td className="px-6 py-4 flex gap-2">
-                        <Link href={`/admin/tests/${test._id}/edit`} className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
-                          <Edit className="h-4 w-4" /> Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(test._id)}
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                          disabled={deletingId === test._id}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {deletingId === test._id ? 'Deleting...' : 'Delete'}
-                        </button>
-                        <Link href={`/admin/tests/${test._id}/submissions`} className="text-blue-600 hover:text-blue-900 flex items-center gap-1">
-                          <BarChart3 className="h-4 w-4" /> View Submissions
-                        </Link>
-                      </td>
-                    </tr>
+          ) : showCategories ? (
+            // Show categories
+            <div>
+              {categories.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-6xl mb-4">📝</div>
+                  <p className="text-lg mb-2">No test categories found</p>
+                  <p>Create your first test to get started!</p>
+                  <Link href="/admin/tests/create" className="inline-block mt-4 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                    Create First Test
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categories.map((categoryData) => (
+                    <TestCategoryCard
+                      key={categoryData.category}
+                      category={categoryData.category}
+                      testCount={categoryData.count}
+                      onClick={() => handleCategorySelect(categoryData.category)}
+                    />
                   ))}
-                </tbody>
-              </table>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Show tests for selected category
+            <div>
+              {tests.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="text-6xl mb-4">📝</div>
+                  <p>No tests found for {formatCategoryName(selectedCategory)}.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded shadow bg-white mt-4">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Questions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                      {tests.map((test) => (
+                        <tr key={test._id} className="hover:bg-indigo-50 transition-colors">
+                          <td className="px-6 py-4 text-black font-medium">{test.title}</td>
+                          <td className="px-6 py-4 text-gray-700 whitespace-pre-wrap max-w-xs truncate">{test.description}</td>
+                          <td className="px-6 py-4 text-gray-700">{test.language}</td>
+                          <td className="px-6 py-4 text-gray-700">{formatCategoryName(test.category)}</td>
+                          <td className="px-6 py-4 text-gray-700">{test.mcqs?.length || 0}</td>
+                          <td className="px-6 py-4 flex gap-2 flex-wrap">
+                            <Link href={`/admin/tests/${test._id}/edit`} className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1 text-sm">
+                              <Edit className="h-4 w-4" /> Edit
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(test._id)}
+                              className="text-red-600 hover:text-red-900 flex items-center gap-1 text-sm"
+                              disabled={deletingId === test._id}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              {deletingId === test._id ? 'Deleting...' : 'Delete'}
+                            </button>
+                            <Link href={`/admin/tests/${test._id}/submissions`} className="text-blue-600 hover:text-blue-900 flex items-center gap-1 text-sm">
+                              <BarChart3 className="h-4 w-4" /> Submissions
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>
