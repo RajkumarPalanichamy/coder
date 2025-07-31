@@ -13,6 +13,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
   const [description, setDescription] = useState(initialData.description || '');
   const [language, setLanguage] = useState(initialData.language || '');
   const [category, setCategory] = useState(initialData.category || '');
+  const [duration, setDuration] = useState(initialData.duration || 60);
   const [mcqs, setMcqs] = useState(initialData.mcqs || []);
   const [error, setError] = useState('');
   const [editingIdx, setEditingIdx] = useState(null);
@@ -68,11 +69,16 @@ export default function TestForm({ initialData = {}, onSubmit }) {
       setError('Title, category, and at least one MCQ are required.');
       return;
     }
+    if (duration < 1 || duration > 300) {
+      setError('Duration must be between 1 and 300 minutes.');
+      return;
+    }
     onSubmit({
       title,
       description,
       language,
       category,
+      duration: parseInt(duration),
       mcqs,
     });
   };
@@ -131,6 +137,38 @@ export default function TestForm({ initialData = {}, onSubmit }) {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+      <div>
+        <label className="block font-medium mb-1">Duration (minutes)</label>
+        <div className="space-y-2">
+          <input
+            type="number"
+            min="1"
+            max="300"
+            className="w-full border px-3 py-2 rounded text-black"
+            value={duration}
+            onChange={e => setDuration(e.target.value)}
+            placeholder="Enter duration in minutes"
+            required
+          />
+          <div className="flex flex-wrap gap-2">
+            {[15, 30, 45, 60, 90, 120, 180].map((time) => (
+              <button
+                key={time}
+                type="button"
+                onClick={() => setDuration(time)}
+                className={`px-3 py-1 text-sm rounded border transition-colors ${
+                  parseInt(duration) === time 
+                    ? 'bg-green-100 border-green-300 text-green-700' 
+                    : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {time}m
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500">Quick select common durations or enter custom value (1-300 minutes)</p>
         </div>
       </div>
       <div>

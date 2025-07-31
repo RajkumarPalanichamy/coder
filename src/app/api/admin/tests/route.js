@@ -16,7 +16,7 @@ export async function POST(req) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
-  const { title, description, mcqs, language, category, availableFrom, availableTo } = await req.json();
+  const { title, description, mcqs, language, category, duration, availableFrom, availableTo } = await req.json();
   if (!title || !category || !mcqs || !Array.isArray(mcqs) || mcqs.length === 0) {
     return NextResponse.json({ error: 'Title, category, and MCQs are required' }, { status: 400 });
   }
@@ -26,6 +26,7 @@ export async function POST(req) {
     mcqs,
     language,
     category,
+    duration: duration || 60, // Default to 60 minutes if not provided
     createdBy: user._id,
     availableFrom,
     availableTo,

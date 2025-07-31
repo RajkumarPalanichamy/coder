@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Clock, Filter, ArrowLeft } from 'lucide-react';
+import { BookOpen, Clock, ArrowLeft } from 'lucide-react';
 import TestCategoryCard from '../../components/TestCategoryCard';
 
 export default function TestListPage() {
   const [tests, setTests] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showCategories, setShowCategories] = useState(true);
 
@@ -75,12 +74,7 @@ export default function TestListPage() {
   const handleBackToCategories = () => {
     setSelectedCategory("");
     setShowCategories(true);
-    setSearch("");
   };
-
-  const filteredTests = tests.filter(test =>
-    test.title.toLowerCase().includes(search.toLowerCase())
-  );
 
   const formatCategoryName = (category) => {
     return category.charAt(0).toUpperCase() + category.slice(1);
@@ -139,28 +133,14 @@ export default function TestListPage() {
         ) : (
           // Show tests for selected category
           <div>
-            {/* Search bar */}
-            <div className="mb-6">
-              <div className="relative max-w-md">
-                <input
-                  type="text"
-                  placeholder="Search tests..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-                <Filter className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-              </div>
-            </div>
-
-            {filteredTests.length === 0 ? (
+            {tests.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No tests found for {formatCategoryName(selectedCategory)}.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTests.map(test => (
+                {tests.map(test => (
                   <div key={test._id} className="border rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
                     <div>
                       <div className="flex items-center gap-2 mb-3">
