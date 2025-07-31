@@ -28,10 +28,21 @@ export default function TestListPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/tests/categories');
+      if (!res.ok) {
+        throw new Error('Failed to fetch categories');
+      }
       const data = await res.json();
-      setCategories(data || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data) ? data.filter(item => 
+        item && 
+        item.category && 
+        typeof item.category === 'string' &&
+        item.category.trim().length > 0
+      ) : [];
+      setCategories(validData);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      setCategories([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -40,11 +51,17 @@ export default function TestListPage() {
   const fetchTestsByCategory = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/tests/category/${selectedCategory}`);
+      const res = await fetch(`/api/tests/category/${encodeURIComponent(selectedCategory)}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch tests');
+      }
       const data = await res.json();
-      setTests(data || []);
+      // Ensure data is an array
+      const validData = Array.isArray(data) ? data : [];
+      setTests(validData);
     } catch (error) {
       console.error('Error fetching tests:', error);
+      setTests([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -106,14 +123,16 @@ export default function TestListPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {categories.map((categoryData) => (
-                  <TestCategoryCard
-                    key={categoryData.category}
-                    category={categoryData.category}
-                    testCount={categoryData.count}
-                    onClick={() => handleCategorySelect(categoryData.category)}
-                  />
-                ))}
+                {categories
+                  .filter(categoryData => categoryData && categoryData.category) // Filter out invalid entries
+                  .map((categoryData) => (
+                    <TestCategoryCard
+                      key={categoryData.category}
+                      category={categoryData.category}
+                      testCount={categoryData.count || 0}
+                      onClick={() => handleCategorySelect(categoryData.category)}
+                    />
+                  ))}
               </div>
             )}
           </div>

@@ -1,6 +1,10 @@
 "use client";
 
 const getCategoryIcon = (category) => {
+  if (!category || typeof category !== 'string') {
+    return '📝'; // Default test icon
+  }
+  
   const categoryLower = category.toLowerCase();
   if (categoryLower.includes('oops') || categoryLower.includes('oop')) {
     return '🏗️'; // Object-oriented programming
@@ -27,6 +31,10 @@ const getCategoryIcon = (category) => {
 };
 
 const getCategoryColor = (category) => {
+  if (!category || typeof category !== 'string') {
+    return 'from-slate-500 to-slate-700'; // Default color
+  }
+  
   const categoryLower = category.toLowerCase();
   if (categoryLower.includes('oops') || categoryLower.includes('oop')) {
     return 'from-purple-500 to-purple-700';
@@ -53,10 +61,18 @@ const getCategoryColor = (category) => {
 };
 
 const formatCategoryName = (category) => {
+  if (!category || typeof category !== 'string') {
+    return 'Unknown Category';
+  }
   return category.charAt(0).toUpperCase() + category.slice(1);
 };
 
-export default function TestCategoryCard({ category, testCount, onClick }) {
+export default function TestCategoryCard({ category, testCount = 0, onClick }) {
+  // Handle case where category might be null/undefined
+  if (!category) {
+    return null; // Don't render the card if no category
+  }
+
   const icon = getCategoryIcon(category);
   const colorClass = getCategoryColor(category);
   const formattedName = formatCategoryName(category);
