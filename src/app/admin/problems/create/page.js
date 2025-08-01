@@ -253,10 +253,10 @@ export default function AdminProblemCreatePage() {
                       onChange={handleChange}
                       required
                       className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                      placeholder="e.g., JavaScript, Python, Java, C++, Go, Rust, etc."
+                      placeholder="e.g., JavaScript, Python, Java, C++, C#, Go, Rust, etc."
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      Enter any programming language name (case sensitive)
+                      Enter the programming language name (will be normalized automatically)
                     </p>
                   </div>
 
