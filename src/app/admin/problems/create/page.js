@@ -245,27 +245,18 @@ export default function AdminProblemCreatePage() {
                     <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
                       Programming Language
                     </label>
-                    <select
+                    <input
                       id="language"
                       name="language"
+                      type="text"
                       value={formData.language}
                       onChange={handleChange}
                       required
                       className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                    >
-                      <option value="">Select a programming language</option>
-                      <option value="javascript">JavaScript</option>
-                      <option value="python">Python</option>
-                      <option value="java">Java</option>
-                      <option value="cpp">C++</option>
-                      <option value="csharp">C#</option>
-                      <option value="c">C</option>
-                      <option value="go">Go</option>
-                      <option value="rust">Rust</option>
-                      <option value="kotlin">Kotlin</option>
-                    </select>
+                      placeholder="e.g., JavaScript, Python, Java, C++, C#, Go, Rust, etc."
+                    />
                     <p className="mt-1 text-xs text-gray-500">
-                      Select the programming language for this problem
+                      Enter the programming language name (will be normalized automatically)
                     </p>
                   </div>
 
