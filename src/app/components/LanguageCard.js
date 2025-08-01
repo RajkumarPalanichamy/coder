@@ -12,8 +12,17 @@ const getLanguageIcon = (language) => {
     case 'cpp':
     case 'c++':
       return <Terminal className="h-12 w-12 text-blue-600" />;
+    case 'csharp':
+    case 'c#':
+      return <Terminal className="h-12 w-12 text-purple-600" />;
     case 'c':
       return <Hash className="h-12 w-12 text-gray-600" />;
+    case 'go':
+      return <Terminal className="h-12 w-12 text-cyan-600" />;
+    case 'rust':
+      return <Terminal className="h-12 w-12 text-orange-600" />;
+    case 'kotlin':
+      return <Terminal className="h-12 w-12 text-violet-600" />;
     default:
       return <Laptop className="h-12 w-12 text-gray-500" />;
   }
@@ -30,8 +39,17 @@ const getLanguageColor = (language) => {
     case 'cpp':
     case 'c++':
       return 'from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800';
+    case 'csharp':
+    case 'c#':
+      return 'from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800';
     case 'c':
       return 'from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800';
+    case 'go':
+      return 'from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800';
+    case 'rust':
+      return 'from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800';
+    case 'kotlin':
+      return 'from-violet-500 to-violet-700 hover:from-violet-600 hover:to-violet-800';
     default:
       return 'from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700';
   }
@@ -48,8 +66,17 @@ const getBorderColor = (language) => {
     case 'cpp':
     case 'c++':
       return 'border-blue-200 hover:border-blue-300';
+    case 'csharp':
+    case 'c#':
+      return 'border-purple-200 hover:border-purple-300';
     case 'c':
       return 'border-gray-200 hover:border-gray-300';
+    case 'go':
+      return 'border-cyan-200 hover:border-cyan-300';
+    case 'rust':
+      return 'border-orange-200 hover:border-orange-300';
+    case 'kotlin':
+      return 'border-violet-200 hover:border-violet-300';
     default:
       return 'border-gray-200 hover:border-gray-300';
   }
@@ -59,6 +86,8 @@ const formatLanguageName = (language) => {
   switch (language.toLowerCase()) {
     case 'cpp':
       return 'C++';
+    case 'csharp':
+      return 'C#';
     case 'javascript':
       return 'JavaScript';
     default:
