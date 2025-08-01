@@ -47,6 +47,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchUser();
+  }, []);
+
+  useEffect(() => {
     fetchDashboardData();
     fetchTests();
   }, [language]);
@@ -58,13 +61,13 @@ export default function AdminDashboard() {
         const data = await res.json();
         setUser(data.user);
         if (data.user.role !== 'admin') {
-          window.location.href = '/login';
+          router.push('/login');
         }
       } else if (res.status === 401) {
-        window.location.href = '/login';
+        router.push('/login');
       }
     } catch {
-      window.location.href = '/login';
+      router.push('/login');
     }
   };
 
@@ -155,6 +158,8 @@ export default function AdminDashboard() {
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
+      // Still navigate to login even if logout request fails
+      router.push('/login');
     }
   };
 
