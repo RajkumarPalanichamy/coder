@@ -7,10 +7,16 @@ export async function GET(request) {
     await connectDB();
     
     const { searchParams } = new URL(request.url);
-    const difficulty = searchParams.get('difficulty');
-    const category = searchParams.get('category');
-    const search = searchParams.get('search');
-    const language = searchParams.get('language');
+    const rawDifficulty = searchParams.get('difficulty');
+    const rawCategory = searchParams.get('category');
+    const rawSearch = searchParams.get('search');
+    const rawLanguage = searchParams.get('language');
+
+    // Decode URL-encoded parameters to handle special characters
+    const difficulty = rawDifficulty ? decodeURIComponent(rawDifficulty) : null;
+    const category = rawCategory ? decodeURIComponent(rawCategory) : null;
+    const search = rawSearch ? decodeURIComponent(rawSearch) : null;
+    const language = rawLanguage ? decodeURIComponent(rawLanguage) : null;
 
     // Build query
     let query = { isActive: true };

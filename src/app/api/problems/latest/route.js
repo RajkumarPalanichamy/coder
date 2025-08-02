@@ -6,15 +6,20 @@ export async function GET(req) {
   await connectDB();
   
   const { searchParams } = new URL(req.url);
-  const language = searchParams.get('language');
-  const category = searchParams.get('category');
-  const difficulty = searchParams.get('difficulty');
+  const rawLanguage = searchParams.get('language');
+  const rawCategory = searchParams.get('category');
+  const rawDifficulty = searchParams.get('difficulty');
 
-  if (!language || !category || !difficulty) {
+  if (!rawLanguage || !rawCategory || !rawDifficulty) {
     return NextResponse.json({ 
       error: 'Missing required parameters: language, category, and difficulty' 
     }, { status: 400 });
   }
+
+  // Decode URL-encoded parameters to handle special characters
+  const language = decodeURIComponent(rawLanguage);
+  const category = decodeURIComponent(rawCategory);
+  const difficulty = decodeURIComponent(rawDifficulty);
 
   try {
     // Find the first problem (oldest/earliest created) for the given criteria

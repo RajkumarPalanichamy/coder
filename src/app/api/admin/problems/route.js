@@ -19,9 +19,14 @@ export async function GET(request) {
     }
     
     const { searchParams } = new URL(request.url);
-    const language = searchParams.get('language');
-    const difficulty = searchParams.get('difficulty');
-    const category = searchParams.get('category');
+    const rawLanguage = searchParams.get('language');
+    const rawDifficulty = searchParams.get('difficulty');
+    const rawCategory = searchParams.get('category');
+
+    // Decode URL-encoded parameters to handle special characters
+    const language = rawLanguage ? decodeURIComponent(rawLanguage) : null;
+    const difficulty = rawDifficulty ? decodeURIComponent(rawDifficulty) : null;
+    const category = rawCategory ? decodeURIComponent(rawCategory) : null;
 
     let query = {};
     if (language) {

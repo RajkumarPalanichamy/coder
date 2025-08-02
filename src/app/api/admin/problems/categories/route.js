@@ -19,14 +19,17 @@ export async function GET(request) {
     }
     
     const { searchParams } = new URL(request.url);
-    const language = searchParams.get('language');
+    const rawLanguage = searchParams.get('language');
 
-    if (!language) {
+    if (!rawLanguage) {
       return NextResponse.json(
         { error: 'Language parameter is required' },
         { status: 400 }
       );
     }
+
+    // Decode URL-encoded language parameter to handle special characters
+    const language = decodeURIComponent(rawLanguage);
 
     // Get all unique categories for the specified language (including inactive problems for admin)
     const categories = await Problem.distinct('category', { 
