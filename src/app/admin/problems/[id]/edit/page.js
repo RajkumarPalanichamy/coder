@@ -182,24 +182,69 @@ export default function AdminProblemEditPage() {
                     </div>
                     <div>
                       <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-                      <input id="category" name="category" type="text" required value={formData.category} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                      <div className="space-y-2">
+                        <input 
+                          id="category" 
+                          name="category" 
+                          type="text" 
+                          required 
+                          value={formData.category} 
+                          onChange={handleChange} 
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          placeholder="Enter category or select from below"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {['Arrays & Strings', 'Data Structures', 'Algorithms', 'Dynamic Programming', 'Tree & Graph', 'Hash Table', 'Math & Logic', 'Sorting & Searching', 'Greedy', 'Backtracking', 'Two Pointers', 'Sliding Window'].map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, category: cat })}
+                              className={`px-2 py-1 text-xs rounded border transition-colors ${
+                                formData.category === cat 
+                                  ? 'bg-indigo-100 border-indigo-300 text-indigo-700' 
+                                  : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div>
                     <label htmlFor="language" className="block text-sm font-medium text-gray-700">Programming Language</label>
-                    <input 
-                      id="language" 
-                      name="language" 
-                      type="text"
-                      value={formData.language} 
-                      onChange={handleChange} 
-                      required
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="e.g., JavaScript, Python, Java, C++, Go, Rust, etc."
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Enter any programming language name (case sensitive)
-                    </p>
+                    <div className="space-y-2">
+                      <input 
+                        id="language" 
+                        name="language" 
+                        type="text"
+                        value={formData.language} 
+                        onChange={handleChange} 
+                        required
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        placeholder="Enter programming language or select from below"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {['JavaScript', 'Python', 'Java', 'C++', 'C#', 'C', 'Go', 'Rust', 'TypeScript', 'PHP', 'Ruby', 'Swift', 'Kotlin'].map((lang) => (
+                          <button
+                            key={lang}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, language: lang })}
+                            className={`px-2 py-1 text-xs rounded border transition-colors ${
+                              formData.language === lang 
+                                ? 'bg-blue-100 border-blue-300 text-blue-700' 
+                                : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {lang}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Quick select common languages or enter custom language name (will be normalized automatically)
+                      </p>
+                    </div>
                   </div>
                   <div>
                     <label htmlFor="constraints" className="block text-sm font-medium text-gray-700">Constraints</label>

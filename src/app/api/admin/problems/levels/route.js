@@ -19,15 +19,19 @@ export async function GET(request) {
     }
     
     const { searchParams } = new URL(request.url);
-    const language = searchParams.get('language');
-    const category = searchParams.get('category');
+    const rawLanguage = searchParams.get('language');
+    const rawCategory = searchParams.get('category');
 
-    if (!language || !category) {
+    if (!rawLanguage || !rawCategory) {
       return NextResponse.json(
         { error: 'Language and category parameters are required' },
         { status: 400 }
       );
     }
+
+    // Decode URL-encoded parameters to handle special characters
+    const language = decodeURIComponent(rawLanguage);
+    const category = decodeURIComponent(rawCategory);
 
     // Get all unique difficulty levels for the specified language and category (including inactive problems for admin)
     const levels = await Problem.distinct('difficulty', { 

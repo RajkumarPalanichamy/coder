@@ -229,35 +229,74 @@ export default function AdminProblemCreatePage() {
                       <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                         Category
                       </label>
-                      <input
-                        id="category"
-                        name="category"
-                        type="text"
-                        required
-                        value={formData.category}
-                        onChange={handleChange}
-                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                        placeholder="e.g., Arrays & Strings"
-                      />
+                      <div className="space-y-2">
+                        <input
+                          id="category"
+                          name="category"
+                          type="text"
+                          required
+                          value={formData.category}
+                          onChange={handleChange}
+                          className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                          placeholder="Enter category or select from below"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {['Arrays & Strings', 'Data Structures', 'Algorithms', 'Dynamic Programming', 'Tree & Graph', 'Hash Table', 'Math & Logic', 'Sorting & Searching', 'Greedy', 'Backtracking', 'Two Pointers', 'Sliding Window'].map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, category: cat })}
+                              className={`px-3 py-1 text-sm rounded border transition-colors ${
+                                formData.category === cat 
+                                  ? 'bg-indigo-100 border-indigo-300 text-indigo-700' 
+                                  : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Quick select common categories or enter custom category name
+                        </p>
+                      </div>
                     </div>
                   </div>
                   <div>
                     <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
                       Programming Language
                     </label>
-                    <input
-                      id="language"
-                      name="language"
-                      type="text"
-                      value={formData.language}
-                      onChange={handleChange}
-                      required
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                      placeholder="e.g., JavaScript, Python, Java, C++, C#, Go, Rust, etc."
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Enter the programming language name (will be normalized automatically)
-                    </p>
+                    <div className="space-y-2">
+                      <input
+                        id="language"
+                        name="language"
+                        type="text"
+                        value={formData.language}
+                        onChange={handleChange}
+                        required
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                        placeholder="Enter programming language or select from below"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {['JavaScript', 'Python', 'Java', 'C++', 'C#', 'C', 'Go', 'Rust', 'TypeScript', 'PHP', 'Ruby', 'Swift', 'Kotlin'].map((lang) => (
+                          <button
+                            key={lang}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, language: lang })}
+                            className={`px-3 py-1 text-sm rounded border transition-colors ${
+                              formData.language === lang 
+                                ? 'bg-blue-100 border-blue-300 text-blue-700' 
+                                : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {lang}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Quick select common languages or enter custom language name (will be normalized automatically)
+                      </p>
+                    </div>
                   </div>
 
                   <div>

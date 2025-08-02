@@ -45,10 +45,21 @@ export default function StudentProblemsPage() {
     setLanguagesLoading(true);
     try {
       const res = await fetch('/api/problems/meta');
+      if (!res.ok) {
+        throw new Error('Failed to fetch languages');
+      }
       const data = await res.json();
-      setLanguages(data.languages || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data.languages) ? data.languages.filter(item => 
+        item && 
+        item.language && 
+        typeof item.language === 'string' &&
+        item.language.trim().length > 0
+      ) : [];
+      setLanguages(validData);
     } catch (err) {
-      // handle error
+      console.error('Error fetching languages:', err);
+      setLanguages([]); // Set empty array on error
     } finally {
       setLanguagesLoading(false);
     }
@@ -57,11 +68,19 @@ export default function StudentProblemsPage() {
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
-      const res = await fetch(`/api/problems/categories?language=${language}`);
+      const res = await fetch(`/api/problems/categories?language=${encodeURIComponent(language)}`);
       const data = await res.json();
-      setCategories(data.categories || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data.categories) ? data.categories.filter(item => 
+        item && 
+        item.category && 
+        typeof item.category === 'string' &&
+        item.category.trim().length > 0
+      ) : [];
+      setCategories(validData);
     } catch (err) {
-      // handle error
+      console.error('Error fetching categories:', err);
+      setCategories([]); // Set empty array on error
     } finally {
       setCategoriesLoading(false);
     }
@@ -70,11 +89,19 @@ export default function StudentProblemsPage() {
   const fetchLevels = async () => {
     setLevelsLoading(true);
     try {
-      const res = await fetch(`/api/problems/levels?language=${language}&category=${category}`);
+      const res = await fetch(`/api/problems/levels?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`);
       const data = await res.json();
-      setLevels(data.levels || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data.levels) ? data.levels.filter(item => 
+        item && 
+        item.level && 
+        typeof item.level === 'string' &&
+        item.level.trim().length > 0
+      ) : [];
+      setLevels(validData);
     } catch (err) {
-      // handle error
+      console.error('Error fetching levels:', err);
+      setLevels([]); // Set empty array on error
     } finally {
       setLevelsLoading(false);
     }
@@ -102,7 +129,7 @@ export default function StudentProblemsPage() {
     
     // Fetch the latest problem and redirect to it
     try {
-      const response = await fetch(`/api/problems/latest?language=${language}&category=${category}&difficulty=${selectedLevel}`);
+      const response = await fetch(`/api/problems/latest?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}&difficulty=${encodeURIComponent(selectedLevel)}`);
       const data = await response.json();
       
       if (response.ok && data.problemId) {
@@ -196,14 +223,16 @@ export default function StudentProblemsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {languages.map((langData) => (
-                <LanguageCard
-                  key={langData.language}
-                  language={langData.language}
-                  problemCount={langData.count}
-                  onClick={() => handleLanguageCardClick(langData.language)}
-                />
-              ))}
+              {languages
+                .filter(langData => langData && langData.language) // Filter out invalid entries
+                .map((langData) => (
+                  <LanguageCard
+                    key={langData.language}
+                    language={langData.language}
+                    problemCount={langData.count || 0}
+                    onClick={() => handleLanguageCardClick(langData.language)}
+                  />
+                ))}
             </div>
           )}
         </div>
@@ -222,14 +251,16 @@ export default function StudentProblemsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((categoryData) => (
-                <CategoryCard
-                  key={categoryData.category}
-                  category={categoryData.category}
-                  problemCount={categoryData.count}
-                  onClick={() => handleCategoryCardClick(categoryData.category)}
-                />
-              ))}
+              {categories
+                .filter(categoryData => categoryData && categoryData.category) // Filter out invalid entries
+                .map((categoryData) => (
+                  <CategoryCard
+                    key={categoryData.category}
+                    category={categoryData.category}
+                    problemCount={categoryData.count || 0}
+                    onClick={() => handleCategoryCardClick(categoryData.category)}
+                  />
+                ))}
             </div>
           )}
         </div>
@@ -248,14 +279,16 @@ export default function StudentProblemsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {levels.map((levelData) => (
-                <LevelCard
-                  key={levelData.level}
-                  level={levelData.level}
-                  problemCount={levelData.count}
-                  onClick={() => handleLevelCardClick(levelData.level)}
-                />
-              ))}
+              {levels
+                .filter(levelData => levelData && levelData.level) // Filter out invalid entries
+                .map((levelData) => (
+                  <LevelCard
+                    key={levelData.level}
+                    level={levelData.level}
+                    problemCount={levelData.count || 0}
+                    onClick={() => handleLevelCardClick(levelData.level)}
+                  />
+                ))}
             </div>
           )}
         </div>

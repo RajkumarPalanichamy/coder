@@ -119,7 +119,7 @@ export default function Dashboard() {
     try {
       const [statsRes, problemsRes] = await Promise.all([
         fetch('/api/user/stats'),
-        fetch(`/api/problems${language ? `?language=${language}` : ''}`)
+        fetch(`/api/problems${language ? `?language=${encodeURIComponent(language)}` : ''}`)
       ]);
       const statsData = await statsRes.json();
       const problemsData = await problemsRes.json();
