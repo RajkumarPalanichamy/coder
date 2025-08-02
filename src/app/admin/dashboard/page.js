@@ -79,7 +79,7 @@ export default function AdminDashboard() {
       setStudents(studentsData.students || []);
 
       // Fetch problems
-      const problemsResponse = await fetch(`/api/admin/problems${language ? `?language=${language}` : ''}`);
+      const problemsResponse = await fetch(`/api/admin/problems${language ? `?language=${encodeURIComponent(language)}` : ''}`);
       const problemsData = await problemsResponse.json();
       setProblems(problemsData.problems || []);
 

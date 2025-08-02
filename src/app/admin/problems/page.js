@@ -62,11 +62,22 @@ export default function AdminProblemsPage() {
       const res = await fetch('/api/admin/problems/meta', {
         credentials: 'include'
       });
+      if (!res.ok) {
+        throw new Error('Failed to fetch languages');
+      }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setLanguages(data.languages || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data.languages) ? data.languages.filter(item => 
+        item && 
+        item.language && 
+        typeof item.language === 'string' &&
+        item.language.trim().length > 0
+      ) : [];
+      setLanguages(validData);
     } catch (err) {
       console.error('Error fetching languages:', err);
+      setLanguages([]); // Set empty array on error
     } finally {
       setLanguagesLoading(false);
     }
@@ -75,14 +86,25 @@ export default function AdminProblemsPage() {
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
-      const res = await fetch(`/api/admin/problems/categories?language=${language}`, {
+      const res = await fetch(`/api/admin/problems/categories?language=${encodeURIComponent(language)}`, {
         credentials: 'include'
       });
+      if (!res.ok) {
+        throw new Error('Failed to fetch categories');
+      }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setCategories(data.categories || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data.categories) ? data.categories.filter(item => 
+        item && 
+        item.category && 
+        typeof item.category === 'string' &&
+        item.category.trim().length > 0
+      ) : [];
+      setCategories(validData);
     } catch (err) {
       console.error('Error fetching categories:', err);
+      setCategories([]); // Set empty array on error
     } finally {
       setCategoriesLoading(false);
     }
@@ -91,14 +113,25 @@ export default function AdminProblemsPage() {
   const fetchLevels = async () => {
     setLevelsLoading(true);
     try {
-      const res = await fetch(`/api/admin/problems/levels?language=${language}&category=${category}`, {
+      const res = await fetch(`/api/admin/problems/levels?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`, {
         credentials: 'include'
       });
+      if (!res.ok) {
+        throw new Error('Failed to fetch levels');
+      }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setLevels(data.levels || []);
+      // Ensure data is an array and filter out invalid entries
+      const validData = Array.isArray(data.levels) ? data.levels.filter(item => 
+        item && 
+        item.level && 
+        typeof item.level === 'string' &&
+        item.level.trim().length > 0
+      ) : [];
+      setLevels(validData);
     } catch (err) {
       console.error('Error fetching levels:', err);
+      setLevels([]); // Set empty array on error
     } finally {
       setLevelsLoading(false);
     }
@@ -109,18 +142,24 @@ export default function AdminProblemsPage() {
     setError("");
     try {
       const params = [];
-      if (language) params.push(`language=${language}`);
-      if (category) params.push(`category=${category}`);
-      if (level) params.push(`difficulty=${level}`);
+      if (language) params.push(`language=${encodeURIComponent(language)}`);
+      if (category) params.push(`category=${encodeURIComponent(category)}`);
+      if (level) params.push(`difficulty=${encodeURIComponent(level)}`);
       const query = params.length ? `?${params.join('&')}` : '';
       const res = await fetch(`/api/admin/problems${query}`, {
         credentials: 'include'
       });
+      if (!res.ok) {
+        throw new Error('Failed to fetch problems');
+      }
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setProblems(data.problems || []);
+      // Ensure data is an array
+      const validData = Array.isArray(data.problems) ? data.problems : [];
+      setProblems(validData);
     } catch (err) {
       setError(err.message);
+      setProblems([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -286,14 +325,16 @@ export default function AdminProblemsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {languages.map((langData) => (
-                    <LanguageCard
-                      key={langData.language}
-                      language={langData.language}
-                      problemCount={langData.count}
-                      onClick={() => handleLanguageCardClick(langData.language)}
-                    />
-                  ))}
+                  {languages
+                    .filter(langData => langData && langData.language) // Filter out invalid entries
+                    .map((langData) => (
+                      <LanguageCard
+                        key={langData.language}
+                        language={langData.language}
+                        problemCount={langData.count || 0}
+                        onClick={() => handleLanguageCardClick(langData.language)}
+                      />
+                    ))}
                 </div>
               )}
             </div>
@@ -312,14 +353,16 @@ export default function AdminProblemsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {categories.map((categoryData) => (
-                    <CategoryCard
-                      key={categoryData.category}
-                      category={categoryData.category}
-                      problemCount={categoryData.count}
-                      onClick={() => handleCategoryCardClick(categoryData.category)}
-                    />
-                  ))}
+                  {categories
+                    .filter(categoryData => categoryData && categoryData.category) // Filter out invalid entries
+                    .map((categoryData) => (
+                      <CategoryCard
+                        key={categoryData.category}
+                        category={categoryData.category}
+                        problemCount={categoryData.count || 0}
+                        onClick={() => handleCategoryCardClick(categoryData.category)}
+                      />
+                    ))}
                 </div>
               )}
             </div>
@@ -338,14 +381,16 @@ export default function AdminProblemsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {levels.map((levelData) => (
-                    <LevelCard
-                      key={levelData.level}
-                      level={levelData.level}
-                      problemCount={levelData.count}
-                      onClick={() => handleLevelCardClick(levelData.level)}
-                    />
-                  ))}
+                  {levels
+                    .filter(levelData => levelData && levelData.level) // Filter out invalid entries
+                    .map((levelData) => (
+                      <LevelCard
+                        key={levelData.level}
+                        level={levelData.level}
+                        problemCount={levelData.count || 0}
+                        onClick={() => handleLevelCardClick(levelData.level)}
+                      />
+                    ))}
                 </div>
               )}
             </div>
