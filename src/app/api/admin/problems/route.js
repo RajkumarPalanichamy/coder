@@ -82,13 +82,36 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Normalize language name for consistency
+    const normalizeLanguage = (lang) => {
+      const langLower = lang.toLowerCase().trim();
+      const mapping = {
+        'c++': 'cpp',
+        'c#': 'csharp',
+        'javascript': 'javascript',
+        'python': 'python',
+        'java': 'java',
+        'c': 'c',
+        'go': 'go',
+        'rust': 'rust',
+        'kotlin': 'kotlin',
+        'typescript': 'typescript',
+        'php': 'php',
+        'ruby': 'ruby',
+        'swift': 'swift'
+      };
+      return mapping[langLower] || langLower;
+    };
+
+    const normalizedLanguage = normalizeLanguage(language);
+
     // Create new problem
     const problem = await Problem.create({
       title,
       description,
       difficulty,
       category,
-      programmingLanguage: language,
+      programmingLanguage: normalizedLanguage,
       constraints: constraints || '',
       examples: examples || [],
       testCases: testCases || [],

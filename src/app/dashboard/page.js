@@ -14,6 +14,7 @@ const LANGUAGES = [
   { label: 'Python', value: 'python' },
   { label: 'Java', value: 'java' },
   { label: 'C++', value: 'cpp' },
+  { label: 'C#', value: 'csharp' },
   { label: 'C', value: 'c' },
 ];
 
@@ -217,6 +218,61 @@ export default function Dashboard() {
       </div>
 
       {/* Problems Section */}
+      <div className="max-w-6xl mx-auto px-4 md:px-0 mt-8 mb-10">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <Code2 className="w-6 h-6 text-indigo-500" />
+            <h2 className="text-2xl font-bold text-gray-900">
+              {language ? `${language.toUpperCase()} Problems` : 'All Problems'}
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-indigo-500" />
+            <div className="flex gap-1 bg-white rounded-full shadow px-2 py-1">
+              {LANGUAGES.map(lang => (
+                <button
+                  key={lang.value}
+                  onClick={() => setLanguage(lang.value)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    language === lang.value
+                      ? 'bg-indigo-600 text-white shadow'
+                      : 'text-indigo-700 hover:bg-indigo-100'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          </div>
+        ) : problems.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {language ? `No ${language.toUpperCase()} problems found` : 'No problems available'}
+            </h3>
+            <p className="text-gray-500">
+              {language ? 'Try selecting a different language or check back later.' : 'Problems will appear here once they are added.'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {problems.map((problem) => (
+                           <ProblemCard
+               key={problem._id}
+               problem={problem}
+               href={`/problems/${problem._id}`}
+               showStatus={false}
+             />
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 } 
