@@ -12,7 +12,7 @@ const TestSchema = new mongoose.Schema({
   description: { type: String },
   mcqs: [MCQSchema], // Embedded MCQs
   language: { type: String },
-  collection: { type: String, required: true }, // Collection field for top-level organization 
+  collection: { type: String, default: 'General' }, // Collection field for top-level organization, default to 'General' for backward compatibility
   category: { type: String, required: true }, // Added category field for organizing tests
   duration: { type: Number, default: 60 }, // Duration in minutes, default 60 minutes
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

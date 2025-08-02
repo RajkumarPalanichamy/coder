@@ -72,10 +72,12 @@ export default function TestForm({ initialData = {}, onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!title.trim() || !collection.trim() || !category.trim() || mcqs.length === 0) {
-      setError('Title, collection, category, and at least one MCQ are required.');
+    if (!title.trim() || !category.trim() || mcqs.length === 0) {
+      setError('Title, category, and at least one MCQ are required.');
       return;
     }
+    // Use default collection if not provided
+    const finalCollection = collection.trim() || 'General';
     if (duration < 1 || duration > 300) {
       setError('Duration must be between 1 and 300 minutes.');
       return;
@@ -83,7 +85,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
     onSubmit({
       title,
       description,
-      collection,
+      collection: finalCollection,
       language,
       category,
       duration: parseInt(duration),
