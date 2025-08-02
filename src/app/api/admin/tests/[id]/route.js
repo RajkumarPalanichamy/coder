@@ -14,10 +14,10 @@ export async function PUT(req, { params }) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
-  const { title, description, mcqs, language, availableFrom, availableTo } = await req.json();
+  const { title, description, collection, mcqs, language, category, duration, availableFrom, availableTo } = await req.json();
   const test = await Test.findByIdAndUpdate(
     params.id,
-    { title, description, mcqs, language, availableFrom, availableTo },
+    { title, description, collection, mcqs, language, category, duration, availableFrom, availableTo },
     { new: true }
   );
   if (!test) return NextResponse.json({ error: 'Not found' }, { status: 404 });

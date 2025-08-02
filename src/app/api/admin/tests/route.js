@@ -16,13 +16,14 @@ export async function POST(req) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
-  const { title, description, mcqs, language, category, duration, availableFrom, availableTo } = await req.json();
+  const { title, description, collection, mcqs, language, category, duration, availableFrom, availableTo } = await req.json();
   if (!title || !category || !mcqs || !Array.isArray(mcqs) || mcqs.length === 0) {
     return NextResponse.json({ error: 'Title, category, and MCQs are required' }, { status: 400 });
   }
   const test = await Test.create({
     title,
     description,
+    collection: collection || 'General', // Default to 'General' if not provided
     mcqs,
     language,
     category,
