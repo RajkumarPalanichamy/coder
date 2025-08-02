@@ -3,6 +3,36 @@ import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import { getUserFromRequest } from '@/lib/auth';
 
+// Language normalization function - only for actual programming languages
+const normalizeLanguage = (lang) => {
+  const langLower = lang.toLowerCase().trim();
+  
+  // Only normalize known programming languages, leave everything else as-is
+  const programmingLanguageMapping = {
+    'c++': 'cpp',
+    'c#': 'csharp',
+    'javascript': 'javascript',
+    'python': 'python',
+    'java': 'java',
+    'c': 'c',
+    'go': 'go',
+    'rust': 'rust',
+    'kotlin': 'kotlin',
+    'typescript': 'typescript',
+    'php': 'php',
+    'ruby': 'ruby',
+    'swift': 'swift'
+  };
+  
+  // If it's a known programming language, normalize it
+  if (programmingLanguageMapping[langLower]) {
+    return programmingLanguageMapping[langLower];
+  }
+  
+  // Otherwise, return as-is (for company collections like "TCS problems", "Wipro problems", etc.)
+  return lang;
+};
+
 export async function GET(request) {
   try {
     await connectDB();
@@ -18,16 +48,26 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get all unique languages (simple version)
+    // Get all unique languages
     const languages = await Problem.distinct('programmingLanguage');
     
-    // Get problem count for each language
-    const languagesWithCounts = await Promise.all(
-      languages.map(async (language) => {
-        const count = await Problem.countDocuments({ programmingLanguage: language });
-        return { language, count };
-      })
-    );
+    // Group by normalized name (only programming languages get normalized)
+    const languageGroups = {};
+    
+    for (const language of languages) {
+      const normalized = normalizeLanguage(language);
+      if (!languageGroups[normalized]) {
+        languageGroups[normalized] = 0;
+      }
+      const count = await Problem.countDocuments({ programmingLanguage: language });
+      languageGroups[normalized] += count;
+    }
+    
+    // Convert to array format
+    const languagesWithCounts = Object.entries(languageGroups).map(([language, count]) => ({
+      language,
+      count
+    }));
 
     // Get other metadata
     const categories = await Problem.distinct('category');

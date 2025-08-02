@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 
-// Language normalization function
+// Language normalization function - only for actual programming languages
 const normalizeLanguage = (lang) => {
   const langLower = lang.toLowerCase().trim();
-  const mapping = {
+  
+  // Only normalize known programming languages, leave everything else as-is
+  const programmingLanguageMapping = {
     'c++': 'cpp',
     'c#': 'csharp',
     'javascript': 'javascript',
@@ -20,7 +22,21 @@ const normalizeLanguage = (lang) => {
     'ruby': 'ruby',
     'swift': 'swift'
   };
-  return mapping[langLower] || langLower;
+  
+  // If it's a known programming language, normalize it
+  if (programmingLanguageMapping[langLower]) {
+    return programmingLanguageMapping[langLower];
+  }
+  
+  // Otherwise, return as-is (for company collections like "TCS problems", "Wipro problems", etc.)
+  return lang;
+};
+
+// Check if a language is a known programming language
+const isProgrammingLanguage = (lang) => {
+  const langLower = lang.toLowerCase().trim();
+  const programmingLanguages = ['c++', 'c#', 'javascript', 'python', 'java', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift', 'cpp', 'csharp'];
+  return programmingLanguages.includes(langLower);
 };
 
 export async function GET(request) {
@@ -49,12 +65,17 @@ export async function GET(request) {
     }
 
     if (language) {
-      // Normalize the language parameter and search for both normalized and original values
-      const normalizedLanguage = normalizeLanguage(language);
-      query.$or = [
-        { programmingLanguage: normalizedLanguage },
-        { programmingLanguage: language }
-      ];
+      if (isProgrammingLanguage(language)) {
+        // If it's a programming language, check both normalized and original values
+        const normalizedLanguage = normalizeLanguage(language);
+        query.$or = [
+          { programmingLanguage: normalizedLanguage },
+          { programmingLanguage: language }
+        ];
+      } else {
+        // If it's a company collection, use exact match
+        query.programmingLanguage = language;
+      }
     }
 
     const problems = await Problem.find(query)

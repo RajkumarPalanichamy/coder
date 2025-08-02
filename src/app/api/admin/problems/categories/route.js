@@ -3,10 +3,12 @@ import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import { getUserFromRequest } from '@/lib/auth';
 
-// Language normalization function
+// Language normalization function - only for actual programming languages
 const normalizeLanguage = (lang) => {
   const langLower = lang.toLowerCase().trim();
-  const mapping = {
+  
+  // Only normalize known programming languages, leave everything else as-is
+  const programmingLanguageMapping = {
     'c++': 'cpp',
     'c#': 'csharp',
     'javascript': 'javascript',
@@ -21,7 +23,21 @@ const normalizeLanguage = (lang) => {
     'ruby': 'ruby',
     'swift': 'swift'
   };
-  return mapping[langLower] || langLower;
+  
+  // If it's a known programming language, normalize it
+  if (programmingLanguageMapping[langLower]) {
+    return programmingLanguageMapping[langLower];
+  }
+  
+  // Otherwise, return as-is (for company collections like "TCS problems", "Wipro problems", etc.)
+  return lang;
+};
+
+// Check if a language is a known programming language
+const isProgrammingLanguage = (lang) => {
+  const langLower = lang.toLowerCase().trim();
+  const programmingLanguages = ['c++', 'c#', 'javascript', 'python', 'java', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift', 'cpp', 'csharp'];
+  return programmingLanguages.includes(langLower);
 };
 
 export async function GET(request) {
@@ -49,27 +65,28 @@ export async function GET(request) {
       );
     }
 
-    // Normalize the language parameter
-    const normalizedLanguage = normalizeLanguage(language);
+    let query = {};
 
-    // Get all unique categories for the specified language (including inactive problems for admin)
-    // We need to check both normalized and original language values in case of inconsistent data
-    const categories = await Problem.distinct('category', {
-      $or: [
+    if (isProgrammingLanguage(language)) {
+      // If it's a programming language, check both normalized and original values
+      const normalizedLanguage = normalizeLanguage(language);
+      query.$or = [
         { programmingLanguage: normalizedLanguage },
         { programmingLanguage: language }
-      ]
-    });
+      ];
+    } else {
+      // If it's a company collection, use exact match
+      query.programmingLanguage = language;
+    }
+
+    // Get all unique categories for the specified language (including inactive problems for admin)
+    const categories = await Problem.distinct('category', query);
     
     // Get problem count for each category
     const categoriesWithCounts = await Promise.all(
       categories.map(async (category) => {
-        const count = await Problem.countDocuments({ 
-          $or: [
-            { programmingLanguage: normalizedLanguage, category: category },
-            { programmingLanguage: language, category: category }
-          ]
-        });
+        const categoryQuery = { ...query, category: category };
+        const count = await Problem.countDocuments(categoryQuery);
         return { category, count };
       })
     );

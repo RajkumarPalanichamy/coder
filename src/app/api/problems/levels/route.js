@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 
-// Language normalization function
+// Language normalization function - only for actual programming languages
 const normalizeLanguage = (lang) => {
   const langLower = lang.toLowerCase().trim();
-  const mapping = {
+  
+  // Only normalize known programming languages, leave everything else as-is
+  const programmingLanguageMapping = {
     'c++': 'cpp',
     'c#': 'csharp',
     'javascript': 'javascript',
@@ -20,7 +22,21 @@ const normalizeLanguage = (lang) => {
     'ruby': 'ruby',
     'swift': 'swift'
   };
-  return mapping[langLower] || langLower;
+  
+  // If it's a known programming language, normalize it
+  if (programmingLanguageMapping[langLower]) {
+    return programmingLanguageMapping[langLower];
+  }
+  
+  // Otherwise, return as-is (for company collections like "TCS problems", "Wipro problems", etc.)
+  return lang;
+};
+
+// Check if a language is a known programming language
+const isProgrammingLanguage = (lang) => {
+  const langLower = lang.toLowerCase().trim();
+  const programmingLanguages = ['c++', 'c#', 'javascript', 'python', 'java', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift', 'cpp', 'csharp'];
+  return programmingLanguages.includes(langLower);
 };
 
 export async function GET(request) {
@@ -38,27 +54,28 @@ export async function GET(request) {
       );
     }
 
-    // Normalize the language parameter
-    const normalizedLanguage = normalizeLanguage(language);
+    let query = { category: category, isActive: true };
+
+    if (isProgrammingLanguage(language)) {
+      // If it's a programming language, check both normalized and original values
+      const normalizedLanguage = normalizeLanguage(language);
+      query.$or = [
+        { programmingLanguage: normalizedLanguage },
+        { programmingLanguage: language }
+      ];
+    } else {
+      // If it's a company collection, use exact match
+      query.programmingLanguage = language;
+    }
 
     // Get all unique difficulty levels for the specified language and category
-    // We need to check both normalized and original language values in case of inconsistent data
-    const levels = await Problem.distinct('difficulty', { 
-      $or: [
-        { programmingLanguage: normalizedLanguage, category: category, isActive: true },
-        { programmingLanguage: language, category: category, isActive: true }
-      ]
-    });
+    const levels = await Problem.distinct('difficulty', query);
     
     // Get problem count for each level
     const levelsWithCounts = await Promise.all(
       levels.map(async (level) => {
-        const count = await Problem.countDocuments({ 
-          $or: [
-            { programmingLanguage: normalizedLanguage, category: category, difficulty: level, isActive: true },
-            { programmingLanguage: language, category: category, difficulty: level, isActive: true }
-          ]
-        });
+        const levelQuery = { ...query, difficulty: level };
+        const count = await Problem.countDocuments(levelQuery);
         return { level, count };
       })
     );
