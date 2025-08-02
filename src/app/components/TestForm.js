@@ -11,6 +11,7 @@ function emptyMCQ() {
 export default function TestForm({ initialData = {}, onSubmit }) {
   const [title, setTitle] = useState(initialData.title || '');
   const [description, setDescription] = useState(initialData.description || '');
+  const [collection, setCollection] = useState(initialData.collection || '');
   const [language, setLanguage] = useState(initialData.language || '');
   const [category, setCategory] = useState(initialData.category || '');
   const [duration, setDuration] = useState(initialData.duration || 60);
@@ -18,6 +19,12 @@ export default function TestForm({ initialData = {}, onSubmit }) {
   const [error, setError] = useState('');
   const [editingIdx, setEditingIdx] = useState(null);
   const [mcqDraft, setMcqDraft] = useState(emptyMCQ());
+
+  // Predefined collections for quick selection
+  const predefinedCollections = [
+    'Aptitude', 'Technical', 'Verbal', 'Quantitative', 
+    'General Knowledge', 'Soft Skills', 'Competitive', 'Programming'
+  ];
 
   // Predefined categories for quick selection
   const predefinedCategories = [
@@ -65,8 +72,8 @@ export default function TestForm({ initialData = {}, onSubmit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!title.trim() || !category.trim() || mcqs.length === 0) {
-      setError('Title, category, and at least one MCQ are required.');
+    if (!title.trim() || !collection.trim() || !category.trim() || mcqs.length === 0) {
+      setError('Title, collection, category, and at least one MCQ are required.');
       return;
     }
     if (duration < 1 || duration > 300) {
@@ -76,6 +83,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
     onSubmit({
       title,
       description,
+      collection,
       language,
       category,
       duration: parseInt(duration),
@@ -102,6 +110,34 @@ export default function TestForm({ initialData = {}, onSubmit }) {
           value={description}
           onChange={e => setDescription(e.target.value)}
         />
+      </div>
+      <div>
+        <label className="block font-medium mb-1">Collection</label>
+        <div className="space-y-2">
+          <input
+            className="w-full border px-3 py-2 rounded text-black"
+            value={collection}
+            onChange={e => setCollection(e.target.value)}
+            placeholder="Enter collection or select from below"
+            required
+          />
+          <div className="flex flex-wrap gap-2">
+            {predefinedCollections.map((col) => (
+              <button
+                key={col}
+                type="button"
+                onClick={() => setCollection(col)}
+                className={`px-3 py-1 text-sm rounded border transition-colors ${
+                  collection === col 
+                    ? 'bg-purple-100 border-purple-300 text-purple-700' 
+                    : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {col}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
       <div>
         <label className="block font-medium mb-1">Language</label>
