@@ -3,6 +3,27 @@ import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import { getUserFromRequest } from '@/lib/auth';
 
+// Language normalization function
+const normalizeLanguage = (lang) => {
+  const langLower = lang.toLowerCase().trim();
+  const mapping = {
+    'c++': 'cpp',
+    'c#': 'csharp',
+    'javascript': 'javascript',
+    'python': 'python',
+    'java': 'java',
+    'c': 'c',
+    'go': 'go',
+    'rust': 'rust',
+    'kotlin': 'kotlin',
+    'typescript': 'typescript',
+    'php': 'php',
+    'ruby': 'ruby',
+    'swift': 'swift'
+  };
+  return mapping[langLower] || langLower;
+};
+
 export async function GET(request) {
   try {
     await connectDB();
@@ -29,19 +50,26 @@ export async function GET(request) {
       );
     }
 
+    // Normalize the language parameter
+    const normalizedLanguage = normalizeLanguage(language);
+
     // Get all unique difficulty levels for the specified language and category (including inactive problems for admin)
+    // We need to check both normalized and original language values in case of inconsistent data
     const levels = await Problem.distinct('difficulty', { 
-      programmingLanguage: language,
-      category: category
+      $or: [
+        { programmingLanguage: normalizedLanguage, category: category },
+        { programmingLanguage: language, category: category }
+      ]
     });
     
     // Get problem count for each level
     const levelsWithCounts = await Promise.all(
       levels.map(async (level) => {
         const count = await Problem.countDocuments({ 
-          programmingLanguage: language, 
-          category: category,
-          difficulty: level
+          $or: [
+            { programmingLanguage: normalizedLanguage, category: category, difficulty: level },
+            { programmingLanguage: language, category: category, difficulty: level }
+          ]
         });
         return { level, count };
       })

@@ -2,6 +2,27 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 
+// Language normalization function
+const normalizeLanguage = (lang) => {
+  const langLower = lang.toLowerCase().trim();
+  const mapping = {
+    'c++': 'cpp',
+    'c#': 'csharp',
+    'javascript': 'javascript',
+    'python': 'python',
+    'java': 'java',
+    'c': 'c',
+    'go': 'go',
+    'rust': 'rust',
+    'kotlin': 'kotlin',
+    'typescript': 'typescript',
+    'php': 'php',
+    'ruby': 'ruby',
+    'swift': 'swift'
+  };
+  return mapping[langLower] || langLower;
+};
+
 export async function GET(req) {
   await connectDB();
   
@@ -17,12 +38,17 @@ export async function GET(req) {
   }
 
   try {
+    // Normalize the language parameter
+    const normalizedLanguage = normalizeLanguage(language);
+
     // Find the first problem (oldest/earliest created) for the given criteria
+    // We need to check both normalized and original language values in case of inconsistent data
     const firstProblem = await Problem.findOne({
       isActive: true,
-      programmingLanguage: language,
-      category: category,
-      difficulty: difficulty
+      $or: [
+        { programmingLanguage: normalizedLanguage, category: category, difficulty: difficulty },
+        { programmingLanguage: language, category: category, difficulty: difficulty }
+      ]
     })
     .select('_id title')
     .sort({ createdAt: 1 }); // Sort by creation date ascending to get the first
