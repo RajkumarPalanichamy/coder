@@ -293,6 +293,9 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                         onChange={() => handleAnswerSelect(currentQuestion, index)}
                         className="mr-3 text-indigo-600 focus:ring-indigo-500"
                       />
+                      <span className="mr-3 inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-medium">
+                        {String.fromCharCode(65 + index)}
+                      </span>
                       <span className="text-gray-800">{option}</span>
                     </label>
                   ))}

@@ -77,6 +77,9 @@ export default function TestTaking({ test, onSubmit }) {
                   onChange={() => handleOptionChange(step, oidx)}
                   className="mr-2 accent-indigo-600"
                 />
+                <span className="mr-3 inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-700 font-medium">
+                  {String.fromCharCode(65 + oidx)}
+                </span>
                 <span className="text-black">{opt}</span>
               </label>
             ))}
