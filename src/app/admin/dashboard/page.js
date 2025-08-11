@@ -47,12 +47,12 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchDashboardData();
     fetchTests();
-  }, [language]);
+  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUser = async () => {
     try {

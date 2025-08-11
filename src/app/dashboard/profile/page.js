@@ -231,7 +231,7 @@ export default function StudentProfilePage() {
               </div>
               {user.about && (
                 <div className="text-center text-gray-600 mb-4 max-w-md">
-                  <p className="italic">"{user.about}"</p>
+                  <p className="italic">&ldquo;{user.about}&rdquo;</p>
                 </div>
               )}
             </>

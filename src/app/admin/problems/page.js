@@ -48,13 +48,13 @@ export default function AdminProblemsPage() {
     if (selectedLanguage && currentView === 'subcategories') {
       fetchSubcategories();
     }
-  }, [selectedLanguage, currentView]);
+  }, [selectedLanguage, currentView]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (selectedLanguage && selectedSubcategory && selectedLevel && currentView === 'problems') {
       fetchProblems();
     }
-  }, [selectedLanguage, selectedSubcategory, selectedLevel, currentView]);
+  }, [selectedLanguage, selectedSubcategory, selectedLevel, currentView]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProblemCounts = async () => {
     try {
