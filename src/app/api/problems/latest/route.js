@@ -8,25 +8,32 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const rawLanguage = searchParams.get('language');
   const rawCategory = searchParams.get('category');
+  const rawSubcategory = searchParams.get('subcategory');
   const rawDifficulty = searchParams.get('difficulty');
 
-  if (!rawLanguage || !rawCategory || !rawDifficulty) {
+  // Support both old and new API calls
+  const subcategory = rawSubcategory || rawCategory;
+
+  if (!rawLanguage || !subcategory || !rawDifficulty) {
     return NextResponse.json({ 
-      error: 'Missing required parameters: language, category, and difficulty' 
+      error: 'Missing required parameters: language, subcategory, and difficulty' 
     }, { status: 400 });
   }
 
   // Decode URL-encoded parameters to handle special characters
   const language = decodeURIComponent(rawLanguage);
-  const category = decodeURIComponent(rawCategory);
   const difficulty = decodeURIComponent(rawDifficulty);
+  const decodedSubcategory = decodeURIComponent(subcategory);
 
   try {
     // Find the first problem (oldest/earliest created) for the given criteria
     const firstProblem = await Problem.findOne({
       isActive: true,
       programmingLanguage: language,
-      category: category,
+      $or: [
+        { subcategory: decodedSubcategory },
+        { category: decodedSubcategory } // Fallback for older problems
+      ],
       difficulty: difficulty
     })
     .select('_id title')

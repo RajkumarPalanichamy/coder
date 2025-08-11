@@ -21,6 +21,7 @@ export default function AdminProblemCreatePage() {
     examples: [{ input: '', output: '', explanation: '' }],
     testCases: [{ input: '', output: '', isHidden: false }],
     timeLimit: 1, // minutes
+    problemTimeLimit: 10, // minutes per problem
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -191,22 +192,42 @@ export default function AdminProblemCreatePage() {
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700 mb-1">
-                      Time Limit (minutes)
-                    </label>
-                    <input
-                      id="timeLimit"
-                      name="timeLimit"
-                      type="number"
-                      min="1"
-                      max="60"
-                      value={formData.timeLimit}
-                      onChange={handleChange}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                      placeholder="1"
-                      required
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700 mb-1">
+                        Execution Time Limit (minutes)
+                      </label>
+                      <input
+                        id="timeLimit"
+                        name="timeLimit"
+                        type="number"
+                        min="1"
+                        max="60"
+                        value={formData.timeLimit}
+                        onChange={handleChange}
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                        placeholder="1"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="problemTimeLimit" className="block text-sm font-medium text-gray-700 mb-1">
+                        Problem Time Limit (minutes)
+                      </label>
+                      <input
+                        id="problemTimeLimit"
+                        name="problemTimeLimit"
+                        type="number"
+                        min="5"
+                        max="120"
+                        value={formData.problemTimeLimit}
+                        onChange={handleChange}
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                        placeholder="10"
+                        required
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Time allocated for students to solve this problem</p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -227,38 +248,38 @@ export default function AdminProblemCreatePage() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                        Category
+                      <label htmlFor="subcategory" className="block text-sm font-medium text-gray-700 mb-1">
+                        Subcategory
                       </label>
                       <div className="space-y-2">
                         <input
-                          id="category"
-                          name="category"
+                          id="subcategory"
+                          name="subcategory"
                           type="text"
                           required
-                          value={formData.category}
+                          value={formData.subcategory}
                           onChange={handleChange}
                           className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
-                          placeholder="Enter category or select from below"
+                          placeholder="Enter subcategory or select from below"
                         />
                         <div className="flex flex-wrap gap-2">
-                          {['Arrays & Strings', 'Data Structures', 'Algorithms', 'Dynamic Programming', 'Tree & Graph', 'Hash Table', 'Math & Logic', 'Sorting & Searching', 'Greedy', 'Backtracking', 'Two Pointers', 'Sliding Window'].map((cat) => (
+                          {['Basic Problems', 'Arrays', 'Strings', 'Algorithms', 'Data Structures', 'Dynamic Programming', 'Trees', 'Graphs', 'Math', 'Sorting', 'Searching'].map((subcat) => (
                             <button
-                              key={cat}
+                              key={subcat}
                               type="button"
-                              onClick={() => setFormData({ ...formData, category: cat })}
+                              onClick={() => setFormData({ ...formData, subcategory: subcat })}
                               className={`px-3 py-1 text-sm rounded border transition-colors ${
-                                formData.category === cat 
+                                formData.subcategory === subcat 
                                   ? 'bg-indigo-100 border-indigo-300 text-indigo-700' 
                                   : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
                               }`}
                             >
-                              {cat}
+                              {subcat}
                             </button>
                           ))}
                         </div>
                         <p className="text-xs text-gray-500">
-                          Quick select common categories or enter custom category name
+                          Quick select common subcategories or enter custom subcategory name
                         </p>
                       </div>
                     </div>

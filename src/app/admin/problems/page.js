@@ -299,14 +299,12 @@ export default function AdminProblemsPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-3xl font-bold text-gray-900">Technical Courses</h1>
-              {currentView === 'problems' && (
-                <Link
-                  href={`/admin/problems/create?language=${selectedLanguage}&subcategory=${selectedSubcategory}&level=${selectedLevel}`}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" /> Add Problem
-                </Link>
-              )}
+              <Link
+                href="/admin/problems/create"
+                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" /> Add Problem
+              </Link>
             </div>
             
             {/* Breadcrumbs */}

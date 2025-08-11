@@ -70,6 +70,10 @@ const problemSchema = new mongoose.Schema({
     type: Number,
     default: 128 // MB
   },
+  problemTimeLimit: {
+    type: Number,
+    default: 10 // minutes per problem
+  },
   isActive: {
     type: Boolean,
     default: true
