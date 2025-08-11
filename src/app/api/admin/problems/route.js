@@ -22,11 +22,13 @@ export async function GET(request) {
     const rawLanguage = searchParams.get('language');
     const rawDifficulty = searchParams.get('difficulty');
     const rawCategory = searchParams.get('category');
+    const rawSubcategory = searchParams.get('subcategory');
 
     // Decode URL-encoded parameters to handle special characters
     const language = rawLanguage ? decodeURIComponent(rawLanguage) : null;
     const difficulty = rawDifficulty ? decodeURIComponent(rawDifficulty) : null;
     const category = rawCategory ? decodeURIComponent(rawCategory) : null;
+    const subcategory = rawSubcategory ? decodeURIComponent(rawSubcategory) : null;
 
     let query = {};
     if (language) {
@@ -37,6 +39,9 @@ export async function GET(request) {
     }
     if (category) {
       query.category = category;
+    }
+    if (subcategory) {
+      query.subcategory = subcategory;
     }
 
     const problems = await Problem.find(query)
@@ -64,6 +69,7 @@ export async function POST(request) {
       description, 
       difficulty, 
       category,
+      subcategory,
       language,
       constraints,
       examples, 
@@ -74,9 +80,9 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!title || !description || !difficulty || !category || !language || !starterCode) {
+    if (!title || !description || !difficulty || !language || !starterCode) {
       return NextResponse.json(
-        { error: 'Title, description, difficulty, category, language, and starter code are required' },
+        { error: 'Title, description, difficulty, language, and starter code are required' },
         { status: 400 }
       );
     }
@@ -115,7 +121,8 @@ export async function POST(request) {
       title,
       description,
       difficulty,
-      category,
+      category: category || '',
+      subcategory: subcategory || 'Basic Problems',
       programmingLanguage: normalizedLanguage,
       constraints: constraints || '',
       examples: examples || [],

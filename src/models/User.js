@@ -37,6 +37,22 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  phone: {
+    type: String,
+    trim: true
+  },
+  dob: {
+    type: Date
+  },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', ''],
+    default: ''
+  },
+  about: {
+    type: String,
+    maxlength: 500
+  },
   isActive: {
     type: Boolean,
     default: true

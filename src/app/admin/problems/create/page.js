@@ -12,6 +12,7 @@ export default function AdminProblemCreatePage() {
     description: '',
     difficulty: 'level1',
     category: '',
+    subcategory: 'Basic Problems',
     language: '',
     constraints: '',
     starterCode: '',

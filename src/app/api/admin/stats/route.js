@@ -13,6 +13,18 @@ export async function GET(request) {
     const totalProblems = await Problem.countDocuments({ isActive: true });
     const totalSubmissions = await Submission.countDocuments();
 
+    // Get language-specific problem counts
+    const languageCounts = {};
+    const languages = ['javascript', 'python', 'java', 'cpp', 'c'];
+    
+    for (const lang of languages) {
+      const count = await Problem.countDocuments({ 
+        isActive: true,
+        tags: lang 
+      });
+      languageCounts[lang] = count;
+    }
+
     // Get recent activity (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -26,12 +38,25 @@ export async function GET(request) {
       createdAt: { $gte: sevenDaysAgo }
     });
 
+    // Get submission success rate
+    const acceptedSubmissions = await Submission.countDocuments({ status: 'accepted' });
+    const submissionSuccessRate = totalSubmissions > 0 
+      ? Math.round((acceptedSubmissions / totalSubmissions) * 100) 
+      : 0;
+
+    // Get active students (students who have made submissions)
+    const activeStudents = await Submission.distinct('userId').length;
+
     return NextResponse.json({
       totalStudents,
       totalProblems,
       totalSubmissions,
       recentSubmissions,
-      recentStudents
+      recentStudents,
+      languageCounts,
+      submissionSuccessRate,
+      activeStudents,
+      acceptedSubmissions
     });
 
   } catch (error) {

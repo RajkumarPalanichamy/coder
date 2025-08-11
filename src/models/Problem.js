@@ -32,13 +32,19 @@ const problemSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: true,
+    required: false,  // Making it optional since we'll use subcategory
     trim: true
   },
   programmingLanguage: {
     type: String,
     required: true,
     trim: true
+  },
+  subcategory: {
+    type: String,
+    required: true,
+    trim: true,
+    default: 'Basic Problems'  // Default subcategory
   },
   constraints: {
     type: String
@@ -82,8 +88,8 @@ const problemSchema = new mongoose.Schema({
 });
 
 // Index for better search performance
-problemSchema.index({ title: 'text', description: 'text', category: 'text' });
-problemSchema.index({ difficulty: 1, category: 1, isActive: 1 });
+problemSchema.index({ title: 'text', description: 'text', category: 'text', subcategory: 'text' });
+problemSchema.index({ difficulty: 1, programmingLanguage: 1, subcategory: 1, isActive: 1 });
 
 const Problem = mongoose.models.Problem || mongoose.model('Problem', problemSchema);
 

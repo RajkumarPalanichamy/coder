@@ -1,13 +1,24 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, Code2, FolderOpen, Target } from 'lucide-react';
+import { Plus, Edit, Trash2, Code2, FolderOpen, Target, ArrowLeft } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
-import LanguageCard from '../../components/LanguageCard';
-import CategoryCard from '../../components/CategoryCard';
-import LevelCard from '../../components/LevelCard';
-import Loader from '../../components/Loader';
 import { useRouter } from 'next/navigation';
+
+// Language configuration with icons
+const LANGUAGES = [
+  { value: 'javascript', label: 'JavaScript', icon: '🟨', color: 'yellow' },
+  { value: 'python', label: 'Python', icon: '🐍', color: 'blue' },
+  { value: 'java', label: 'Java', icon: '☕', color: 'orange' },
+  { value: 'cpp', label: 'C++', icon: '⚡', color: 'purple' },
+  { value: 'c', label: 'C', icon: '🔧', color: 'gray' }
+];
+
+const LEVELS = [
+  { value: 'level1', label: 'Level 1', color: 'green', icon: '🟢' },
+  { value: 'level2', label: 'Level 2', color: 'yellow', icon: '🟡' },
+  { value: 'level3', label: 'Level 3', color: 'red', icon: '🔴' }
+];
 
 export default function AdminProblemsPage() {
   const router = useRouter();
@@ -15,125 +26,56 @@ export default function AdminProblemsPage() {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
   };
+
   const [problems, setProblems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [languagesLoading, setLanguagesLoading] = useState(true);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [levelsLoading, setLevelsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [language, setLanguage] = useState("");
-  const [category, setCategory] = useState("");
-  const [level, setLevel] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("");
   const [deletingId, setDeletingId] = useState(null);
-  const [selected, setSelected] = useState([]);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [languages, setLanguages] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [levels, setLevels] = useState([]);
-  const [showLanguageCards, setShowLanguageCards] = useState(true);
-  const [showCategoryCards, setShowCategoryCards] = useState(false);
-  const [showLevelCards, setShowLevelCards] = useState(false);
+  const [subcategories, setSubcategories] = useState([]);
+  const [problemCounts, setProblemCounts] = useState({});
+
+  // Navigation state
+  const [currentView, setCurrentView] = useState('languages'); // languages, subcategories, levels, problems
 
   useEffect(() => {
-    fetchLanguages();
+    fetchProblemCounts();
   }, []);
 
   useEffect(() => {
-    if (language && !category) {
-      fetchCategories();
+    if (selectedLanguage && currentView === 'subcategories') {
+      fetchSubcategories();
     }
-  }, [language]);
+  }, [selectedLanguage, currentView]);
 
   useEffect(() => {
-    if (language && category && !level) {
-      fetchLevels();
-    }
-  }, [language, category]);
-
-  useEffect(() => {
-    if (language && category && level) {
+    if (selectedLanguage && selectedSubcategory && selectedLevel && currentView === 'problems') {
       fetchProblems();
     }
-  }, [language, category, level]);
+  }, [selectedLanguage, selectedSubcategory, selectedLevel, currentView]);
 
-  const fetchLanguages = async () => {
-    setLanguagesLoading(true);
+  const fetchProblemCounts = async () => {
     try {
-      const res = await fetch('/api/admin/problems/meta', {
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch languages');
-      }
+      const res = await fetch('/api/admin/problems/counts');
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      // Ensure data is an array and filter out invalid entries
-      const validData = Array.isArray(data.languages) ? data.languages.filter(item => 
-        item && 
-        item.language && 
-        typeof item.language === 'string' &&
-        item.language.trim().length > 0
-      ) : [];
-      setLanguages(validData);
+      setProblemCounts(data);
     } catch (err) {
-      console.error('Error fetching languages:', err);
-      setLanguages([]); // Set empty array on error
-    } finally {
-      setLanguagesLoading(false);
+      console.error('Error fetching problem counts:', err);
     }
   };
 
-  const fetchCategories = async () => {
-    setCategoriesLoading(true);
+  const fetchSubcategories = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`/api/admin/problems/categories?language=${encodeURIComponent(language)}`, {
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch categories');
-      }
+      const res = await fetch(`/api/admin/problems/subcategories?language=${encodeURIComponent(selectedLanguage)}`);
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      // Ensure data is an array and filter out invalid entries
-      const validData = Array.isArray(data.categories) ? data.categories.filter(item => 
-        item && 
-        item.category && 
-        typeof item.category === 'string' &&
-        item.category.trim().length > 0
-      ) : [];
-      setCategories(validData);
+      setSubcategories(data.subcategories || ['Basic Problems', 'Arrays', 'Strings', 'Algorithms', 'Data Structures']);
     } catch (err) {
-      console.error('Error fetching categories:', err);
-      setCategories([]); // Set empty array on error
+      setSubcategories(['Basic Problems', 'Arrays', 'Strings', 'Algorithms', 'Data Structures']);
     } finally {
-      setCategoriesLoading(false);
-    }
-  };
-
-  const fetchLevels = async () => {
-    setLevelsLoading(true);
-    try {
-      const res = await fetch(`/api/admin/problems/levels?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`, {
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch levels');
-      }
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      // Ensure data is an array and filter out invalid entries
-      const validData = Array.isArray(data.levels) ? data.levels.filter(item => 
-        item && 
-        item.level && 
-        typeof item.level === 'string' &&
-        item.level.trim().length > 0
-      ) : [];
-      setLevels(validData);
-    } catch (err) {
-      console.error('Error fetching levels:', err);
-      setLevels([]); // Set empty array on error
-    } finally {
-      setLevelsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -142,24 +84,17 @@ export default function AdminProblemsPage() {
     setError("");
     try {
       const params = [];
-      if (language) params.push(`language=${encodeURIComponent(language)}`);
-      if (category) params.push(`category=${encodeURIComponent(category)}`);
-      if (level) params.push(`difficulty=${encodeURIComponent(level)}`);
-      const query = params.length ? `?${params.join('&')}` : '';
-      const res = await fetch(`/api/admin/problems${query}`, {
-        credentials: 'include'
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch problems');
-      }
+      params.push(`language=${encodeURIComponent(selectedLanguage)}`);
+      params.push(`subcategory=${encodeURIComponent(selectedSubcategory)}`);
+      params.push(`difficulty=${encodeURIComponent(selectedLevel)}`);
+      const query = `?${params.join('&')}`;
+      
+      const res = await fetch(`/api/admin/problems${query}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      // Ensure data is an array
-      const validData = Array.isArray(data.problems) ? data.problems : [];
-      setProblems(validData);
+      setProblems(data.problems || []);
     } catch (err) {
       setError(err.message);
-      setProblems([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -169,11 +104,9 @@ export default function AdminProblemsPage() {
     if (!confirm("Are you sure you want to delete this problem?")) return;
     setDeletingId(id);
     try {
-      await fetch(`/api/admin/problems/${id}`, { 
-        method: "DELETE",
-        credentials: 'include'
-      });
+      await fetch(`/api/admin/problems/${id}`, { method: "DELETE" });
       setProblems(problems.filter((p) => p._id !== id));
+      fetchProblemCounts(); // Update counts
     } catch {
       alert("Failed to delete problem.");
     } finally {
@@ -181,315 +114,236 @@ export default function AdminProblemsPage() {
     }
   };
 
-  const handleSelect = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-    );
+  const handleLanguageSelect = (lang) => {
+    setSelectedLanguage(lang);
+    setCurrentView('subcategories');
   };
 
-  const handleSelectAll = () => {
-    if (selected.length === problems.length) {
-      setSelected([]);
-    } else {
-      setSelected(problems.map((p) => p._id));
+  const handleSubcategorySelect = (subcategory) => {
+    setSelectedSubcategory(subcategory);
+    setCurrentView('levels');
+  };
+
+  const handleLevelSelect = (level) => {
+    setSelectedLevel(level);
+    setCurrentView('problems');
+  };
+
+  const handleBack = () => {
+    if (currentView === 'problems') {
+      setSelectedLevel("");
+      setCurrentView('levels');
+    } else if (currentView === 'levels') {
+      setSelectedSubcategory("");
+      setCurrentView('subcategories');
+    } else if (currentView === 'subcategories') {
+      setSelectedLanguage("");
+      setCurrentView('languages');
     }
   };
 
-    const handleBulkDelete = async () => {
-    if (selected.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selected.length} problems?`)) return;
-    setBulkDeleting(true);
-    try {
-      await Promise.all(selected.map(id => fetch(`/api/admin/problems/${id}`, { 
-        method: 'DELETE',
-        credentials: 'include'
-      })));
-      setProblems(problems.filter((p) => !selected.includes(p._id)));
-      setSelected([]);
-    } catch {
-      alert('Failed to delete selected problems.');
-    } finally {
-      setBulkDeleting(false);
+  const getBreadcrumbs = () => {
+    const crumbs = [];
+    crumbs.push({ label: 'Languages', onClick: () => { setCurrentView('languages'); setSelectedLanguage(''); } });
+    
+    if (selectedLanguage) {
+      const lang = LANGUAGES.find(l => l.value === selectedLanguage);
+      crumbs.push({ 
+        label: lang?.label || selectedLanguage, 
+        onClick: () => { setCurrentView('subcategories'); setSelectedSubcategory(''); } 
+      });
     }
+    
+    if (selectedSubcategory) {
+      crumbs.push({ 
+        label: selectedSubcategory, 
+        onClick: () => { setCurrentView('levels'); setSelectedLevel(''); } 
+      });
+    }
+    
+    if (selectedLevel) {
+      const level = LEVELS.find(l => l.value === selectedLevel);
+      crumbs.push({ label: level?.label || selectedLevel });
+    }
+    
+    return crumbs;
   };
 
-  const handleLanguageCardClick = (selectedLanguage) => {
-    setLanguage(selectedLanguage);
-    setCategory('');
-    setLevel('');
-    setShowLanguageCards(false);
-    setShowCategoryCards(true);
-    setShowLevelCards(false);
-  };
+  const renderLanguageSelection = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {LANGUAGES.map((lang) => (
+        <button
+          key={lang.value}
+          onClick={() => handleLanguageSelect(lang.value)}
+          className={`bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all transform hover:scale-105 border-2 border-transparent hover:border-${lang.color}-400`}
+        >
+          <div className="text-6xl mb-4">{lang.icon}</div>
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">{lang.label}</h3>
+          <p className="text-gray-600">
+            {problemCounts[lang.value] || 0} problems
+          </p>
+        </button>
+      ))}
+    </div>
+  );
 
-  const handleCategoryCardClick = (selectedCategory) => {
-    setCategory(selectedCategory);
-    setLevel('');
-    setShowCategoryCards(false);
-    setShowLevelCards(true);
-  };
+  const renderSubcategorySelection = () => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {subcategories.map((subcategory) => (
+          <button
+            key={subcategory}
+            onClick={() => handleSubcategorySelect(subcategory)}
+            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all hover:bg-indigo-50 border border-gray-200"
+          >
+            <FolderOpen className="h-8 w-8 text-indigo-600 mb-3" />
+            <h3 className="text-lg font-semibold text-gray-800">{subcategory}</h3>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
-  const handleLevelCardClick = (selectedLevel) => {
-    setLevel(selectedLevel);
-    setShowLevelCards(false);
-  };
+  const renderLevelSelection = () => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {LEVELS.map((level) => (
+        <button
+          key={level.value}
+          onClick={() => handleLevelSelect(level.value)}
+          className={`bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-all transform hover:scale-105 border-2 border-transparent hover:border-${level.color}-400`}
+        >
+          <div className="text-5xl mb-4">{level.icon}</div>
+          <h3 className="text-2xl font-bold text-gray-800">{level.label}</h3>
+          <p className="text-gray-600 mt-2">Click to view problems</p>
+        </button>
+      ))}
+    </div>
+  );
 
-  const handleBackToLanguages = () => {
-    setLanguage("");
-    setCategory("");
-    setLevel("");
-    setShowLanguageCards(true);
-    setShowCategoryCards(false);
-    setShowLevelCards(false);
-  };
-
-  const handleBackToCategories = () => {
-    setCategory("");
-    setLevel("");
-    setShowCategoryCards(true);
-    setShowLevelCards(false);
-  };
-
-  const handleBackToLevels = () => {
-    setLevel("");
-    setShowLevelCards(true);
-  };
+  const renderProblems = () => (
+    <div className="bg-white rounded-lg shadow">
+      {loading ? (
+        <div className="text-center py-12 text-gray-500">Loading problems...</div>
+      ) : error ? (
+        <div className="text-center py-12 text-red-500">{error}</div>
+      ) : problems.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <p>No problems found.</p>
+          <Link
+            href={`/admin/problems/create?language=${selectedLanguage}&subcategory=${selectedSubcategory}&level=${selectedLevel}`}
+            className="mt-4 inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            <Plus className="h-4 w-4" /> Create First Problem
+          </Link>
+        </div>
+      ) : (
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {problems.map((problem) => (
+              <tr key={problem._id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{problem.title}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                    ${problem.difficulty === 'level1' ? 'bg-green-100 text-green-800' : 
+                      problem.difficulty === 'level2' ? 'bg-yellow-100 text-yellow-800' : 
+                      'bg-red-100 text-red-800'}`}>
+                    {LEVELS.find(l => l.value === problem.difficulty)?.label || problem.difficulty}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                    ${problem.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {problem.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <Link
+                    href={`/admin/problems/${problem._id}/edit`}
+                    className="text-indigo-600 hover:text-indigo-900 mr-4"
+                  >
+                    <Edit className="h-4 w-4 inline" /> Edit
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(problem._id)}
+                    className="text-red-600 hover:text-red-900"
+                    disabled={deletingId === problem._id}
+                  >
+                    <Trash2 className="h-4 w-4 inline" /> 
+                    {deletingId === problem._id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 bg-gray-50 min-h-screen">
-        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
-            <div className="flex items-center gap-3">
-              {!showLanguageCards && (
-                <button
-                  onClick={
-                    showCategoryCards ? handleBackToLanguages : 
-                    showLevelCards ? handleBackToCategories : 
-                    level ? handleBackToLevels : 
-                    category ? handleBackToCategories : 
-                    handleBackToLanguages
-                  }
-                  className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          {/* Header with breadcrumbs */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-3xl font-bold text-gray-900">Technical Courses</h1>
+              {currentView === 'problems' && (
+                <Link
+                  href={`/admin/problems/create?language=${selectedLanguage}&subcategory=${selectedSubcategory}&level=${selectedLevel}`}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  {showCategoryCards ? 'Back to Languages' : 
-                   showLevelCards ? 'Back to Categories' : 
-                   level ? 'Back to Levels' : 
-                   category ? 'Back to Categories' : 
-                   'Back to Languages'}
+                  <Plus className="h-4 w-4" /> Add Problem
+                </Link>
+              )}
+            </div>
+            
+            {/* Breadcrumbs */}
+            <nav className="flex items-center space-x-2 text-sm">
+              {currentView !== 'languages' && (
+                <button
+                  onClick={handleBack}
+                  className="text-gray-500 hover:text-gray-700 mr-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
                 </button>
               )}
-              <div>
-                <h1 className="text-3xl font-bold text-black">
-                  {showLanguageCards 
-                    ? 'Problems by Language' 
-                    : showCategoryCards 
-                      ? 'Choose Problem Category' 
-                      : showLevelCards
-                        ? 'Choose Difficulty Level'
-                        : 'Problems Management'
-                  }
-                </h1>
-                {!showLanguageCards && language && (
-                  <p className="text-gray-600 mt-1">
-                    Showing {language.toUpperCase()} problems
-                    {category && ` - ${category}`}
-                    {level && ` - ${level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : level === 'level3' ? 'Level 3' : level}`}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2 items-center">
-              <Link href="/admin/problems/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
-                <Plus className="h-4 w-4" /> Add Problem
-              </Link>
-            </div>
+              {getBreadcrumbs().map((crumb, index) => (
+                <div key={index} className="flex items-center">
+                  {index > 0 && <span className="mx-2 text-gray-400">/</span>}
+                  {crumb.onClick ? (
+                    <button
+                      onClick={crumb.onClick}
+                      className="text-indigo-600 hover:text-indigo-800"
+                    >
+                      {crumb.label}
+                    </button>
+                  ) : (
+                    <span className="text-gray-900 font-medium">{crumb.label}</span>
+                  )}
+                </div>
+              ))}
+            </nav>
           </div>
-          {/* Language Cards View */}
-          {showLanguageCards ? (
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Code2 className="h-6 w-6 text-indigo-500" />
-                <h2 className="text-xl font-semibold text-gray-800">Choose a Programming Language</h2>
-              </div>
-              {languagesLoading ? (
-                <Loader type="cards" />
-              ) : languages.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Code2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No programming languages found. Create some problems first!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {languages
-                    .filter(langData => langData && langData.language) // Filter out invalid entries
-                    .map((langData) => (
-                      <LanguageCard
-                        key={langData.language}
-                        language={langData.language}
-                        problemCount={langData.count || 0}
-                        onClick={() => handleLanguageCardClick(langData.language)}
-                      />
-                    ))}
-                </div>
-              )}
-            </div>
-          ) : showCategoryCards ? (
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <FolderOpen className="h-6 w-6 text-indigo-500" />
-                <h2 className="text-xl font-semibold text-gray-800">Choose Problem Category for {language.toUpperCase()}</h2>
-              </div>
-              {categoriesLoading ? (
-                <Loader type="cards" />
-              ) : categories.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <FolderOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No categories found for {language}. Create some problems first!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {categories
-                    .filter(categoryData => categoryData && categoryData.category) // Filter out invalid entries
-                    .map((categoryData) => (
-                      <CategoryCard
-                        key={categoryData.category}
-                        category={categoryData.category}
-                        problemCount={categoryData.count || 0}
-                        onClick={() => handleCategoryCardClick(categoryData.category)}
-                      />
-                    ))}
-                </div>
-              )}
-            </div>
-          ) : showLevelCards ? (
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Target className="h-6 w-6 text-indigo-500" />
-                <h2 className="text-xl font-semibold text-gray-800">Choose Difficulty Level for {language.toUpperCase()} - {category}</h2>
-              </div>
-              {levelsLoading ? (
-                <Loader type="cards" />
-              ) : levels.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No difficulty levels found for {language} - {category}. Create some problems first!</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {levels
-                    .filter(levelData => levelData && levelData.level) // Filter out invalid entries
-                    .map((levelData) => (
-                      <LevelCard
-                        key={levelData.level}
-                        level={levelData.level}
-                        problemCount={levelData.count || 0}
-                        onClick={() => handleLevelCardClick(levelData.level)}
-                      />
-                    ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Bulk Delete Button */}
-              {selected.length > 0 && (
-                <div className="mb-4 flex items-center gap-4">
-                  <button
-                    onClick={handleBulkDelete}
-                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2 disabled:opacity-50"
-                    disabled={bulkDeleting}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    {bulkDeleting ? 'Deleting...' : `Delete Selected (${selected.length})`}
-                  </button>
-                </div>
-              )}
-          {loading ? (
-            <Loader type="table" />
-          ) : error ? (
-            <div className="text-center py-12 text-red-500">{error}</div>
-          ) : problems.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              No problems found for {language.toUpperCase()} - {category} - {level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : level === 'level3' ? 'Level 3' : level}.
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded shadow bg-white mt-4">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selected.length === problems.length && problems.length > 0}
-                        onChange={handleSelectAll}
-                        aria-label="Select all problems"
-                      />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difficulty</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {problems.map((problem) => (
-                    <tr key={problem._id} className="hover:bg-indigo-50 transition-colors">
-                      <td className="px-4 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(problem._id)}
-                          onChange={() => handleSelect(problem._id)}
-                          aria-label={`Select problem ${problem.title}`}
-                        />
-                      </td>
-                      <td className="px-6 py-4 text-black font-medium">{problem.title}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          problem.difficulty === 'level1' ? 'bg-green-100 text-green-800' :
-                          problem.difficulty === 'level2' ? 'bg-yellow-100 text-yellow-800' :
-                          problem.difficulty === 'level3' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-700">{problem.category}</td>
-                      <td className="px-6 py-4">
-                        {problem.programmingLanguage && (
-                          <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 capitalize">
-                            {problem.programmingLanguage}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">{(problem.tags || []).join(', ')}</td>
-                      <td className="px-6 py-4 flex gap-2">
-                        <Link href={`/admin/problems/${problem._id}/edit`} className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
-                          <Edit className="h-4 w-4" /> Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(problem._id)}
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                          disabled={deletingId === problem._id}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          {deletingId === problem._id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-            </>
-          )}
+
+          {/* Content */}
+          <div className="mt-6">
+            {currentView === 'languages' && renderLanguageSelection()}
+            {currentView === 'subcategories' && renderSubcategorySelection()}
+            {currentView === 'levels' && renderLevelSelection()}
+            {currentView === 'problems' && renderProblems()}
+          </div>
         </div>
       </main>
     </div>
