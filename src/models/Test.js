@@ -10,14 +10,23 @@ const MCQSchema = new mongoose.Schema({
 const TestSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
+  instructions: { type: String }, // Test instructions
   mcqs: [MCQSchema], // Embedded MCQs
-  language: { type: String },
-  collection: { type: String, default: 'General' }, // Collection field for top-level organization, default to 'General' for backward compatibility
-  category: { type: String, required: true }, // Added category field for organizing tests
-  duration: { type: Number, default: 60 }, // Duration in minutes, default 60 minutes
+  language: { type: String, required: true }, // Main programming language (Java, Python, etc.)
+  category: { type: String, required: true }, // Subcategory (Basic Problems, Advanced Problems, etc.)
+  level: { 
+    type: String, 
+    enum: ['level1', 'level2', 'level3'],
+    required: true 
+  }, // Difficulty level
+  duration: { type: Number, default: 90 }, // Duration in minutes, default 90 minutes (1.5h)
+  attempts: { type: Number, default: 1 }, // Number of attempts allowed
+  questionCount: { type: Number, default: 10 }, // Number of questions in test
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   availableFrom: { type: Date },
   availableTo: { type: Date },
+  isActive: { type: Boolean, default: true },
+  tags: [{ type: String, trim: true }] // Additional tags for organization
 }, { timestamps: true });
 
 export default mongoose.models.Test || mongoose.model('Test', TestSchema); 

@@ -7,10 +7,12 @@ import {
   Code, 
   Trash2, 
   Filter, 
-  ArrowUpDown 
+  ArrowUpDown,
+  Download 
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useRouter } from 'next/navigation';
+import * as XLSX from 'xlsx';
 
 export default function AdminSubmissionsPage() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function AdminSubmissionsPage() {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: 'submittedAt', direction: 'desc' });
+  const [selectedSubmissions, setSelectedSubmissions] = useState(new Set());
 
   useEffect(() => {
     fetchSubmissions();
@@ -139,6 +142,58 @@ export default function AdminSubmissionsPage() {
 
   const sortedSubmissions = sortSubmissions(filteredSubmissions);
 
+  const handleExportExcel = () => {
+    const dataToExport = selectedSubmissions.size > 0 
+      ? sortedSubmissions.filter(sub => selectedSubmissions.has(sub._id))
+      : sortedSubmissions;
+
+    const excelData = dataToExport.map(sub => ({
+      'Type': sub.type === 'problem' ? 'Technical Problem' : 'Aptitude Test',
+      'Student': (sub.user?.firstName && sub.user?.lastName) 
+        ? `${sub.user.firstName} ${sub.user.lastName}` 
+        : (sub.student?.firstName && sub.student?.lastName)
+        ? `${sub.student.firstName} ${sub.student.lastName}`
+        : 'N/A',
+      'Student Email': sub.user?.email || sub.student?.email || 'N/A',
+      'Title': sub.problem?.title || sub.test?.title || 'N/A',
+      'Status': getStatusStyle(sub.status).text,
+      'Score': `${sub.score ?? 'N/A'}%`,
+      'Date': new Date(sub.submittedAt || sub.createdAt).toLocaleString(),
+      'Language': sub.language || 'N/A',
+      'Time Taken': sub.timeTaken ? `${sub.timeTaken}s` : 'N/A'
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions');
+    
+    // Auto-adjust column widths
+    const colWidths = Object.keys(excelData[0] || {}).map(key => ({
+      wch: Math.max(key.length, 15)
+    }));
+    worksheet['!cols'] = colWidths;
+
+    XLSX.writeFile(workbook, `submissions_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  const toggleSubmissionSelection = (submissionId) => {
+    const newSelection = new Set(selectedSubmissions);
+    if (newSelection.has(submissionId)) {
+      newSelection.delete(submissionId);
+    } else {
+      newSelection.add(submissionId);
+    }
+    setSelectedSubmissions(newSelection);
+  };
+
+  const toggleAllSubmissions = () => {
+    if (selectedSubmissions.size === sortedSubmissions.length) {
+      setSelectedSubmissions(new Set());
+    } else {
+      setSelectedSubmissions(new Set(sortedSubmissions.map(s => s._id)));
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -190,6 +245,14 @@ export default function AdminSubmissionsPage() {
               Tests
             </button>
           </div>
+          <button
+            onClick={handleExportExcel}
+            disabled={sortedSubmissions.length === 0}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2 disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" /> 
+            Export {selectedSubmissions.size > 0 ? `(${selectedSubmissions.size})` : 'All'}
+          </button>
         </div>
 
         {/* Submissions Table */}
@@ -197,6 +260,14 @@ export default function AdminSubmissionsPage() {
           <table className="min-w-full bg-white shadow rounded-lg">
             <thead>
               <tr>
+                <th className="px-4 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedSubmissions.size === sortedSubmissions.length && sortedSubmissions.length > 0}
+                    onChange={toggleAllSubmissions}
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                </th>
                 <th className="px-4 py-2">Type</th>
                 <th className="px-4 py-2">Student</th>
                 <th className="px-4 py-2">
@@ -246,6 +317,14 @@ export default function AdminSubmissionsPage() {
                 
                 return (
                   <tr key={sub._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedSubmissions.has(sub._id)}
+                        onChange={() => toggleSubmissionSelection(sub._id)}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </td>
                     <td className="px-4 py-2 capitalize">
                       <span className={`px-2 py-1 rounded text-xs ${
                         sub.type === 'problem' 

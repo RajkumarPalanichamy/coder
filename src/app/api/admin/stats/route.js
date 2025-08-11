@@ -13,6 +13,18 @@ export async function GET(request) {
     const totalProblems = await Problem.countDocuments({ isActive: true });
     const totalSubmissions = await Submission.countDocuments();
 
+    // Get language-specific problem counts
+    const languageCounts = await Problem.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: '$programmingLanguage', count: { $sum: 1 } } }
+    ]);
+
+    // Transform to object for easier access
+    const problemsByLanguage = languageCounts.reduce((acc, lang) => {
+      acc[lang._id.toLowerCase()] = lang.count;
+      return acc;
+    }, {});
+
     // Get recent activity (last 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -26,12 +38,21 @@ export async function GET(request) {
       createdAt: { $gte: sevenDaysAgo }
     });
 
+    // Get more detailed analytics
+    const avgScoreResult = await Submission.aggregate([
+      { $match: { score: { $ne: null } } },
+      { $group: { _id: null, avgScore: { $avg: '$score' } } }
+    ]);
+    const avgScore = avgScoreResult.length > 0 ? Math.round(avgScoreResult[0].avgScore) : 0;
+
     return NextResponse.json({
       totalStudents,
       totalProblems,
       totalSubmissions,
+      problemsByLanguage,
       recentSubmissions,
-      recentStudents
+      recentStudents,
+      avgScore
     });
 
   } catch (error) {

@@ -1,0 +1,70 @@
+import { NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import Test from '@/models/Test';
+import { getUserFromRequest } from '@/lib/auth';
+
+export async function GET(request) {
+  try {
+    await connectDB();
+    
+    // Check authentication
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Check if user is admin
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    
+    const { searchParams } = new URL(request.url);
+    const rawLanguage = searchParams.get('language');
+    const rawCategory = searchParams.get('category');
+
+    if (!rawLanguage || !rawCategory) {
+      return NextResponse.json(
+        { error: 'Language and category parameters are required' },
+        { status: 400 }
+      );
+    }
+
+    // Decode URL-encoded parameters to handle special characters
+    const language = decodeURIComponent(rawLanguage);
+    const category = decodeURIComponent(rawCategory);
+
+    // Get all unique levels for the specified language and category
+    const levels = await Test.distinct('level', { 
+      language,
+      category,
+      isActive: true
+    });
+    
+    // Get test count for each level
+    const levelsWithCounts = await Promise.all(
+      levels.map(async (level) => {
+        const count = await Test.countDocuments({ 
+          language, 
+          category,
+          level,
+          isActive: true
+        });
+        return { level, count };
+      })
+    );
+
+    // Sort levels in order: level1, level2, level3
+    const levelOrder = ['level1', 'level2', 'level3'];
+    const sortedLevels = levelsWithCounts.sort((a, b) => 
+      levelOrder.indexOf(a.level) - levelOrder.indexOf(b.level)
+    );
+
+    return NextResponse.json({ levels: sortedLevels });
+  } catch (error) {
+    console.error('Error fetching test levels:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
