@@ -15,24 +15,6 @@ const testCaseSchema = new mongoose.Schema({
   }
 });
 
-// New schema for level timing information
-const levelTimingSchema = new mongoose.Schema({
-  level: {
-    type: String,
-    enum: ['level1', 'level2', 'level3'],
-    required: true
-  },
-  timeAllowed: {
-    type: Number,
-    required: true,
-    default: 3600 // Default 1 hour in seconds
-  },
-  description: {
-    type: String,
-    default: ''
-  }
-});
-
 const problemSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -82,21 +64,19 @@ const problemSchema = new mongoose.Schema({
   },
   timeLimit: {
     type: Number,
-    default: 1000 // milliseconds
+    default: 1000 // milliseconds for execution
   },
   memoryLimit: {
     type: Number,
     default: 128 // MB
   },
-  // Level-specific timing information
-  levelTiming: {
-    type: levelTimingSchema,
+  // Individual problem timing (set by admin) - in minutes
+  problemTimeAllowed: {
+    type: Number,
+    required: true,
     default: function() {
-      return {
-        level: this.difficulty,
-        timeAllowed: this.difficulty === 'level1' ? 1800 : this.difficulty === 'level2' ? 2700 : 3600, // 30, 45, 60 minutes
-        description: `Time allowed for ${this.difficulty} problems`
-      };
+      // Default timing based on difficulty if not set by admin
+      return this.difficulty === 'level1' ? 5 : this.difficulty === 'level2' ? 8 : 12;
     }
   },
   // Points/score for solving this problem

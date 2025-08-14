@@ -55,7 +55,7 @@ export async function POST(request, { params }) {
       category: category,
       difficulty: level,
       isActive: true
-    }).select('_id title levelTiming points');
+    }).select('_id title problemTimeAllowed points');
 
     if (problems.length === 0) {
       return NextResponse.json(
@@ -64,11 +64,9 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Calculate time allowed and total points
-    const levelTiming = problems[0].levelTiming || {
-      level: level,
-      timeAllowed: level === 'level1' ? 1800 : level === 'level2' ? 2700 : 3600
-    };
+    // Calculate total time from individual problem timings (convert minutes to seconds)
+    const totalTimeMinutes = problems.reduce((sum, problem) => sum + (problem.problemTimeAllowed || 0), 0);
+    const timeAllowedSeconds = totalTimeMinutes * 60;
 
     const totalPoints = problems.reduce((sum, problem) => sum + (problem.points || 0), 0);
 
@@ -80,7 +78,7 @@ export async function POST(request, { params }) {
       programmingLanguage: language,
       status: 'in_progress',
       startTime: new Date(),
-      timeAllowed: levelTiming.timeAllowed,
+      timeAllowed: timeAllowedSeconds,
       totalProblems: problems.length,
       totalPoints,
       problemSubmissions: []
@@ -166,7 +164,7 @@ export async function POST(request, { params }) {
       category,
       totalProblems: problems.length,
       submittedProblems: submissionResults.filter(r => r.status === 'submitted').length,
-      timeAllowed: levelTiming.timeAllowed,
+      timeAllowed: timeAllowedSeconds,
       totalPoints,
       submissions: submissionResults,
       message: `Successfully submitted ${submissionResults.filter(r => r.status === 'submitted').length} out of ${problemSubmissions.length} problems for ${level}`

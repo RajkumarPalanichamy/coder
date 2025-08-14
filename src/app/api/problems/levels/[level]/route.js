@@ -47,19 +47,18 @@ export async function GET(request, { params }) {
         category,
         problems: [],
         totalProblems: 0,
-        totalTime: 0,
+        totalTimeMinutes: 0,
+        totalTimeSeconds: 0,
         totalPoints: 0,
         message: 'No problems found for this level'
       });
     }
 
-    // Calculate total time and points for this level
-    const levelTiming = problems[0].levelTiming || {
-      level: level,
-      timeAllowed: level === 'level1' ? 1800 : level === 'level2' ? 2700 : 3600,
-      description: `Time allowed for ${level} problems`
-    };
+    // Calculate total time from individual problem timings (convert minutes to seconds)
+    const totalTimeMinutes = problems.reduce((sum, problem) => sum + (problem.problemTimeAllowed || 0), 0);
+    const totalTimeSeconds = totalTimeMinutes * 60;
 
+    // Calculate total points
     const totalPoints = problems.reduce((sum, problem) => sum + (problem.points || 0), 0);
 
     return NextResponse.json({
@@ -79,15 +78,16 @@ export async function GET(request, { params }) {
         starterCode: problem.starterCode,
         timeLimit: problem.timeLimit,
         memoryLimit: problem.memoryLimit,
+        problemTimeAllowed: problem.problemTimeAllowed, // Individual problem timing in minutes
         points: problem.points,
         tags: problem.tags,
         createdAt: problem.createdAt
       })),
       totalProblems: problems.length,
-      levelTiming,
-      totalTime: levelTiming.timeAllowed,
+      totalTimeMinutes, // Total time in minutes
+      totalTimeSeconds, // Total time in seconds
       totalPoints,
-      instructions: `Complete all ${problems.length} problems within ${Math.floor(levelTiming.timeAllowed / 60)} minutes`
+      instructions: `Complete all ${problems.length} problems within ${totalTimeMinutes} minutes total`
     });
 
   } catch (error) {

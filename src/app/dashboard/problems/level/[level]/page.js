@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send } from 'lucide-react';
+import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
@@ -19,21 +19,26 @@ export default function LevelProblemsPage() {
 
   const [levelData, setLevelData] = useState(null);
   const [problems, setProblems] = useState([]);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [runningCode, setRunningCode] = useState({});
+  const [runningCode, setRunningCode] = useState(false);
   
   // Store code for each problem
   const [problemCodes, setProblemCodes] = useState({});
   const [problemLanguages, setProblemLanguages] = useState({});
   const [runResults, setRunResults] = useState({});
-  const [canSubmitAll, setCanSubmitAll] = useState(false);
   
-  // Timer state
+  // Timer state for entire level
   const [timeLeft, setTimeLeft] = useState(null);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [levelSubmissionId, setLevelSubmissionId] = useState(null);
   const timerRef = useRef();
+
+  // Current problem
+  const currentProblem = problems[currentProblemIndex];
+  const currentCode = currentProblem ? (problemCodes[currentProblem._id] || '') : '';
+  const currentLanguage = currentProblem ? (problemLanguages[currentProblem._id] || 'javascript') : 'javascript';
 
   useEffect(() => {
     if (language && category && level) {
@@ -113,22 +118,20 @@ export default function LevelProblemsPage() {
     }
   };
 
-  const handleRunCode = async (problemId) => {
-    setRunningCode(prev => ({ ...prev, [problemId]: true }));
-    setRunResults(prev => ({ ...prev, [problemId]: null }));
-
-    const problem = problems.find(p => p._id === problemId);
-    const code = problemCodes[problemId];
-    const lang = problemLanguages[problemId];
+  const handleRunCode = async () => {
+    if (!currentProblem) return;
+    
+    setRunningCode(true);
+    setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
 
     try {
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          code,
-          language: lang,
-          testCases: problem.examples || []
+          code: currentCode,
+          language: currentLanguage,
+          testCases: currentProblem.examples || []
         })
       });
       
@@ -137,7 +140,7 @@ export default function LevelProblemsPage() {
       if (response.ok) {
         setRunResults(prev => ({
           ...prev,
-          [problemId]: {
+          [currentProblem._id]: {
             success: true,
             results: data.results,
             allPassed: data.results.every(r => r.passed)
@@ -146,7 +149,7 @@ export default function LevelProblemsPage() {
       } else {
         setRunResults(prev => ({
           ...prev,
-          [problemId]: {
+          [currentProblem._id]: {
             success: false,
             error: data.error || 'Code execution failed'
           }
@@ -155,24 +158,14 @@ export default function LevelProblemsPage() {
     } catch (error) {
       setRunResults(prev => ({
         ...prev,
-        [problemId]: {
+        [currentProblem._id]: {
           success: false,
           error: 'Error running code'
         }
       }));
     } finally {
-      setRunningCode(prev => ({ ...prev, [problemId]: false }));
+      setRunningCode(false);
     }
-
-    // Check if all problems have been run successfully
-    checkCanSubmitAll();
-  };
-
-  const checkCanSubmitAll = () => {
-    const allProblemsHaveCode = problems.every(problem => 
-      problemCodes[problem._id] && problemCodes[problem._id].trim() !== ''
-    );
-    setCanSubmitAll(allProblemsHaveCode && sessionStarted);
   };
 
   const handleSubmitAll = async () => {
@@ -186,7 +179,7 @@ export default function LevelProblemsPage() {
     try {
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
-        code: problemCodes[problem._id],
+        code: problemCodes[problem._id] || '',
         submissionLanguage: problemLanguages[problem._id]
       }));
 
@@ -217,19 +210,32 @@ export default function LevelProblemsPage() {
     }
   };
 
-  const updateProblemCode = (problemId, newCode) => {
+  const updateCurrentCode = (newCode) => {
+    if (!currentProblem) return;
     setProblemCodes(prev => ({
       ...prev,
-      [problemId]: newCode
+      [currentProblem._id]: newCode
     }));
-    checkCanSubmitAll();
   };
 
-  const updateProblemLanguage = (problemId, newLanguage) => {
+  const updateCurrentLanguage = (newLanguage) => {
+    if (!currentProblem) return;
     setProblemLanguages(prev => ({
       ...prev,
-      [problemId]: newLanguage
+      [currentProblem._id]: newLanguage
     }));
+  };
+
+  const goToPrevious = () => {
+    if (currentProblemIndex > 0) {
+      setCurrentProblemIndex(currentProblemIndex - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (currentProblemIndex < problems.length - 1) {
+      setCurrentProblemIndex(currentProblemIndex + 1);
+    }
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -245,6 +251,11 @@ export default function LevelProblemsPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getProgress = () => {
+    const completed = Object.values(problemCodes).filter(code => code && code.trim() !== '').length;
+    return `${completed}/${problems.length}`;
   };
 
   if (loading) {
@@ -296,8 +307,8 @@ export default function LevelProblemsPage() {
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(level)}`}>
                 {level === 'level1' ? 'Level 1' : level === 'level2' ? 'Level 2' : 'Level 3'}
               </span>
-              <span className="text-sm text-gray-500">{problems.length} Problems</span>
-              <span className="text-sm text-gray-500">{levelData.totalPoints} Points</span>
+              <span className="text-sm text-gray-500">Problem {currentProblemIndex + 1}/{problems.length}</span>
+              <span className="text-sm text-gray-500">Progress: {getProgress()}</span>
             </div>
           </div>
         </div>
@@ -311,7 +322,7 @@ export default function LevelProblemsPage() {
               <div className="flex items-center space-x-2">
                 <Clock className="h-5 w-5 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">
-                  Total Time: {Math.floor(levelData.totalTime / 60)} minutes
+                  Total Level Time: {levelData.totalTimeMinutes} minutes
                 </span>
               </div>
               {sessionStarted && timeLeft !== null && (
@@ -319,6 +330,14 @@ export default function LevelProblemsPage() {
                   <Timer className="h-5 w-5 text-orange-600" />
                   <span className={`text-lg font-semibold ${timeLeft <= 300 ? 'text-red-600' : 'text-orange-600'}`}>
                     Time Left: {formatTime(timeLeft)}
+                  </span>
+                </div>
+              )}
+              {currentProblem && (
+                <div className="flex items-center space-x-2">
+                  <Target className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm text-gray-600">
+                    This Problem: {currentProblem.problemTimeAllowed} min
                   </span>
                 </div>
               )}
@@ -335,7 +354,7 @@ export default function LevelProblemsPage() {
               ) : (
                 <button
                   onClick={handleSubmitAll}
-                  disabled={!canSubmitAll || submitting}
+                  disabled={submitting}
                   className="flex items-center bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
                 >
                   {submitting ? (
@@ -346,7 +365,7 @@ export default function LevelProblemsPage() {
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Submit All Problems
+                      Submit All Problems ({getProgress()})
                     </>
                   )}
                 </button>
@@ -356,89 +375,107 @@ export default function LevelProblemsPage() {
         </div>
       </div>
 
-      {/* Problems List */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-8">
-          {problems.map((problem, index) => (
-            <div key={problem._id} className="bg-white rounded-lg shadow">
-              {/* Problem Header */}
-              <div className="border-b border-gray-200 p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {index + 1}. {problem.title}
-                    </h2>
-                    <p className="text-gray-600 mt-2">{problem.description}</p>
-                    {problem.points && (
-                      <span className="inline-block mt-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                        {problem.points} points
-                      </span>
-                    )}
-                  </div>
+      {/* Main Content - Current Problem */}
+      {currentProblem && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Problem Description */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-medium text-gray-900">
+                  Problem {currentProblemIndex + 1}: {currentProblem.title}
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                    {currentProblem.points} points
+                  </span>
+                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                    {currentProblem.problemTimeAllowed} min
+                  </span>
                 </div>
+              </div>
+              
+              <div className="prose max-w-none">
+                <p className="text-gray-700 mb-4 whitespace-pre-wrap">{currentProblem.description}</p>
                 
-                {/* Examples */}
-                {problem.examples && problem.examples.length > 0 && (
-                  <div className="mt-4">
+                {currentProblem.constraints && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium text-gray-900 mb-2">Constraints:</h3>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{currentProblem.constraints}</p>
+                  </div>
+                )}
+
+                {currentProblem.examples && currentProblem.examples.length > 0 && (
+                  <div className="mb-4">
                     <h3 className="text-sm font-medium text-gray-900 mb-2">Examples:</h3>
-                    {problem.examples.map((example, idx) => (
-                      <div key={idx} className="bg-gray-50 rounded p-3 mb-2">
+                    {currentProblem.examples.map((example, index) => (
+                      <div key={index} className="bg-gray-50 rounded p-3 mb-2">
                         <p className="text-sm text-gray-600 mb-1">
                           <strong>Input:</strong> {example.input}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 mb-1">
                           <strong>Output:</strong> {example.output}
                         </p>
+                        {example.explanation && (
+                          <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                            <strong>Explanation:</strong> {example.explanation}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Code Editor */}
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Solution</h3>
-                  <select
-                    value={problemLanguages[problem._id] || 'javascript'}
-                    onChange={(e) => updateProblemLanguage(problem._id, e.target.value)}
-                    className="border border-gray-300 rounded px-3 py-1 text-sm"
-                  >
-                    <option value="javascript">JavaScript</option>
-                    <option value="python">Python</option>
-                    <option value="java">Java</option>
-                    <option value="cpp">C++</option>
-                    <option value="c">C</option>
-                  </select>
+            {/* Code Editor */}
+            <div className="bg-white rounded-lg shadow flex flex-col">
+              <div className="border-b border-gray-200 p-4 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
+                  <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-700 capitalize">{currentLanguage}</span>
                 </div>
-                
-                <div className="border rounded-lg">
-                  <MonacoEditor
-                    height="200px"
-                    language={problemLanguages[problem._id] || 'javascript'}
-                    value={problemCodes[problem._id] || ''}
-                    theme="vs-light"
-                    options={{
-                      fontSize: 14,
-                      minimap: { enabled: false },
-                      scrollBeyondLastLine: false,
-                      wordWrap: 'on',
-                      automaticLayout: true,
-                      lineNumbers: 'on',
-                      tabSize: 2,
-                    }}
-                    onChange={(value) => updateProblemCode(problem._id, value || '')}
-                  />
-                </div>
+                <select
+                  value={currentLanguage}
+                  onChange={(e) => updateCurrentLanguage(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1 text-sm text-black bg-white"
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                  <option value="cpp">C++</option>
+                  <option value="c">C</option>
+                </select>
+              </div>
+              
+              <div className="p-0 flex-1 min-h-[384px]">
+                <MonacoEditor
+                  height="384px"
+                  language={currentLanguage}
+                  value={currentCode}
+                  theme="vs-light"
+                  options={{
+                    fontSize: 14,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    automaticLayout: true,
+                    lineNumbers: 'on',
+                    tabSize: 2,
+                  }}
+                  onChange={(value) => updateCurrentCode(value || '')}
+                />
+              </div>
 
+              <div className="p-4">
                 {/* Run Code Button and Results */}
-                <div className="mt-4 flex items-center space-x-4">
+                <div className="flex items-center space-x-4 mb-4">
                   <button
-                    onClick={() => handleRunCode(problem._id)}
-                    disabled={runningCode[problem._id] || !sessionStarted}
+                    onClick={handleRunCode}
+                    disabled={runningCode || !sessionStarted}
                     className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {runningCode[problem._id] ? (
+                    {runningCode ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Running...
@@ -451,23 +488,23 @@ export default function LevelProblemsPage() {
                     )}
                   </button>
                   
-                  {runResults[problem._id] && (
+                  {runResults[currentProblem._id] && (
                     <div className={`flex items-center px-3 py-1 rounded-md ${
-                      runResults[problem._id].success && runResults[problem._id].allPassed
+                      runResults[currentProblem._id].success && runResults[currentProblem._id].allPassed
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {runResults[problem._id].success && runResults[problem._id].allPassed ? (
+                      {runResults[currentProblem._id].success && runResults[currentProblem._id].allPassed ? (
                         <CheckCircle className="h-4 w-4 mr-1" />
                       ) : (
                         <XCircle className="h-4 w-4 mr-1" />
                       )}
                       <span className="text-sm">
-                        {runResults[problem._id].success 
-                          ? runResults[problem._id].allPassed 
+                        {runResults[currentProblem._id].success 
+                          ? runResults[currentProblem._id].allPassed 
                             ? 'All tests passed' 
                             : 'Some tests failed'
-                          : runResults[problem._id].error
+                          : runResults[currentProblem._id].error
                         }
                       </span>
                     </div>
@@ -475,9 +512,9 @@ export default function LevelProblemsPage() {
                 </div>
 
                 {/* Test Results */}
-                {runResults[problem._id] && runResults[problem._id].results && (
-                  <div className="mt-4 space-y-2">
-                    {runResults[problem._id].results.map((result, idx) => (
+                {runResults[currentProblem._id] && runResults[currentProblem._id].results && (
+                  <div className="space-y-2">
+                    {runResults[currentProblem._id].results.map((result, idx) => (
                       <div key={idx} className={`p-3 rounded border ${
                         result.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
                       }`}>
@@ -501,7 +538,48 @@ export default function LevelProblemsPage() {
                 )}
               </div>
             </div>
-          ))}
+          </div>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex justify-center items-center space-x-6">
+          <button
+            onClick={goToPrevious}
+            disabled={currentProblemIndex === 0}
+            className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="h-5 w-5 mr-2" />
+            <div className="text-left">
+              <div className="text-sm text-gray-500">Previous</div>
+              <div className="text-sm">Problem {currentProblemIndex}</div>
+            </div>
+          </button>
+
+          <div className="text-center">
+            <div className="text-sm text-gray-500 mb-1">
+              Problem {currentProblemIndex + 1} of {problems.length}
+            </div>
+            <div className="w-48 bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentProblemIndex + 1) / problems.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <button
+            onClick={goToNext}
+            disabled={currentProblemIndex === problems.length - 1}
+            className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="text-right">
+              <div className="text-sm text-gray-500">Next</div>
+              <div className="text-sm">Problem {currentProblemIndex + 2}</div>
+            </div>
+            <ChevronRight className="h-5 w-5 ml-2" />
+          </button>
         </div>
       </div>
     </div>

@@ -133,7 +133,7 @@ export async function POST(request) {
       category: category,
       difficulty: level,
       isActive: true
-    }).select('_id points levelTiming');
+    }).select('_id points problemTimeAllowed');
 
     if (problems.length === 0) {
       return NextResponse.json(
@@ -142,11 +142,9 @@ export async function POST(request) {
       );
     }
 
-    // Calculate time allowed and total points
-    const levelTiming = problems[0].levelTiming || {
-      level: level,
-      timeAllowed: level === 'level1' ? 1800 : level === 'level2' ? 2700 : 3600
-    };
+    // Calculate total time from individual problem timings (convert minutes to seconds)
+    const totalTimeMinutes = problems.reduce((sum, problem) => sum + (problem.problemTimeAllowed || 0), 0);
+    const timeAllowedSeconds = totalTimeMinutes * 60;
 
     const totalPoints = problems.reduce((sum, problem) => sum + (problem.points || 0), 0);
 
@@ -158,7 +156,7 @@ export async function POST(request) {
       programmingLanguage: language,
       status: 'in_progress',
       startTime: new Date(),
-      timeAllowed: levelTiming.timeAllowed,
+      timeAllowed: timeAllowedSeconds,
       totalProblems: problems.length,
       totalPoints,
       problemSubmissions: []
@@ -179,7 +177,7 @@ export async function POST(request) {
         totalProblems: levelSubmission.totalProblems,
         totalPoints: levelSubmission.totalPoints
       },
-      message: `Level ${level} session started. You have ${Math.floor(levelTiming.timeAllowed / 60)} minutes to complete ${problems.length} problems.`
+      message: `Level ${level} session started. You have ${Math.floor(timeAllowedSeconds / 60)} minutes to complete ${problems.length} problems.`
     });
 
   } catch (error) {
