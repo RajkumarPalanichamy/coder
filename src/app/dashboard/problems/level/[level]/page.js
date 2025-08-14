@@ -312,7 +312,7 @@ export default function LevelProblemsPage() {
                   <span className="font-semibold text-gray-900">Total Time</span>
                 </div>
                 <p className="text-2xl font-bold text-indigo-600">
-                  {levelData?.totalTimeMinutes || 30} minutes
+                  {level === 'level1' ? '30' : level === 'level2' ? '45' : '60'} minutes
                 </p>
               </div>
 
@@ -335,7 +335,7 @@ export default function LevelProblemsPage() {
                 Important Instructions
               </h3>
               <ul className="text-amber-700 space-y-2 text-sm">
-                <li>• You have {levelData?.totalTimeMinutes || 30} minutes to complete all {problems.length} problems</li>
+                <li>• You have {level === 'level1' ? '30' : level === 'level2' ? '45' : '60'} minutes to complete all {problems.length} problems</li>
                 <li>• The timer will run for the entire level, not individual problems</li>
                 <li>• You can navigate between problems freely during the session</li>
                 <li>• Your code will be auto-saved as you work</li>
@@ -419,7 +419,7 @@ export default function LevelProblemsPage() {
               <div className="flex items-center space-x-2">
                 <Clock className="h-5 w-5 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">
-                  Level Duration: {levelData?.totalTimeMinutes || 30} minutes
+                  Level Duration: {level === 'level1' ? '30' : level === 'level2' ? '45' : '60'} minutes
                 </span>
               </div>
               {sessionStarted && timeLeft !== null && (

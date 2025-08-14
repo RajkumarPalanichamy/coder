@@ -105,10 +105,14 @@ export async function POST(request) {
       );
     }
 
-    // Calculate total time allowed (sum of individual problem times)
-    const totalTimeSeconds = problems.reduce((total, problem) => {
-      return total + (problem.timeLimit || 0);
-    }, 0);
+    // Set fixed total time for each level (not sum of individual problems)
+    const levelTimeMinutes = {
+      'level1': 30,  // Level 1: 30 minutes total
+      'level2': 45,  // Level 2: 45 minutes total  
+      'level3': 60   // Level 3: 60 minutes total
+    };
+    
+    const totalTimeSeconds = (levelTimeMinutes[level] || 30) * 60; // Convert to seconds
 
     // Create level submission
     const levelSubmission = new LevelSubmission({
