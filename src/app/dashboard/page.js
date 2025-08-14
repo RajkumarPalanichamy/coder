@@ -266,7 +266,7 @@ export default function Dashboard() {
                            <ProblemCard
                key={problem._id}
                problem={problem}
-               href={`/problems/${problem._id}`}
+               href={`/problems/${problem._id}/instructions`}
                showStatus={false}
              />
             ))}

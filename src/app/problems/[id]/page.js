@@ -715,7 +715,7 @@ export default function ProblemPage() {
           <div className="flex justify-center items-center space-x-6">
             {navigation.previous ? (
               <button
-                onClick={() => router.push(`/problems/${navigation.previous.id}`)}
+                onClick={() => router.push(`/problems/${navigation.previous.id}/instructions`)}
                 className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
               >
                 <ChevronLeft className="h-5 w-5 mr-2" />
@@ -744,7 +744,7 @@ export default function ProblemPage() {
 
             {navigation.next ? (
               <button
-                onClick={() => router.push(`/problems/${navigation.next.id}`)}
+                onClick={() => router.push(`/problems/${navigation.next.id}/instructions`)}
                 className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
               >
                 <div className="text-right">

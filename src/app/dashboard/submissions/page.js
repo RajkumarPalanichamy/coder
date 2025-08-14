@@ -115,7 +115,7 @@ function SubmissionsContent() {
   // Navigate to details
   const handleDetailsClick = (submission) => {
     if (submission.type === 'problem') {
-      router.push(`/problems/${submission.problem?._id}`);
+      router.push(`/problems/${submission.problem?._id}/instructions`);
     } else if (submission.type === 'test') {
       router.push(`/dashboard/tests/${submission.test?._id}`);
     }
