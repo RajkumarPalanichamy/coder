@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Submission, { LevelSubmission } from '@/models/Submission';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // GET - Fetch level submissions for a user
 export async function GET(request) {
   try {
     await connectDB();
     
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -23,7 +22,7 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page')) || 1;
 
     // Build query
-    let query = { user: session.user.id };
+    let query = { user: userId };
     
     if (level) query.level = level;
     if (language) query.programmingLanguage = decodeURIComponent(language);
@@ -78,8 +77,9 @@ export async function POST(request) {
   try {
     await connectDB();
     
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -104,7 +104,7 @@ export async function POST(request) {
 
     // Check if user already has an active level submission
     const existingLevelSubmission = await LevelSubmission.findOne({
-      user: session.user.id,
+      user: userId,
       level,
       category,
       programmingLanguage: language,
@@ -152,7 +152,7 @@ export async function POST(request) {
 
     // Create new level submission session
     const levelSubmission = new LevelSubmission({
-      user: session.user.id,
+      user: userId,
       level,
       category,
       programmingLanguage: language,

@@ -2,15 +2,14 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import Submission, { LevelSubmission } from '@/models/Submission';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function POST(request, { params }) {
   try {
     await connectDB();
     
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -36,7 +35,7 @@ export async function POST(request, { params }) {
 
     // Check if user already has a level submission for this combination
     const existingLevelSubmission = await LevelSubmission.findOne({
-      user: session.user.id,
+      user: userId,
       level,
       category,
       programmingLanguage: language,
@@ -75,7 +74,7 @@ export async function POST(request, { params }) {
 
     // Create level submission record
     const levelSubmission = new LevelSubmission({
-      user: session.user.id,
+      user: userId,
       level,
       category,
       programmingLanguage: language,
@@ -105,7 +104,7 @@ export async function POST(request, { params }) {
       try {
         // Create individual submission
         const submission = new Submission({
-          user: session.user.id,
+          user: userId,
           problem: problemId,
           code: code,
           language: submissionLanguage || language,
@@ -187,8 +186,9 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
     
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -206,7 +206,7 @@ export async function GET(request, { params }) {
 
     // Find the level submission
     const levelSubmission = await LevelSubmission.findOne({
-      user: session.user.id,
+      user: userId,
       level,
       category: decodeURIComponent(category),
       programmingLanguage: decodeURIComponent(language)

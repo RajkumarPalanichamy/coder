@@ -2,16 +2,15 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import Submission, { LevelSubmission } from '@/models/Submission';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // POST - Submit a single problem within a level session
 export async function POST(request, { params }) {
   try {
     await connectDB();
     
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -30,7 +29,7 @@ export async function POST(request, { params }) {
     // Find the level submission
     const levelSubmission = await LevelSubmission.findOne({
       _id: levelSubmissionId,
-      user: session.user.id
+      user: userId
     });
 
     if (!levelSubmission) {
@@ -91,7 +90,7 @@ export async function POST(request, { params }) {
 
     // Create the individual submission
     const submission = new Submission({
-      user: session.user.id,
+      user: userId,
       problem: problemId,
       code: code,
       language: language,
@@ -152,8 +151,9 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
     
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -162,7 +162,7 @@ export async function GET(request, { params }) {
     // Find the level submission with populated data
     const levelSubmission = await LevelSubmission.findOne({
       _id: levelSubmissionId,
-      user: session.user.id
+      user: userId
     })
     .populate({
       path: 'problemSubmissions.problem',
