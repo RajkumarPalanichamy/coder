@@ -20,8 +20,11 @@ export async function POST(request, { params }) {
     const body = await request.json();
     const { language, category, problemSubmissions } = body;
 
+    console.log('API received:', { level, language, category, problemSubmissions: problemSubmissions?.length });
+
     // Validate level
     if (!['level1', 'level2', 'level3'].includes(level)) {
+      console.log('Invalid level:', level);
       return NextResponse.json(
         { error: 'Invalid level. Must be level1, level2, or level3' },
         { status: 400 }
@@ -30,6 +33,7 @@ export async function POST(request, { params }) {
 
     // Validate required fields
     if (!language || !category || !problemSubmissions || !Array.isArray(problemSubmissions)) {
+      console.log('Validation failed:', { language, category, problemSubmissions: !!problemSubmissions, isArray: Array.isArray(problemSubmissions) });
       return NextResponse.json(
         { error: 'Language, category, and problemSubmissions are required' },
         { status: 400 }
@@ -45,7 +49,10 @@ export async function POST(request, { params }) {
       status: { $in: ['in_progress', 'completed'] }
     });
 
+    console.log('Existing submission check:', { userId, level, category, language, existing: !!existingLevelSubmission });
+
     if (existingLevelSubmission) {
+      console.log('Found existing submission:', existingLevelSubmission._id);
       return NextResponse.json(
         { error: 'You already have an active submission for this level' },
         { status: 400 }
@@ -60,7 +67,10 @@ export async function POST(request, { params }) {
       isActive: true
     }).select('_id title problemTimeAllowed points');
 
+    console.log('Problems query result:', { count: problems.length, query: { programmingLanguage: language, category, difficulty: level, isActive: true } });
+
     if (problems.length === 0) {
+      console.log('No problems found for level');
       return NextResponse.json(
         { error: 'No problems found for this level' },
         { status: 404 }
