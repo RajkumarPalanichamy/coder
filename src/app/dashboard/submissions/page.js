@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   CheckCircle, 
   XCircle, 
@@ -9,18 +9,24 @@ import {
   Code, 
   FileText,
   BookOpen,
-  Trophy
+  Trophy,
+  Target,
+  Timer,
+  Award
 } from 'lucide-react';
 
-export default function StudentSubmissionsPage() {
+function SubmissionsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [submissions, setSubmissions] = useState([]);
+  const [levelSubmissions, setLevelSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState(searchParams.get('type') || 'all');
 
   useEffect(() => {
     fetchSubmissions();
+    fetchLevelSubmissions();
   }, []);
 
   const fetchSubmissions = async () => {
@@ -30,14 +36,28 @@ export default function StudentSubmissionsPage() {
 
       if (response.ok) {
         setSubmissions(data.submissions);
-        setLoading(false);
       } else {
         setError(data.error || 'Failed to fetch submissions');
-        setLoading(false);
       }
     } catch (err) {
       console.error('Error fetching submissions:', err);
       setError('Network error. Please try again.');
+    }
+  };
+
+  const fetchLevelSubmissions = async () => {
+    try {
+      const response = await fetch('/api/submissions/level');
+      const data = await response.json();
+
+      if (response.ok) {
+        setLevelSubmissions(data.levelSubmissions || []);
+      } else {
+        console.error('Error fetching level submissions:', data.error);
+      }
+    } catch (err) {
+      console.error('Error fetching level submissions:', err);
+    } finally {
       setLoading(false);
     }
   };
@@ -46,10 +66,11 @@ export default function StudentSubmissionsPage() {
   const getStatusStyle = (status) => {
     switch (status) {
       case 'accepted':
+      case 'completed':
         return {
           color: 'text-green-600 bg-green-50',
           icon: CheckCircle,
-          text: 'Accepted'
+          text: 'Completed'
         };
       case 'wrong_answer':
         return {
@@ -64,10 +85,23 @@ export default function StudentSubmissionsPage() {
           text: 'Runtime Error'
         };
       case 'pending':
+      case 'in_progress':
         return {
           color: 'text-blue-600 bg-blue-50',
           icon: Clock,
-          text: 'Pending'
+          text: status === 'in_progress' ? 'In Progress' : 'Pending'
+        };
+      case 'time_expired':
+        return {
+          color: 'text-red-600 bg-red-50',
+          icon: Timer,
+          text: 'Time Expired'
+        };
+      case 'submitted':
+        return {
+          color: 'text-indigo-600 bg-indigo-50',
+          icon: Award,
+          text: 'Submitted'
         };
       default:
         return {
@@ -87,11 +121,37 @@ export default function StudentSubmissionsPage() {
     }
   };
 
+  // Navigate to level submission details
+  const handleLevelDetailsClick = (levelSubmission) => {
+    router.push(`/dashboard/submissions/level/${levelSubmission._id}`);
+  };
+
   // Filter submissions
-  const filteredSubmissions = submissions.filter(submission => {
-    if (filter === 'all') return true;
-    return submission.type === filter;
-  });
+  const getFilteredData = () => {
+    let filteredSubmissions = [];
+    let filteredLevelSubmissions = [];
+
+    if (filter === 'all' || filter === 'individual') {
+      filteredSubmissions = submissions.filter(submission => {
+        if (filter === 'all') return true;
+        return submission.type === 'problem' || submission.type === 'test';
+      });
+    }
+
+    if (filter === 'all' || filter === 'level') {
+      filteredLevelSubmissions = levelSubmissions;
+    }
+
+    return { filteredSubmissions, filteredLevelSubmissions };
+  };
+
+  const { filteredSubmissions, filteredLevelSubmissions } = getFilteredData();
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   if (loading) {
     return (
@@ -113,7 +173,10 @@ export default function StudentSubmissionsPage() {
       <div className="p-6 text-center">
         <p className="text-red-600 mb-4">{error}</p>
         <button 
-          onClick={fetchSubmissions}
+          onClick={() => {
+            fetchSubmissions();
+            fetchLevelSubmissions();
+          }}
           className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
         >
           Retry
@@ -139,29 +202,29 @@ export default function StudentSubmissionsPage() {
             All
           </button>
           <button
-            onClick={() => setFilter('problem')}
+            onClick={() => setFilter('level')}
             className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center transition ${
-              filter === 'problem' 
+              filter === 'level' 
                 ? 'bg-indigo-600 text-white' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <BookOpen className="h-4 w-4 mr-2" /> Problems
+            <Target className="h-4 w-4 mr-2" /> Levels
           </button>
           <button
-            onClick={() => setFilter('test')}
+            onClick={() => setFilter('individual')}
             className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center transition ${
-              filter === 'test' 
+              filter === 'individual' 
                 ? 'bg-indigo-600 text-white' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <Trophy className="h-4 w-4 mr-2" /> Tests
+            <BookOpen className="h-4 w-4 mr-2" /> Individual
           </button>
         </div>
       </div>
       
-      {filteredSubmissions.length === 0 ? (
+      {filteredLevelSubmissions.length === 0 && filteredSubmissions.length === 0 ? (
         <div className="bg-white p-6 rounded-lg shadow text-center">
           <p className="text-gray-600 mb-4">No submissions yet.</p>
           <div className="flex justify-center space-x-4">
@@ -181,6 +244,89 @@ export default function StudentSubmissionsPage() {
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Level Submissions */}
+          {filteredLevelSubmissions.map((levelSubmission) => {
+            const StatusIcon = getStatusStyle(levelSubmission.status).icon;
+            const statusStyle = getStatusStyle(levelSubmission.status);
+            
+            return (
+              <div 
+                key={levelSubmission._id} 
+                className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow border-l-4 border-indigo-500"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-5 w-5 text-indigo-500" />
+                    <h3 
+                      className="text-lg font-semibold text-gray-800 cursor-pointer hover:text-indigo-600"
+                      onClick={() => handleLevelDetailsClick(levelSubmission)}
+                    >
+                      {levelSubmission.level.toUpperCase()} - {levelSubmission.programmingLanguage} - {levelSubmission.category}
+                    </h3>
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">
+                      Level Submission
+                    </span>
+                  </div>
+                  <span 
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${statusStyle.color}`}
+                  >
+                    <StatusIcon className="h-4 w-4 inline-block mr-1 -mt-1" />
+                    {statusStyle.text}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-4 gap-4 text-sm text-gray-600">
+                  <div>
+                    <span className="font-medium">Problems:</span>
+                    <p>{levelSubmission.completedProblems}/{levelSubmission.totalProblems}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Score:</span>
+                    <p className={`font-bold ${
+                      levelSubmission.totalScore === 100 
+                        ? 'text-green-600' 
+                        : levelSubmission.totalScore > 50 
+                        ? 'text-yellow-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {levelSubmission.totalScore || 0}%
+                    </p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Time Used:</span>
+                    <p>{formatTime(levelSubmission.timeUsed || 0)} / {formatTime(levelSubmission.timeAllowed)}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium">Submitted:</span>
+                    <p>{new Date(levelSubmission.createdAt).toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                {levelSubmission.submissionSummary && (
+                  <div className="mt-3 flex space-x-4 text-xs">
+                    {levelSubmission.submissionSummary.accepted > 0 && (
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                        ✓ {levelSubmission.submissionSummary.accepted} Accepted
+                      </span>
+                    )}
+                    {levelSubmission.submissionSummary.wrongAnswer > 0 && (
+                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded">
+                        ✗ {levelSubmission.submissionSummary.wrongAnswer} Wrong
+                      </span>
+                    )}
+                    {levelSubmission.submissionSummary.pending > 0 && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                        ⏳ {levelSubmission.submissionSummary.pending} Pending
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Individual Submissions */}
           {filteredSubmissions.map((submission) => {
             // Determine title and icon based on submission type
             const title = submission.type === 'problem' 
@@ -267,5 +413,24 @@ export default function StudentSubmissionsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StudentSubmissionsPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-6">
+        <div className="animate-pulse">
+          <div className="h-10 bg-gray-200 rounded w-1/2 mb-4"></div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="h-16 bg-gray-100 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    }>
+      <SubmissionsContent />
+    </Suspense>
   );
 } 

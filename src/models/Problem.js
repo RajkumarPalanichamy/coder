@@ -40,6 +40,12 @@ const problemSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  // Common name/collection name (e.g., "TCS Problems", "LeetCode Style", etc.)
+  commonName: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   constraints: {
     type: String
   },
@@ -58,11 +64,27 @@ const problemSchema = new mongoose.Schema({
   },
   timeLimit: {
     type: Number,
-    default: 1000 // milliseconds
+    default: 1000 // milliseconds for execution
   },
   memoryLimit: {
     type: Number,
     default: 128 // MB
+  },
+  // Individual problem timing (set by admin) - in minutes
+  problemTimeAllowed: {
+    type: Number,
+    required: true,
+    default: function() {
+      // Default timing based on difficulty if not set by admin
+      return this.difficulty === 'level1' ? 5 : this.difficulty === 'level2' ? 8 : 12;
+    }
+  },
+  // Points/score for solving this problem
+  points: {
+    type: Number,
+    default: function() {
+      return this.difficulty === 'level1' ? 10 : this.difficulty === 'level2' ? 20 : 30;
+    }
   },
   isActive: {
     type: Boolean,
@@ -84,6 +106,8 @@ const problemSchema = new mongoose.Schema({
 // Index for better search performance
 problemSchema.index({ title: 'text', description: 'text', category: 'text' });
 problemSchema.index({ difficulty: 1, category: 1, isActive: 1 });
+problemSchema.index({ programmingLanguage: 1, category: 1, difficulty: 1 });
+problemSchema.index({ commonName: 1, programmingLanguage: 1 });
 
 const Problem = mongoose.models.Problem || mongoose.model('Problem', problemSchema);
 

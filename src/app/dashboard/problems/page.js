@@ -127,22 +127,8 @@ export default function StudentProblemsPage() {
     setLevel(selectedLevel);
     setShowLevelCards(false);
     
-    // Fetch the latest problem and redirect to it
-    try {
-      const response = await fetch(`/api/problems/latest?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}&difficulty=${encodeURIComponent(selectedLevel)}`);
-      const data = await response.json();
-      
-      if (response.ok && data.problemId) {
-        router.push(`/problems/${data.problemId}`);
-      } else {
-        // If no problems found, show error message
-        console.error('No problems found for selected criteria:', data.error);
-        // Could show a toast/notification here
-      }
-    } catch (error) {
-      console.error('Error fetching latest problem:', error);
-      // Could show a toast/notification here
-    }
+    // Redirect to the new level problems page
+    router.push(`/dashboard/problems/level/${selectedLevel}?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`);
   };
 
   const handleBackToLanguages = () => {
