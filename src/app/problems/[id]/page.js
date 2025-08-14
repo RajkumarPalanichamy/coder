@@ -32,7 +32,7 @@ export default function ProblemPage() {
 
   useEffect(() => {
     fetchProblem();
-  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   useEffect(() => {
     if (problem && problem.timeLimit && problemStarted) {
@@ -84,85 +84,124 @@ export default function ProblemPage() {
     router.push('/dashboard');
   };
 
-  const handleSubmit = async () => {
-    if (submitting) return;
-    setSubmitting(true);
+  const handleRun = async () => {
+    setRunningCode(true);
+    setRunResult(null);
+    setCanSubmit(false);
     setRunTestResults(null);
-    setSubmissionTestResults(null);
     setRunError('');
-
+    setResult(null); // Clear previous submission results
+    setSubmissionTestResults(null); // Clear previous submission test results
+    // Only use non-hidden test cases
+    const sampleTestCases = (problem.testCases || []).filter(tc => !tc.isHidden);
+    if (!sampleTestCases.length) {
+      setRunError('No sample test cases available.');
+      setRunningCode(false);
+      return;
+    }
     try {
-      const res = await fetch('/api/submissions', {
+      // Real Judge0 execution
+      console.log('Running Judge0 execution for sample test cases');
+      
+      const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language,
+          testCases: sampleTestCases
+        })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        setRunError(data.error || 'Code execution failed.');
+        if (data.details) {
+          console.error('Execution error details:', data.details);
+        }
+        return;
+      }
+      
+      setRunTestResults(data.results);
+      
+      // Display Judge0 notice
+      if (data.notice) {
+        setRunResult({
+          status: 'info',
+          message: data.notice
+        });
+      }
+      
+      // If all passed, allow submit
+      setCanSubmit(data.results.every(r => r.passed));
+    } catch (err) {
+      console.error('Error running code:', err);
+      setRunError('Error running code. Please check your network connection and try again.');
+    } finally {
+      setRunningCode(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    setResult(null);
+    setSubmissionTestResults(null);
+
+    try {
+      const response = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           problemId: params.id,
           code,
           language
-        })
+        }),
       });
 
-      const data = await res.json();
-      
-      if (res.ok) {
-        setResult(data);
-        setRunTestResults(data.results || []);
-        setCanSubmit(false);
+      const data = await response.json();
+
+      if (response.ok) {
+        // Successful submission - all test cases passed
+        setResult({
+          status: 'success',
+          message: data.message || 'Submission successful! All test cases passed.',
+          submission: data.submission,
+          passedCount: data.passedCount,
+          totalCount: data.totalCount
+        });
         
-        // Group test results for better display
-        const sampleResults = data.results?.filter((tc, idx) => 
-          problem.testCases && !problem.testCases[idx].isHidden
-        ) || [];
-        const hiddenResults = data.results?.filter((tc, idx) => 
-          problem.testCases && problem.testCases[idx].isHidden
-        ) || [];
-        
-        setSubmissionTestResults({ sampleResults, hiddenResults });
+        // Show all test case results
+        if (data.testCaseResults) {
+          setSubmissionTestResults(data.testCaseResults);
+        }
       } else {
-        console.error('Submission error:', data.error);
-        setRunError(data.error || 'An error occurred during submission');
+        // Failed submission - show detailed results
+        const passedCount = data.passedCount || 0;
+        const totalCount = data.totalCount || 0;
+        
+        setResult({
+          status: 'error',
+          message: data.error || 'Submission failed',
+          submission: data.submission,
+          passedCount,
+          totalCount
+        });
+        
+        // Show detailed test case results for failed submission
+        if (data.testCaseResults) {
+          setSubmissionTestResults(data.testCaseResults);
+        }
       }
     } catch (error) {
-      console.error('Network error:', error);
-      setRunError('Network error occurred');
+      console.error('Submission error:', error);
+      setResult({
+        status: 'error',
+        message: 'Network error occurred. Please try again.'
+      });
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleRunCode = async () => {
-    if (runningCode) return;
-    setRunningCode(true);
-    setRunTestResults(null);
-    setRunError('');
-
-    try {
-      const res = await fetch('/api/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          problemId: params.id,
-          code,
-          language,
-          isRun: true
-        })
-      });
-
-      const data = await res.json();
-      
-      if (res.ok) {
-        setRunResult(data);
-        setRunTestResults(data.results || []);
-        setCanSubmit(data.results?.every(r => r.status === 'passed') || false);
-      } else {
-        console.error('Run error:', data.error);
-        setRunError(data.error || 'An error occurred while running the code');
-      }
-    } catch (error) {
-      console.error('Network error:', error);
-      setRunError('Network error occurred');
-    } finally {
-      setRunningCode(false);
     }
   };
 
@@ -457,7 +496,7 @@ export default function ProblemPage() {
             <div className="p-4 border-t border-gray-200">
               <div className="flex space-x-2">
                 <button
-                  onClick={handleRunCode}
+                  onClick={handleRun}
                   disabled={runningCode}
                   className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >
