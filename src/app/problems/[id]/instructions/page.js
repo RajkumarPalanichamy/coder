@@ -12,7 +12,7 @@ export default function ProblemInstructionsPage() {
 
   useEffect(() => {
     fetchProblem();
-  }, [params.id]);
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProblem = async () => {
     try {
@@ -178,7 +178,7 @@ export default function ProblemInstructionsPage() {
                       <ul className="space-y-2 text-green-800">
                         <li>• A code editor will be provided with starter code</li>
                         <li>• You can run your code to test it against sample cases</li>
-                        <li>• Submit your final solution when you're confident it's correct</li>
+                        <li>• Submit your final solution when you&apos;re confident it&apos;s correct</li>
                         <li>• Use the provided test cases to verify your logic</li>
                       </ul>
                     </div>
