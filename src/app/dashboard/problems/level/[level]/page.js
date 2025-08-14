@@ -180,8 +180,10 @@ export default function LevelProblemsPage() {
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
         code: problemCodes[problem._id] || '',
-        submissionLanguage: problemLanguages[problem._id]
+        submissionLanguage: problemLanguages[problem._id] || language || 'javascript'
       }));
+
+      console.log('Submitting data:', { language, category, problemSubmissions });
 
       const response = await fetch(`/api/problems/levels/${level}/submit`, {
         method: 'POST',
