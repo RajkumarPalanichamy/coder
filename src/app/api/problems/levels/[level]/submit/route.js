@@ -40,24 +40,26 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Check if user already has a level submission for this combination
-    const existingLevelSubmission = await LevelSubmission.findOne({
-      user: userId,
-      level,
-      category,
-      programmingLanguage: language,
-      status: { $in: ['in_progress', 'completed'] }
-    });
+    // TEMPORARILY DISABLED: Check if user already has a level submission for this combination
+    // const existingLevelSubmission = await LevelSubmission.findOne({
+    //   user: userId,
+    //   level,
+    //   category,
+    //   programmingLanguage: language,
+    //   status: { $in: ['in_progress', 'completed'] }
+    // });
 
-    console.log('Existing submission check:', { userId, level, category, language, existing: !!existingLevelSubmission });
+    // console.log('Existing submission check:', { userId, level, category, language, existing: !!existingLevelSubmission });
 
-    if (existingLevelSubmission) {
-      console.log('Found existing submission:', existingLevelSubmission._id);
-      return NextResponse.json(
-        { error: 'You already have an active submission for this level' },
-        { status: 400 }
-      );
-    }
+    // if (existingLevelSubmission) {
+    //   console.log('Found existing submission:', existingLevelSubmission._id);
+    //   return NextResponse.json(
+    //     { error: 'You already have an active submission for this level' },
+    //     { status: 400 }
+    //   );
+    // }
+
+    console.log('TEMP: Skipped existing submission check for testing');
 
     // Get all problems for this level to validate submissions
     const problems = await Problem.find({
