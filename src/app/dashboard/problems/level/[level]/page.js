@@ -261,15 +261,9 @@ export default function LevelProblemsPage() {
     return `${completed}/${problems.length}`;
   };
 
-  const getProblemStatus = (problemIndex, problemId) => {
-    if (problemIndex === currentProblemIndex) {
-      return 'current';
-    }
+  const isProblemAnswered = (problemId) => {
     const code = problemCodes[problemId];
-    if (code && code.trim() !== '') {
-      return 'answered';
-    }
-    return 'not-answered';
+    return code && code.trim() !== '';
   };
 
   const navigateToProblem = (problemIndex) => {
@@ -470,16 +464,14 @@ export default function LevelProblemsPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-2">Problem Overview</h3>
               <p className="text-sm text-gray-600">Click on any problem to navigate directly to it</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {problems.map((problem, index) => (
                 <ProblemStatusCard
                   key={problem._id}
                   problemNumber={index + 1}
                   title={problem.title}
-                  status={getProblemStatus(index, problem._id)}
+                  isAnswered={isProblemAnswered(problem._id)}
                   onClick={() => navigateToProblem(index)}
-                  points={problem.points}
-                  timeAllowed={problem.problemTimeAllowed}
                 />
               ))}
             </div>
