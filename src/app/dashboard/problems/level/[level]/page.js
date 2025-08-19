@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import ProblemStatusCard from '../../../components/ProblemStatusCard';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
@@ -260,6 +261,10 @@ export default function LevelProblemsPage() {
     return `${completed}/${problems.length}`;
   };
 
+  const getAnsweredCount = () => {
+    return Object.values(problemCodes).filter(code => code && code.trim() !== '').length;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -449,6 +454,15 @@ export default function LevelProblemsPage() {
       {/* Main Content - Current Problem */}
       {currentProblem && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Problem Status Card */}
+          <div className="mb-8">
+            <ProblemStatusCard
+              totalProblems={problems.length}
+              answeredCount={getAnsweredCount()}
+              currentProblemIndex={currentProblemIndex}
+            />
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Problem Description */}
             <div className="bg-white rounded-lg shadow p-6">
