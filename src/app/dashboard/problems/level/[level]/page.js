@@ -347,27 +347,6 @@ export default function LevelProblemsPage() {
               </ul>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-800 mb-3">Problem Overview</h3>
-              <div className="space-y-2">
-                {problems.slice(0, 3).map((problem, index) => (
-                  <div key={index} className="flex justify-between items-center text-sm">
-                    <span className="text-blue-700">{index + 1}. {problem.title}</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-blue-600 font-medium">{problem.difficulty}</span>
-                      <span className="text-blue-500 text-xs">
-                        ({problem.timeLimit ? Math.floor(problem.timeLimit / 60) : 10} min)
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {problems.length > 3 && (
-                  <div className="text-sm text-blue-600">
-                    ... and {problems.length - 3} more problems
-                  </div>
-                )}
-              </div>
-            </div>
 
             <div className="flex gap-4">
               <button
@@ -423,12 +402,7 @@ export default function LevelProblemsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">
-                  Level Duration: {problems.reduce((total, problem) => total + (problem.timeLimit ? Math.floor(problem.timeLimit / 60) : 10), 0)} minutes
-                </span>
-              </div>
+              
               {sessionStarted && timeLeft !== null && (
                 <div className="flex items-center space-x-2">
                   <Timer className="h-5 w-5 text-orange-600" />
