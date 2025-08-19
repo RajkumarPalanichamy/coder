@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import ProblemStatusCard from '../../../components/ProblemStatusCard';
+import ProblemStatusCard from '../../../../components/ProblemStatusCard';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
