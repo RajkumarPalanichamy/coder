@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import ProblemStatusCard from '../../../components/ProblemStatusCard';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
@@ -260,6 +261,21 @@ export default function LevelProblemsPage() {
     return `${completed}/${problems.length}`;
   };
 
+  const getProblemStatus = (problemIndex, problemId) => {
+    if (problemIndex === currentProblemIndex) {
+      return 'current';
+    }
+    const code = problemCodes[problemId];
+    if (code && code.trim() !== '') {
+      return 'answered';
+    }
+    return 'not-answered';
+  };
+
+  const navigateToProblem = (problemIndex) => {
+    setCurrentProblemIndex(problemIndex);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -445,6 +461,31 @@ export default function LevelProblemsPage() {
           </div>
         </div>
       </div>
+
+      {/* Problem Status Cards */}
+      {sessionStarted && (
+        <div className="w-full bg-white border-b border-gray-200 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Problem Overview</h3>
+              <p className="text-sm text-gray-600">Click on any problem to navigate directly to it</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {problems.map((problem, index) => (
+                <ProblemStatusCard
+                  key={problem._id}
+                  problemNumber={index + 1}
+                  title={problem.title}
+                  status={getProblemStatus(index, problem._id)}
+                  onClick={() => navigateToProblem(index)}
+                  points={problem.points}
+                  timeAllowed={problem.problemTimeAllowed}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content - Current Problem */}
       {currentProblem && (
