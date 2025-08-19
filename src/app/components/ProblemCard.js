@@ -42,7 +42,7 @@ export default function ProblemCard({ problem, href, showStatus, status }) {
         href={href}
         className="w-full block bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 text-center transition-colors"
       >
-        View
+        Start Problem
       </Link>
     </div>
   );

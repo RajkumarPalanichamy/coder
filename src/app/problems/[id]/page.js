@@ -13,6 +13,7 @@ export default function ProblemPage() {
   const router = useRouter();
   const [problem, setProblem] = useState(null);
   const [navigation, setNavigation] = useState(null);
+  const [problemStarted, setProblemStarted] = useState(false);
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [loading, setLoading] = useState(true);
@@ -34,16 +35,16 @@ export default function ProblemPage() {
   }, [params.id]);
 
   useEffect(() => {
-    if (problem && problem.timeLimit) {
+    if (problem && problem.timeLimit && problemStarted) {
       setTimeLeft(problem.timeLimit);
     }
-  }, [problem]);
+  }, [problem, problemStarted]);
 
   useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0) return;
+    if (!problemStarted || timeLeft === null || timeLeft <= 0) return;
     timerRef.current = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
     return () => clearTimeout(timerRef.current);
-  }, [timeLeft]);
+  }, [timeLeft, problemStarted]);
 
   useEffect(() => {
     if (timeLeft === 0) {
@@ -73,6 +74,14 @@ export default function ProblemPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStartProblem = () => {
+    setProblemStarted(true);
+  };
+
+  const handleExitProblem = () => {
+    router.push('/dashboard');
   };
 
   const handleRun = async () => {
@@ -196,6 +205,11 @@ export default function ProblemPage() {
     }
   };
 
+  const handleSaveCode = () => {
+    // This could be enhanced to actually save to backend
+    console.log('Code saved:', code);
+  };
+
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'level1': return 'bg-green-100 text-green-800';
@@ -244,6 +258,93 @@ export default function ProblemPage() {
     );
   }
 
+  // Show instructions first (same pattern as tests)
+  if (!problemStarted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+        <div className="max-w-2xl mx-auto pt-16">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{problem.title}</h1>
+              <p className="text-gray-600">{problem.description}</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <svg className="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-semibold text-gray-900">Time Limit</span>
+                </div>
+                <p className="text-2xl font-bold text-indigo-600">
+                  {problem.timeLimit ? `${Math.floor(problem.timeLimit / 60)} minutes` : 'No limit'}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <svg className="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-semibold text-gray-900">Difficulty</span>
+                </div>
+                <p className="text-2xl font-bold text-indigo-600">
+                  {problem.difficulty === 'level1' ? 'Level 1' : 
+                   problem.difficulty === 'level2' ? 'Level 2' : 
+                   problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-amber-800 mb-3 flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                Important Instructions
+              </h3>
+              <ul className="text-amber-700 space-y-2 text-sm">
+                <li>• Read the problem statement carefully before starting</li>
+                <li>• Test your solution with the provided examples</li>
+                {problem.timeLimit && (
+                  <li>• You have {Math.floor(problem.timeLimit / 60)} minutes to complete this problem</li>
+                )}
+                <li>• Your solution will be automatically submitted when time expires</li>
+                <li>• Make sure to save your progress by running and testing your code</li>
+                <li>• Use the provided test cases to verify your logic</li>
+                {problem.timeLimit && (
+                  <li>• Once started, the timer cannot be paused</li>
+                )}
+              </ul>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={handleExitProblem}
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStartProblem}
+                className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+              >
+                Start Problem
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show the actual problem interface (after user clicks "Start Problem")
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -274,6 +375,7 @@ export default function ProblemPage() {
           </div>
         </div>
       </header>
+      
       {/* Timer */}
       {problem.timeLimit && timeLeft !== null && timeLeft > 0 && (
         <div className="w-full bg-yellow-50 border-b border-yellow-200 py-2 flex justify-center items-center">
@@ -298,45 +400,47 @@ export default function ProblemPage() {
             <div className="prose max-w-none">
               <p className="text-gray-700 mb-4 whitespace-pre-wrap">{problem.description}</p>
               
+              {problem.inputFormat && (
+                <div className="mb-4">
+                  <h3 className="text-md font-semibold text-gray-900 mb-2">Input Format</h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{problem.inputFormat}</p>
+                </div>
+              )}
+              
+              {problem.outputFormat && (
+                <div className="mb-4">
+                  <h3 className="text-md font-semibold text-gray-900 mb-2">Output Format</h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{problem.outputFormat}</p>
+                </div>
+              )}
+              
               {problem.constraints && (
                 <div className="mb-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Constraints:</h3>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{problem.constraints}</p>
+                  <h3 className="text-md font-semibold text-gray-900 mb-2">Constraints</h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{problem.constraints}</p>
                 </div>
               )}
-
+              
               {problem.examples && problem.examples.length > 0 && (
                 <div className="mb-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Examples:</h3>
+                  <h3 className="text-md font-semibold text-gray-900 mb-2">Examples</h3>
                   {problem.examples.map((example, index) => (
-                    <div key={index} className="bg-gray-50 rounded p-3 mb-2">
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Input:</strong> {example.input}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Output:</strong> {example.output}
-                      </p>
+                    <div key={index} className="mb-4 p-4 bg-gray-50 rounded">
+                      <h4 className="font-medium text-gray-900 mb-2">Example {index + 1}</h4>
+                      <div className="mb-2">
+                        <span className="font-medium text-gray-700">Input:</span>
+                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">{example.input}</pre>
+                      </div>
+                      <div className="mb-2">
+                        <span className="font-medium text-gray-700">Output:</span>
+                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">{example.output}</pre>
+                      </div>
                       {example.explanation && (
-                        <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                          <strong>Explanation:</strong> {example.explanation}
-                        </p>
+                        <div>
+                          <span className="font-medium text-gray-700">Explanation:</span>
+                          <p className="mt-1 text-sm text-gray-600">{example.explanation}</p>
+                        </div>
                       )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {problem.testCases && problem.testCases.filter(tc => !tc.isHidden).length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">Sample Test Cases:</h3>
-                  {problem.testCases.filter(tc => !tc.isHidden).map((tc, idx) => (
-                    <div key={idx} className="bg-gray-50 rounded p-3 mb-2">
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Input:</strong> {tc.input}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Expected Output:</strong> {tc.output}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -345,17 +449,21 @@ export default function ProblemPage() {
           </div>
 
           {/* Code Editor */}
-          <div className="bg-white rounded-lg shadow flex flex-col">
-            <div className="border-b border-gray-200 p-4 flex justify-between items-center">
+          <div className="bg-white rounded-lg shadow">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
               <div className="flex items-center space-x-2">
-                <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-700 capitalize">{language}</span>
-              </div>
-              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center px-3 py-1 text-sm text-gray-600 hover:text-gray-900"
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-1 text-sm text-black bg-white"
+                  className="text-sm border border-gray-300 rounded px-2 py-1"
                 >
                   <option value="javascript">JavaScript</option>
                   <option value="python">Python</option>
@@ -363,278 +471,145 @@ export default function ProblemPage() {
                   <option value="cpp">C++</option>
                   <option value="c">C</option>
                 </select>
-                <button
-                  onClick={handleCopy}
-                  className={`flex items-center px-2 py-1 rounded text-xs border ${copied ? 'bg-green-100 border-green-300 text-green-700' : 'bg-gray-100 border-gray-300 text-gray-700'} hover:bg-gray-200 transition`}
-                  title="Copy code"
-                >
-                  <Copy className="h-4 w-4 mr-1" />
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
               </div>
             </div>
-            <div className="p-0 flex-1 min-h-[384px]">
+            
+            <div className="h-96">
               <MonacoEditor
-                height="384px"
-                defaultLanguage={language}
+                height="100%"
                 language={language === 'cpp' ? 'cpp' : language}
                 value={code}
+                onChange={(value) => setCode(value || '')}
+                onMount={(editor) => { codeRef.current = editor; }}
                 theme="vs-light"
                 options={{
-                  fontSize: 14,
                   minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  wordWrap: 'on',
-                  automaticLayout: true,
+                  fontSize: 14,
                   lineNumbers: 'on',
-                  tabSize: 2,
-                  formatOnPaste: true,
-                  formatOnType: true,
-                  smoothScrolling: true,
-                  scrollbar: { vertical: 'auto', horizontal: 'auto' },
-                  suggestOnTriggerCharacters: false,
-                  quickSuggestions: false,
-                  wordBasedSuggestions: false,
-                  parameterHints: { enabled: false },
-                  tabCompletion: 'off',
-                  acceptSuggestionOnEnter: 'off',
-                  suggestSelection: 'first',
-                  snippetSuggestions: 'none',
-                }}
-                onChange={(value) => setCode(value || '')}
-                onMount={(editor) => {
-                  codeRef.current = editor;
-                  // Disable copy, cut, and paste
-                  editor.onKeyDown((e) => {
-                    if ((e.ctrlKey || e.metaKey) && (e.keyCode === 33 || e.keyCode === 35 || e.keyCode === 41)) {
-                      // 33: Ctrl+X, 35: Ctrl+C, 41: Ctrl+V
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }
-                  });
-                  editor.onDidPaste(() => {
-                    editor.setValue(code); // revert paste
-                  });
-                  // Also block context menu copy/paste
-                  editor.onContextMenu((e) => {
-                    e.event.preventDefault();
-                    e.event.stopPropagation();
-                  });
+                  roundedSelection: false,
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
                 }}
               />
             </div>
-            <div className="p-4">
-              {/* Error message for run code */}
-              {runError && (
-                <div className="mt-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-                  {runError}
-                </div>
-              )}
-              {/* Run Test Results */}
-              {runTestResults && (
-                <div className="mt-4">
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Test Results</h3>
-                  {runTestResults.map((result, idx) => (
-                    <div key={idx} className={`mb-3 p-4 rounded-md border ${
-                      result.passed 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-red-50 border-red-200'
-                    }`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-sm text-gray-700">
-                          Test Case {idx + 1}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {result.executionTime && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                              {result.executionTime}
-                            </span>
-                          )}
-                          {result.memoryUsed && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                              {result.memoryUsed}
-                            </span>
-                          )}
-                          <span className={`text-xs px-2 py-1 rounded font-medium ${
-                            result.passed 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-red-100 text-red-700'
-                          }`}>
-                            {result.passed ? '✓ PASS' : '✗ FAIL'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-600">Input:</span>
-                          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
-                            {result.input || '(empty)'}
-                          </pre>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-600">Expected:</span>
-                          <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
-                            {result.expected}
-                          </pre>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-600">Your Output:</span>
-                          <pre className={`p-2 rounded mt-1 text-xs font-mono overflow-x-auto ${
-                            result.passed ? 'bg-green-100' : 'bg-red-100'
-                          }`}>
-                            {result.actual || '(no output)'}
-                          </pre>
-                        </div>
-                      </div>
-                      {result.error && (
-                        <div className="mt-2">
-                          <span className="font-medium text-red-600">Error:</span>
-                          <div className="bg-red-100 p-2 rounded mt-1 text-xs text-red-700">
-                            {result.error}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="mt-4 flex space-x-4">
+            
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex space-x-2">
                 <button
                   onClick={handleRun}
-                  disabled={submitting || runningCode}
-                  className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
-                  title="Run your code against sample test cases"
+                  disabled={runningCode}
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >
-                  {runningCode ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Running...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="h-4 w-4 mr-2" />
-                      Run Code
-                    </>
-                  )}
+                  <Play className="h-4 w-4 mr-2" />
+                  {runningCode ? 'Running...' : 'Run Code'}
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={!canSubmit || submitting}
-                  className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
-                  title="Submit your solution for full evaluation"
+                  disabled={submitting || !canSubmit}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {submitting ? 'Submitting...' : 'Submit'}
+                </button>
+                <button
+                  onClick={handleSaveCode}
+                  className="flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  Submit Solution
+                  Save
                 </button>
               </div>
-              {/* Run Result Notice */}
-              {runResult && (
-                <div className={`mt-4 p-3 rounded-md ${
-                  runResult.status === 'info' 
-                    ? 'bg-blue-50 border border-blue-200' 
-                    : runResult.status === 'success'
-                    ? 'bg-green-50 border border-green-200' 
-                    : 'bg-red-50 border border-red-200'
-                }`}>
-                  <p className={`text-sm ${
-                    runResult.status === 'info' ? 'text-blue-800' :
-                    runResult.status === 'success' ? 'text-green-800' : 'text-red-800'
-                  }`}>
-                    ℹ️ {runResult.message}
-                  </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        {(runResult || result || runError) && (
+          <div className="mt-8 bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Results</h3>
+            
+            {runError && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded">
+                <div className="flex items-center">
+                  <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                  <span className="font-medium text-red-800">Error</span>
                 </div>
-              )}
-              {/* Submission Result */}
-              {result && (
-                <div className={`mt-4 p-4 rounded-md ${
-                  result.status === 'success' 
-                    ? 'bg-green-50 border border-green-200' 
-                    : 'bg-red-50 border border-red-200'
+                <p className="mt-1 text-red-700">{runError}</p>
+              </div>
+            )}
+
+            {result && (
+              <div className="mb-4">
+                <div className={`p-4 rounded border ${
+                  result.submission.status === 'accepted' 
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : result.submission.status === 'wrong_answer'
+                    ? 'bg-red-50 border-red-200 text-red-800'
+                    : result.submission.status === 'runtime_error'
+                    ? 'bg-orange-50 border-orange-200 text-orange-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-800'
                 }`}>
-                  <div className="flex items-center">
-                    {result.status === 'success' ? (
-                      <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-red-600 mr-2" />
-                    )}
-                    <p className={`text-sm font-medium ${
-                      result.status === 'success' ? 'text-green-800' : 'text-red-800'
-                    }`}>
-                      {result.message}
-                    </p>
-                  </div>
-                  {result.submission && (
-                    <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                      <div className={`p-3 rounded ${
-                        result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
-                      }`}>
-                        <p className="font-medium text-gray-700">Score</p>
-                        <p className={`text-lg font-bold ${
-                          result.status === 'success' ? 'text-green-700' : 'text-red-700'
-                        }`}>
-                          {result.submission.score}%
-                        </p>
-                      </div>
-                      <div className={`p-3 rounded ${
-                        result.status === 'success' ? 'bg-green-100' : 'bg-red-100'
-                      }`}>
-                        <p className="font-medium text-gray-700">Test Cases</p>
-                        <p className={`text-lg font-bold ${
-                          result.status === 'success' ? 'text-green-700' : 'text-red-700'
-                        }`}>
-                          {result.passedCount || result.submission.testCasesPassed}/{result.totalCount || result.submission.totalTestCases}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {result.submission && result.submission.status && (
-                    <div className="mt-2">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        result.submission.status === 'accepted' 
-                          ? 'bg-green-100 text-green-800'
-                          : result.submission.status === 'wrong_answer'
-                          ? 'bg-red-100 text-red-800'
-                          : result.submission.status === 'runtime_error'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {result.submission.status.replace('_', ' ').toUpperCase()}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {result.submission.status === 'accepted' ? (
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                      ) : (
+                        <XCircle className="h-5 w-5 mr-2" />
+                      )}
+                      <span className="font-medium">
+                        {result.submission.status === 'accepted' ? 'Accepted' : 
+                         result.submission.status === 'wrong_answer' ? 'Wrong Answer' :
+                         result.submission.status === 'runtime_error' ? 'Runtime Error' : 
+                         result.submission.status}
                       </span>
                     </div>
-                  )}
+                    <div className="flex items-center gap-2">
+                      {result.executionTime && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                          {result.executionTime}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        result.submission.status === 'accepted' 
+                          ? 'bg-green-100 text-green-700'
+                          : result.submission.status === 'wrong_answer'
+                          ? 'bg-red-100 text-red-700'
+                          : result.submission.status === 'runtime_error'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        Score: {result.submission.score || 0}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Detailed Submission Test Results */}
-              {submissionTestResults && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">
-                    Submission Test Results
-                    <span className="ml-2 text-sm font-normal text-gray-500">
-                      (All test cases including hidden ones)
-                    </span>
-                  </h3>
-                  <div className="space-y-3">
-                    {submissionTestResults.map((result, idx) => {
-                      // Determine if this is a hidden test case
-                      const isHidden = problem.testCases && problem.testCases[idx] && problem.testCases[idx].isHidden;
-                      
-                      return (
-                        <div key={idx} className={`p-4 rounded-md border ${
-                          result.passed 
+            {runTestResults && runTestResults.length > 0 && (
+              <div className="space-y-4">
+                {sampleResults.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Sample Test Cases</h4>
+                    <div className="space-y-2">
+                      {sampleResults.map((testResult, index) => (
+                        <div key={index} className={`p-3 rounded border ${
+                          testResult.status === 'passed' 
                             ? 'bg-green-50 border-green-200' 
                             : 'bg-red-50 border-red-200'
                         }`}>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm text-gray-700">
-                                Test Case {idx + 1}
-                              </span>
-                              {isHidden && (
-                                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
-                                  Hidden
-                                </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              {testResult.status === 'passed' ? (
+                                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-600 mr-2" />
                               )}
+                              <span className={`font-medium ${
+                                testResult.status === 'passed' ? 'text-green-800' : 'text-red-800'
+                              }`}>
+                                Test Case {index + 1}: {testResult.status === 'passed' ? 'Passed' : 'Failed'}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2">
                               {result.executionTime && (
@@ -642,123 +617,86 @@ export default function ProblemPage() {
                                   {result.executionTime}
                                 </span>
                               )}
-                              {result.memoryUsed && (
-                                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                                  {result.memoryUsed}
-                                </span>
-                              )}
-                              <span className={`text-xs px-2 py-1 rounded font-medium ${
-                                result.passed 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                {result.passed ? '✓ PASS' : '✗ FAIL'}
-                              </span>
                             </div>
                           </div>
-                          
-                          {/* Show input/output details only for failed cases or sample cases */}
-                          {(!result.passed || !isHidden) && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                              <div>
-                                <span className="font-medium text-gray-600">Input:</span>
-                                <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
-                                  {result.input || '(empty)'}
-                                </pre>
-                              </div>
-                              <div>
-                                <span className="font-medium text-gray-600">Expected:</span>
-                                <pre className="bg-gray-100 p-2 rounded mt-1 text-xs font-mono overflow-x-auto">
-                                  {result.expected}
-                                </pre>
-                              </div>
-                              <div>
-                                <span className="font-medium text-gray-600">Your Output:</span>
-                                <pre className={`p-2 rounded mt-1 text-xs font-mono overflow-x-auto ${
-                                  result.passed ? 'bg-green-100' : 'bg-red-100'
-                                }`}>
-                                  {result.actual || '(no output)'}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* For hidden test cases that passed, just show that they passed */}
-                          {result.passed && isHidden && (
-                            <div className="text-sm text-green-700">
-                              ✓ Hidden test case passed successfully
-                            </div>
-                          )}
-                          
-                          {result.error && (
-                            <div className="mt-2">
-                              <span className="font-medium text-red-600">Error:</span>
-                              <div className="bg-red-100 p-2 rounded mt-1 text-xs text-red-700">
-                                {result.error}
-                              </div>
-                            </div>
+                          {testResult.error && (
+                            <p className="mt-2 text-sm text-red-700">{testResult.error}</p>
                           )}
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {hiddenResults.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Hidden Test Cases</h4>
+                    <div className="space-y-2">
+                      {hiddenResults.map((testResult, index) => (
+                        <div key={index} className={`p-3 rounded border ${
+                          testResult.status === 'passed' 
+                            ? 'bg-green-50 border-green-200' 
+                            : 'bg-red-50 border-red-200'
+                        }`}>
+                          <div className="flex items-center">
+                            {testResult.status === 'passed' ? (
+                              <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                            ) : (
+                              <XCircle className="h-4 w-4 text-red-600 mr-2" />
+                            )}
+                            <span className={`font-medium ${
+                              testResult.status === 'passed' ? 'text-green-800' : 'text-red-800'
+                            }`}>
+                              Hidden Test {index + 1}: {testResult.status === 'passed' ? 'Passed' : 'Failed'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Navigation */}
+        {navigation && (navigation.previous || navigation.next) && (
+          <div className="mt-8 flex justify-center">
+            <div className="flex justify-center items-center space-x-6">
+              {navigation.previous ? (
+                <button
+                  onClick={() => router.push(`/problems/${navigation.previous.id}`)}
+                  className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
+                >
+                  <ChevronLeft className="h-5 w-5 mr-2" />
+                  <div className="text-left">
+                    <div className="text-xs text-gray-500">Previous</div>
+                    <div className="text-sm">{navigation.previous.title}</div>
+                  </div>
+                </button>
+              ) : (
+                <div className="w-48"></div>
+              )}
+
+              {navigation.next ? (
+                <button
+                  onClick={() => router.push(`/problems/${navigation.next.id}`)}
+                  className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
+                >
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500">Next</div>
+                    <div className="text-sm">{navigation.next.title}</div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 ml-2" />
+                </button>
+              ) : (
+                <div className="w-48"></div>
               )}
             </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Navigation buttons */}
-      {navigation && (navigation.previous || navigation.next) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-center items-center space-x-6">
-            {navigation.previous ? (
-              <button
-                onClick={() => router.push(`/problems/${navigation.previous.id}`)}
-                className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
-              >
-                <ChevronLeft className="h-5 w-5 mr-2" />
-                <div className="text-left">
-                  <div className="text-sm text-gray-500">Previous</div>
-                  <div className="truncate max-w-[200px]">{navigation.previous.title}</div>
-                </div>
-              </button>
-            ) : (
-              <div className="w-[240px]"></div>
-            )}
-
-            {navigation.totalProblems > 1 && (
-              <div className="text-center">
-                <div className="text-sm text-gray-500 mb-1">
-                  Problem {navigation.currentPosition} of {navigation.totalProblems}
-                </div>
-                <div className="w-48 bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(navigation.currentPosition / navigation.totalProblems) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
-
-            {navigation.next ? (
-              <button
-                onClick={() => router.push(`/problems/${navigation.next.id}`)}
-                className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
-              >
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Next</div>
-                  <div className="truncate max-w-[200px]">{navigation.next.title}</div>
-                </div>
-                <ChevronRight className="h-5 w-5 ml-2" />
-              </button>
-            ) : (
-              <div className="w-[240px]"></div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 } 
