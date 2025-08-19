@@ -5,7 +5,6 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import ProblemStatusCard from '../../../../components/ProblemStatusCard';
-import ProblemIndicators from '../../../../components/ProblemIndicators';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
@@ -455,15 +454,6 @@ export default function LevelProblemsPage() {
       {/* Main Content - Current Problem */}
       {currentProblem && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Problem Status Card */}
-          <div className="mb-8">
-            <ProblemStatusCard
-              totalProblems={problems.length}
-              answeredCount={getAnsweredCount()}
-              currentProblemIndex={currentProblemIndex}
-            />
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Problem Description */}
             <div className="bg-white rounded-lg shadow p-6">
@@ -626,9 +616,9 @@ export default function LevelProblemsPage() {
             </div>
           </div>
 
-          {/* Problem Indicators - Visual indicators below the main content */}
+          {/* Problem Status Card - moved below the main content */}
           <div className="mt-8">
-            <ProblemIndicators
+            <ProblemStatusCard
               totalProblems={problems.length}
               answeredCount={getAnsweredCount()}
               currentProblemIndex={currentProblemIndex}
