@@ -238,7 +238,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                         answers[index] === null ? 'border-red-200 bg-red-50' : 'border-gray-200'
                       }`}
                     >
-                      <div className="flex justify-between items-start mb-2">
+                      {/* <div className="flex justify-between items-start mb-2">
                         <h4 className="font-medium text-gray-900">
                           Q{index + 1}. {mcq.question}
                         </h4>
@@ -248,7 +248,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                         >
                           Edit
                         </button>
-                      </div>
+                      </div> */}
                       <p className="text-sm text-gray-600">
                         <span className="font-medium">Your answer: </span>
                         {answers[index] !== null ? (
