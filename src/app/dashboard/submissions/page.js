@@ -31,7 +31,9 @@ function SubmissionsContent() {
 
   const fetchSubmissions = async () => {
     try {
-      const response = await fetch('/api/submissions');
+      const response = await fetch('/api/submissions', {
+        credentials: 'include'
+      });
       const data = await response.json();
 
       if (response.ok) {
@@ -47,7 +49,9 @@ function SubmissionsContent() {
 
   const fetchLevelSubmissions = async () => {
     try {
-      const response = await fetch('/api/submissions/level');
+      const response = await fetch('/api/submissions/level', {
+        credentials: 'include'
+      });
       const data = await response.json();
 
       if (response.ok) {

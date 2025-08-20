@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 export default function MCQListPage() {
   const router = useRouter();
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
   };
   const [mcqs, setMcqs] = useState([]);
@@ -24,7 +24,7 @@ export default function MCQListPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch('/api/admin/mcqs');
+      const res = await fetch('/api/admin/mcqs', { credentials: 'include' });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setMcqs(data);
@@ -39,7 +39,7 @@ export default function MCQListPage() {
     if (!confirm('Are you sure you want to delete this MCQ?')) return;
     setDeletingId(id);
     try {
-      await fetch(`/api/admin/mcqs/${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/mcqs/${id}`, { method: 'DELETE', credentials: 'include' });
       setMcqs(mcqs.filter(m => m._id !== id));
     } catch {
       alert('Failed to delete MCQ.');

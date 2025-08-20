@@ -12,7 +12,7 @@ export default function RecentSubmissions() {
 
   const fetchSubmissions = async () => {
     try {
-      const res = await fetch('/api/admin/submissions?limit=5');
+      const res = await fetch('/api/admin/submissions?limit=5', { credentials: 'include' });
       const data = await res.json();
       setSubmissions(data.submissions || []);
     } catch (error) {

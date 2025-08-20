@@ -27,7 +27,7 @@ export default function AdminStudentEditPage() {
   const fetchStudent = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/students/${id}`);
+      const res = await fetch(`/api/admin/students/${id}`, { credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch student');
       setFormData({
@@ -63,6 +63,7 @@ export default function AdminStudentEditPage() {
       const response = await fetch(`/api/admin/students/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(updateData)
       });
       const data = await response.json();

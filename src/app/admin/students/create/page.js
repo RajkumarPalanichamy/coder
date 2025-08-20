@@ -42,6 +42,7 @@ export default function AdminStudentCreatePage() {
       const response = await fetch('/api/admin/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,

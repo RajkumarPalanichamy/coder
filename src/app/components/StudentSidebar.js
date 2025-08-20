@@ -22,7 +22,7 @@ export default function StudentSidebar({ onLogout }) {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('/api/user/me');
+      const res = await fetch('/api/user/me', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);

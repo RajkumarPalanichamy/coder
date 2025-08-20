@@ -44,7 +44,7 @@ export default function StudentProblemsPage() {
   const fetchLanguages = async () => {
     setLanguagesLoading(true);
     try {
-      const res = await fetch('/api/problems/meta');
+      const res = await fetch('/api/problems/meta', { credentials: 'include' });
       if (!res.ok) {
         throw new Error('Failed to fetch languages');
       }
@@ -68,7 +68,7 @@ export default function StudentProblemsPage() {
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
-      const res = await fetch(`/api/problems/categories?language=${encodeURIComponent(language)}`);
+      const res = await fetch(`/api/problems/categories?language=${encodeURIComponent(language)}`, { credentials: 'include' });
       const data = await res.json();
       // Ensure data is an array and filter out invalid entries
       const validData = Array.isArray(data.categories) ? data.categories.filter(item => 
@@ -89,7 +89,7 @@ export default function StudentProblemsPage() {
   const fetchLevels = async () => {
     setLevelsLoading(true);
     try {
-      const res = await fetch(`/api/problems/levels?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`);
+      const res = await fetch(`/api/problems/levels?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`, { credentials: 'include' });
       const data = await res.json();
       // Ensure data is an array and filter out invalid entries
       const validData = Array.isArray(data.levels) ? data.levels.filter(item => 
@@ -152,7 +152,7 @@ export default function StudentProblemsPage() {
 
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
   };
 

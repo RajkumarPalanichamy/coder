@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 export default function AdminSubmissionsPage() {
   const router = useRouter();
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
   };
   const [problemSubmissions, setProblemSubmissions] = useState([]);
@@ -34,8 +34,8 @@ export default function AdminSubmissionsPage() {
     setError(null);
     try {
       const [problemRes, testRes] = await Promise.all([
-        fetch('/api/admin/submissions'),
-        fetch('/api/admin/tests/submissions'),
+        fetch('/api/admin/submissions', { credentials: 'include' }),
+        fetch('/api/admin/tests/submissions', { credentials: 'include' }),
       ]);
       
       if (!problemRes.ok || !testRes.ok) {
@@ -65,7 +65,7 @@ export default function AdminSubmissionsPage() {
         ? `/api/admin/submissions/${id}` 
         : `/api/admin/tests/submissions/${id}`;
       
-      const response = await fetch(url, { method: 'DELETE' });
+      const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
       
       if (!response.ok) {
         throw new Error('Failed to delete submission');

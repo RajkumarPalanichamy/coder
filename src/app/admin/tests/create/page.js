@@ -10,7 +10,7 @@ export default function CreateTestPage() {
   const [mcqList, setMcqList] = useState([]);
 
   useEffect(() => {
-    fetch('/api/admin/mcqs')
+    fetch('/api/admin/mcqs', { credentials: 'include' })
       .then(res => res.json())
       .then(setMcqList);
   }, []);

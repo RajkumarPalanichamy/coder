@@ -20,7 +20,7 @@ export default function StudentMCQPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch('/api/admin/mcqs');
+      const res = await fetch('/api/admin/mcqs', { credentials: 'include' });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setMcqs(data);
@@ -33,7 +33,7 @@ export default function StudentMCQPage() {
 
   const fetchLastSubmission = async () => {
     try {
-      const res = await fetch('/api/mcq-submissions');
+      const res = await fetch('/api/mcq-submissions', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         if (data.length > 0) setLastScore(data[0].score);
@@ -59,6 +59,7 @@ export default function StudentMCQPage() {
     await fetch('/api/mcq-submissions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ answers: answerArr, score }),
     });
   };

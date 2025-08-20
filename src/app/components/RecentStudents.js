@@ -12,7 +12,7 @@ export default function RecentStudents() {
 
   const fetchStudents = async () => {
     try {
-      const res = await fetch('/api/admin/students?limit=5');
+      const res = await fetch('/api/admin/students?limit=5', { credentials: 'include' });
       const data = await res.json();
       setStudents(data.students || []);
     } catch (error) {

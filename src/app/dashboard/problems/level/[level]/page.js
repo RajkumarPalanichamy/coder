@@ -73,7 +73,9 @@ export default function LevelProblemsPage() {
 
   const fetchLevelProblems = async () => {
     try {
-      const response = await fetch(`/api/problems/levels/${level}?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`);
+      const response = await fetch(`/api/problems/levels/${level}?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`, {
+        credentials: 'include'
+      });
       const data = await response.json();
       
       if (response.ok) {
@@ -107,6 +109,7 @@ export default function LevelProblemsPage() {
       const response = await fetch('/api/submissions/level', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           level,
           language,
@@ -139,6 +142,7 @@ export default function LevelProblemsPage() {
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           code: currentCode,
           language: currentLanguage,
@@ -199,6 +203,7 @@ export default function LevelProblemsPage() {
       const response = await fetch(`/api/problems/levels/${level}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           language,
           category,

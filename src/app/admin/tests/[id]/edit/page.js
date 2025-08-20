@@ -13,10 +13,10 @@ export default function EditTestPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/admin/tests/${params.id}`)
+    fetch(`/api/admin/tests/${params.id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(setTest);
-    fetch('/api/admin/mcqs')
+    fetch('/api/admin/mcqs', { credentials: 'include' })
       .then(res => res.json())
       .then(setMcqList)
       .finally(() => setLoading(false));

@@ -12,10 +12,10 @@ export default function EditMCQPage() {
   const [testList, setTestList] = useState([]);
 
   useEffect(() => {
-    fetch(`/api/admin/mcqs/${params.id}`)
+    fetch(`/api/admin/mcqs/${params.id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(setMcq);
-    fetch('/api/admin/tests')
+    fetch('/api/admin/tests', { credentials: 'include' })
       .then(res => res.json())
       .then(setTestList);
   }, [params.id]);

@@ -7,7 +7,7 @@ export default function MCQsByTestPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/admin/tests')
+    fetch('/api/admin/tests', { credentials: 'include' })
       .then(res => res.json())
       .then(setTests)
       .finally(() => setLoading(false));

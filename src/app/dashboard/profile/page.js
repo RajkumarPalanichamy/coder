@@ -16,9 +16,9 @@ export default function StudentProfilePage() {
   const fetchAllProfileData = async () => {
     try {
       const [userRes, statsRes, problemSubRes] = await Promise.all([
-        fetch('/api/user/me'),
-        fetch('/api/user/stats'),
-        fetch('/api/submissions'),
+        fetch('/api/user/me', { credentials: 'include' }),
+        fetch('/api/user/stats', { credentials: 'include' }),
+        fetch('/api/submissions', { credentials: 'include' }),
       ]);
       const userData = userRes.ok ? (await userRes.json()).user : null;
       const statsData = statsRes.ok ? await statsRes.json() : null;

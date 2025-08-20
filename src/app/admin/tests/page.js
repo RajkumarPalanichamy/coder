@@ -40,7 +40,7 @@ export default function AdminTestsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch('/api/tests/collections');
+      const res = await fetch('/api/tests/collections', { credentials: 'include' });
       if (!res.ok) {
         throw new Error('Failed to fetch collections');
       }
@@ -65,7 +65,7 @@ export default function AdminTestsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/tests/collection/${encodeURIComponent(selectedCollection)}/categories`);
+      const res = await fetch(`/api/tests/collection/${encodeURIComponent(selectedCollection)}/categories`, { credentials: 'include' });
       if (!res.ok) {
         throw new Error('Failed to fetch categories');
       }
@@ -90,7 +90,7 @@ export default function AdminTestsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/tests/collection/${encodeURIComponent(selectedCollection)}/category/${encodeURIComponent(selectedCategory)}`);
+      const res = await fetch(`/api/tests/collection/${encodeURIComponent(selectedCollection)}/category/${encodeURIComponent(selectedCategory)}`, { credentials: 'include' });
       if (!res.ok) {
         throw new Error('Failed to fetch tests');
       }
@@ -134,7 +134,7 @@ export default function AdminTestsPage() {
     if (!confirm("Are you sure you want to delete this test?")) return;
     setDeletingId(id);
     try {
-      await fetch(`/api/admin/tests/${id}`, { method: "DELETE" });
+      await fetch(`/api/admin/tests/${id}`, { method: "DELETE", credentials: 'include' });
       setTests(tests.filter((t) => t._id !== id));
     } catch {
       alert("Failed to delete test.");

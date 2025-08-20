@@ -34,7 +34,7 @@ export default function AdminProblemEditPage() {
   const fetchProblem = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/problems/${id}`);
+      const res = await fetch(`/api/admin/problems/${id}`, { credentials: 'include' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch problem');
       setFormData({
@@ -122,6 +122,7 @@ export default function AdminProblemEditPage() {
       const response = await fetch(`/api/admin/problems/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           programmingLanguage: formData.language, // Map language to programmingLanguage

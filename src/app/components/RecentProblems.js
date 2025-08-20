@@ -12,7 +12,7 @@ export default function RecentProblems() {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch('/api/admin/problems?limit=5');
+      const res = await fetch('/api/admin/problems?limit=5', { credentials: 'include' });
       const data = await res.json();
       setProblems(data.problems || []);
     } catch (error) {

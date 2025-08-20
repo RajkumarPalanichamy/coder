@@ -118,8 +118,8 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const [statsRes, problemsRes] = await Promise.all([
-        fetch('/api/user/stats'),
-        fetch(`/api/problems${language ? `?language=${encodeURIComponent(language)}` : ''}`)
+        fetch('/api/user/stats', { credentials: 'include' }),
+        fetch(`/api/problems${language ? `?language=${encodeURIComponent(language)}` : ''}`, { credentials: 'include' })
       ]);
       const statsData = await statsRes.json();
       const problemsData = await problemsRes.json();
@@ -134,7 +134,7 @@ export default function Dashboard() {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('/api/user/me');
+      const res = await fetch('/api/user/me', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -151,7 +151,7 @@ export default function Dashboard() {
 
   const fetchTests = async () => {
     try {
-      const res = await fetch('/api/tests');
+      const res = await fetch('/api/tests', { credentials: 'include' });
       const data = await res.json();
       setTests(data);
     } catch (err) {
@@ -160,7 +160,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     router.push('/login');
   };
 

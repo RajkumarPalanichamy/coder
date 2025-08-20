@@ -24,7 +24,7 @@ export default function AdminStudentsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch('/api/admin/students');
+      const res = await fetch('/api/admin/students', { credentials: 'include' });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setStudents(data.students || []);
@@ -39,7 +39,7 @@ export default function AdminStudentsPage() {
     if (!confirm("Are you sure you want to delete this student?")) return;
     setDeletingId(id);
     try {
-      await fetch(`/api/admin/students/${id}`, { method: "DELETE" });
+      await fetch(`/api/admin/students/${id}`, { method: "DELETE", credentials: 'include' });
       setStudents(students.filter((s) => s._id !== id));
     } catch {
       alert("Failed to delete student.");

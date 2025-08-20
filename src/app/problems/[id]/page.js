@@ -6,7 +6,8 @@ import { Play, Save, ArrowLeft, CheckCircle, XCircle, Copy, ChevronLeft, Chevron
 import dynamic from 'next/dynamic';
 
 // Monaco Editor (dynamically loaded to avoid SSR issues)
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
+const MonacoEditor = dynamic(() => import('../../../components/MonacoEditor'), { ssr: false });
+const CodeExecutor = dynamic(() => import('../../../components/CodeExecutor'), { ssr: false });
 
 export default function ProblemPage() {
   const params = useParams();
@@ -106,6 +107,7 @@ export default function ProblemPage() {
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           code,
           language,
@@ -122,10 +124,18 @@ export default function ProblemPage() {
         return;
       }
       
-      setRunTestResults(data.results);
+      // Handle improved response format
+      const results = data.results || [];
+      setRunTestResults(results);
       
-      // Display Judge0 notice
-      if (data.notice) {
+      // Display execution summary
+      if (data.summary) {
+        setRunResult({
+          status: data.summary.allPassed ? 'success' : 'info',
+          message: data.notice || `Execution completed: ${data.summary.passed}/${data.summary.total} test cases passed`,
+          summary: data.summary
+        });
+      } else if (data.notice) {
         setRunResult({
           status: 'info',
           message: data.notice
@@ -133,7 +143,7 @@ export default function ProblemPage() {
       }
       
       // If all passed, allow submit
-      setCanSubmit(data.results.every(r => r.passed));
+      setCanSubmit(results.every(r => r.passed));
     } catch (err) {
       console.error('Error running code:', err);
       setRunError('Error running code. Please check your network connection and try again.');
@@ -153,6 +163,7 @@ export default function ProblemPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           problemId: params.id,
           code,
@@ -477,47 +488,54 @@ export default function ProblemPage() {
             <div className="h-96">
               <MonacoEditor
                 height="100%"
-                language={language === 'cpp' ? 'cpp' : language}
-                value={code}
+                language={language}
+                code={code}
                 onChange={(value) => setCode(value || '')}
                 onMount={(editor) => { codeRef.current = editor; }}
-                theme="vs-light"
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  lineNumbers: 'on',
-                  roundedSelection: false,
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                }}
+                starterCode={problem?.starterCode}
+                showToolbar={true}
+                className="border rounded-lg overflow-hidden"
               />
             </div>
             
             <div className="p-4 border-t border-gray-200">
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleRun}
-                  disabled={runningCode}
-                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  <Play className="h-4 w-4 mr-2" />
-                  {runningCode ? 'Running...' : 'Run Code'}
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting || !canSubmit}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {submitting ? 'Submitting...' : 'Submit'}
-                </button>
-                <button
-                  onClick={handleSaveCode}
-                  className="flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save
-                </button>
+              <div className="space-y-4">
+                {/* Code Executor Component */}
+                <CodeExecutor
+                  code={code}
+                  language={language}
+                  testCases={(problem?.testCases || []).filter(tc => !tc.isHidden)}
+                  onExecutionComplete={(results) => {
+                    setRunTestResults(results.results);
+                    setRunResult({
+                      status: results.summary?.allPassed ? 'success' : 'info',
+                      message: results.notice || `Execution completed: ${results.summary?.passed}/${results.summary?.total} test cases passed`,
+                      summary: results.summary
+                    });
+                    setCanSubmit(results.summary?.allPassed || false);
+                    setRunError('');
+                  }}
+                  disabled={runningCode || submitting}
+                />
+                
+                {/* Additional Actions */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting || !canSubmit}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {submitting ? 'Submitting...' : 'Submit Solution'}
+                  </button>
+                  <button
+                    onClick={handleSaveCode}
+                    className="flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Code
+                  </button>
+                </div>
               </div>
             </div>
           </div>

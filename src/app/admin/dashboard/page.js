@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('/api/user/me');
+      const res = await fetch('/api/user/me', { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -74,17 +74,17 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       // Fetch students
-      const studentsResponse = await fetch('/api/admin/students');
+      const studentsResponse = await fetch('/api/admin/students', { credentials: 'include' });
       const studentsData = await studentsResponse.json();
       setStudents(studentsData.students || []);
 
       // Fetch problems
-      const problemsResponse = await fetch(`/api/admin/problems${language ? `?language=${encodeURIComponent(language)}` : ''}`);
+      const problemsResponse = await fetch(`/api/admin/problems${language ? `?language=${encodeURIComponent(language)}` : ''}`, { credentials: 'include' });
       const problemsData = await problemsResponse.json();
       setProblems(problemsData.problems || []);
 
       // Fetch stats
-      const statsResponse = await fetch('/api/admin/stats');
+      const statsResponse = await fetch('/api/admin/stats', { credentials: 'include' });
       const statsData = await statsResponse.json();
       setStats(statsData);
 
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
 
   const fetchTests = async () => {
     try {
-      const res = await fetch('/api/admin/tests');
+      const res = await fetch('/api/admin/tests', { credentials: 'include' });
       const data = await res.json();
       setTests(data);
     } catch (e) {
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
 
   const fetchMCQs = async () => {
     try {
-      const res = await fetch('/api/admin/mcqs');
+      const res = await fetch('/api/admin/mcqs', { credentials: 'include' });
       const data = await res.json();
       setTestMCQs(data);
     } catch (e) {
@@ -138,12 +138,14 @@ export default function AdminDashboard() {
       await fetch(`/api/admin/tests/${editingTest._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
     } else {
       await fetch('/api/admin/tests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
     }
@@ -154,7 +156,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
@@ -168,7 +170,8 @@ export default function AdminDashboard() {
 
     try {
       const response = await fetch(`/api/admin/students/${studentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -184,7 +187,8 @@ export default function AdminDashboard() {
 
     try {
       const response = await fetch(`/api/admin/problems/${problemId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (response.ok) {
