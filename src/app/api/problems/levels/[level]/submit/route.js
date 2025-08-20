@@ -2,15 +2,35 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import Submission, { LevelSubmission } from '@/models/Submission';
+import { getUserFromRequest } from '@/lib/auth';
 
 export async function POST(request, { params }) {
   try {
     await connectDB();
     
+    // Debug: Log all headers
+    console.log('DEBUG: All headers:', Object.fromEntries(request.headers.entries()));
+    console.log('DEBUG: Cookies:', request.cookies.getAll());
+    
     // Get user info from headers (set by middleware)
-    const userId = request.headers.get('user-id');
+    let userId = request.headers.get('user-id');
+    const userRole = request.headers.get('user-role');
+    const userEmail = request.headers.get('user-email');
+    
+    console.log('DEBUG: User headers from middleware:', { userId, userRole, userEmail });
+    
+    // If headers are not set by middleware, try to get user from token directly
     if (!userId) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      console.log('DEBUG: No userId in headers, trying to decode token directly');
+      const user = getUserFromRequest(request);
+      
+      if (!user) {
+        console.log('DEBUG: Failed to get user from token, returning 401');
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+      
+      userId = user.userId;
+      console.log('DEBUG: Got userId from token:', userId);
     }
 
     const { level } = await params;
@@ -197,9 +217,15 @@ export async function GET(request, { params }) {
     await connectDB();
     
     // Get user info from headers (set by middleware)
-    const userId = request.headers.get('user-id');
+    let userId = request.headers.get('user-id');
+    
+    // If headers are not set by middleware, try to get user from token directly
     if (!userId) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      const user = getUserFromRequest(request);
+      if (!user) {
+        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+      }
+      userId = user.userId;
     }
 
     const { level } = await params;
