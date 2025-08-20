@@ -15,7 +15,13 @@ export async function GET(req) {
 export async function POST(req) {
   await dbConnect();
   const user = await getUserFromRequest(req);
-  requireAdmin(user);
+  
+  try {
+    requireAdmin(user);
+  } catch (error) {
+    return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+  }
+  
   const { title, description, collection, mcqs, language, category, duration, availableFrom, availableTo } = await req.json();
   if (!title || !category || !mcqs || !Array.isArray(mcqs) || mcqs.length === 0) {
     return NextResponse.json({ error: 'Title, category, and MCQs are required' }, { status: 400 });
@@ -28,7 +34,7 @@ export async function POST(req) {
     language,
     category,
     duration: duration || 60, // Default to 60 minutes if not provided
-    createdBy: user._id,
+    createdBy: user.userId, // Use userId instead of _id
     availableFrom,
     availableTo,
   });

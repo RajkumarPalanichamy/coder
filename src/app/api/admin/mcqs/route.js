@@ -15,7 +15,13 @@ export async function GET(req) {
 export async function POST(req) {
   await dbConnect();
   const user = await getUserFromRequest(req);
-  requireAdmin(user);
+  
+  try {
+    requireAdmin(user);
+  } catch (error) {
+    return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+  }
+  
   const { question, options, correctOption, language, test } = await req.json();
   if (!question || !options || correctOption === undefined || !test) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -25,7 +31,7 @@ export async function POST(req) {
     options,
     correctOption,
     language,
-    createdBy: user._id,
+    createdBy: user.userId, // Use userId instead of _id
     test,
   });
   return NextResponse.json(mcq);

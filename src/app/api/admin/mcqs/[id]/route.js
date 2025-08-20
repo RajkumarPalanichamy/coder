@@ -14,7 +14,13 @@ export async function GET(req, { params }) {
 export async function PUT(req, { params }) {
   await dbConnect();
   const user = await getUserFromRequest(req);
-  requireAdmin(user);
+  
+  try {
+    requireAdmin(user);
+  } catch (error) {
+    return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+  }
+  
   const { id } = await params;
   const { question, options, correctOption, language, test } = await req.json();
   const mcq = await MCQ.findByIdAndUpdate(
@@ -29,7 +35,13 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   await dbConnect();
   const user = await getUserFromRequest(req);
-  requireAdmin(user);
+  
+  try {
+    requireAdmin(user);
+  } catch (error) {
+    return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+  }
+  
   const { id } = await params;
   const mcq = await MCQ.findByIdAndDelete(id);
   if (!mcq) return NextResponse.json({ error: 'Not found' }, { status: 404 });

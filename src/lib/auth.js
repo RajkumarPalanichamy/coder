@@ -27,3 +27,9 @@ export function getUserFromRequest(request) {
     return null;
   }
 }
+
+export function requireAdmin(user) {
+  if (!user || user.role !== 'admin') {
+    throw new Error('Admin access required');
+  }
+}
