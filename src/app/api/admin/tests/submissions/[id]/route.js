@@ -5,7 +5,7 @@ import StudentTestSubmission from '@/models/StudentTestSubmission';
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     await StudentTestSubmission.findByIdAndDelete(id);
     return NextResponse.json({ message: 'Submission deleted' });
   } catch (error) {

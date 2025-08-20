@@ -11,6 +11,22 @@ const SUPPORTED_LANGUAGES = {
   c: { id: 50, name: 'C (GCC 9.2.0)' }
 };
 
+// Language mapping from frontend names to Judge0 keys
+const LANGUAGE_MAPPING = {
+  'javascript': 'javascript',
+  'JavaScript': 'javascript',
+  'python': 'python',
+  'Python': 'python',
+  'java': 'java',
+  'Java': 'java',
+  'cpp': 'cpp',
+  'C++': 'cpp',
+  'c': 'c',
+  'C': 'c',
+  'C Programming': 'c',
+  'Embedded C Programming': 'c'
+};
+
 class Judge0Executor {
   constructor() {
     this.apiKey = JUDGE0_API_KEY;
@@ -24,9 +40,11 @@ class Judge0Executor {
       throw new Error('Judge0 API key not configured');
     }
 
-    const langConfig = SUPPORTED_LANGUAGES[language];
+    // Map frontend language name to Judge0 language key
+    const mappedLanguage = LANGUAGE_MAPPING[language] || language;
+    const langConfig = SUPPORTED_LANGUAGES[mappedLanguage];
     if (!langConfig) {
-      throw new Error(`Unsupported language: ${language}`);
+      throw new Error(`Unsupported language: ${language} (mapped to: ${mappedLanguage})`);
     }
 
     const results = [];
@@ -61,12 +79,12 @@ class Judge0Executor {
 
   async submitCode(sourceCode, languageId, stdin) {
     const submissionData = {
-      source_code: sourceCode,
+      source_code: this.encodeBase64(sourceCode),
       language_id: languageId,
-      stdin: stdin
+      stdin: this.encodeBase64(stdin)
     };
 
-    const response = await fetch(`${this.baseUrl}/submissions?base64_encoded=false&wait=false`, {
+    const response = await fetch(`${this.baseUrl}/submissions?base64_encoded=true&wait=false`, {
       method: 'POST',
       headers: {
         'X-RapidAPI-Key': this.apiKey,
@@ -99,11 +117,8 @@ class Judge0Executor {
     let attempts = 0;
 
     while (attempts < this.maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, this.pollInterval));
-      attempts++;
-
       try {
-        const response = await fetch(`${this.baseUrl}/submissions/${token}?base64_encoded=false`, {
+        const response = await fetch(`${this.baseUrl}/submissions/${token}?base64_encoded=true`, {
           headers: {
             'X-RapidAPI-Key': this.apiKey,
             'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
@@ -112,22 +127,35 @@ class Judge0Executor {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.warn(`Poll attempt ${attempts}: HTTP ${response.status}`, {
+          console.error(`Poll attempt ${attempts + 1}: HTTP ${response.status}`, {
             status: response.status,
             statusText: response.statusText,
             errorText: errorText,
           });
+          
+          // If it's a 400 error with UTF-8 message, we need to use base64
+          if (response.status === 400 && errorText.includes('UTF-8')) {
+            console.log('UTF-8 encoding error detected, using base64 encoding');
+            // Continue with base64 encoding
+          }
+          
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, this.pollInterval));
           continue;
         }
 
-        const data = await response.json();
+        const result = await response.json();
         
-        if (data.status && data.status.id > 2) {
-          return data;
+        if (result.status && result.status.id >= 3) {
+          return result;
         }
 
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, this.pollInterval));
       } catch (error) {
-        console.warn(`Poll attempt ${attempts} failed:`, error.message);
+        console.error(`Error polling result (attempt ${attempts + 1}):`, error);
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, this.pollInterval));
       }
     }
 
@@ -136,15 +164,22 @@ class Judge0Executor {
 
   processResult(result, input, expectedOutput) {
     const statusId = result.status?.id || 0;
-    const actualOutput = result.stdout || '';
+    // Decode base64 output if present
+    const actualOutput = result.stdout ? this.decodeBase64(result.stdout) : '';
     let error = '';
     let passed = false;
     let status = 'unknown';
 
+    // Check if output matches expected
+    if (actualOutput.trim() === expectedOutput.trim()) {
+      passed = true;
+      status = 'accepted';
+    }
+
+    // Handle different status codes
     switch (statusId) {
       case 3:
         status = 'accepted';
-        passed = actualOutput.trim() === expectedOutput.trim();
         break;
       case 4:
         status = 'wrong_answer';
@@ -156,19 +191,27 @@ class Judge0Executor {
         break;
       case 6:
         status = 'compilation_error';
-        error = `Compilation Error: ${result.compile_output || 'Unknown compilation error'}`;
+        const compileOutput = result.compile_output ? this.decodeBase64(result.compile_output) : 'Unknown compilation error';
+        error = `Compilation Error: ${compileOutput}`;
         break;
       case 7:
+        status = 'runtime_error';
+        error = 'Runtime Error';
+        break;
       case 8:
+        status = 'memory_limit_exceeded';
+        error = 'Memory Limit Exceeded';
+        break;
       case 9:
-      case 10:
-      case 11:
+        status = 'internal_error';
+        error = 'Internal Error';
+        break;
       case 12:
         status = 'runtime_error';
-        error = `Runtime Error: ${result.stderr || 'Unknown runtime error'}`;
+        const stderr = result.stderr ? this.decodeBase64(result.stderr) : 'Unknown runtime error';
+        error = `Runtime Error: ${stderr}`;
         break;
       default:
-        status = 'unknown_error';
         error = `Unknown Error: ${result.status?.description || 'Unknown status'}`;
     }
 
@@ -190,6 +233,28 @@ class Judge0Executor {
       statusDescription: result.status?.description || 'Unknown',
       token: result.token
     };
+  }
+
+  // Helper method to encode strings to base64
+  encodeBase64(str) {
+    try {
+      if (!str) return '';
+      return Buffer.from(str, 'utf-8').toString('base64');
+    } catch (error) {
+      console.warn('Failed to encode string to base64:', error);
+      return str; // Return original string if encoding fails
+    }
+  }
+
+  // Helper method to decode base64 strings
+  decodeBase64(str) {
+    try {
+      if (!str) return '';
+      return Buffer.from(str, 'base64').toString('utf-8');
+    } catch (error) {
+      console.warn('Failed to decode base64 string:', error);
+      return str; // Return original string if decoding fails
+    }
   }
 }
 
@@ -236,16 +301,22 @@ export async function POST(req) {
 
     const executor = new Judge0Executor();
     const startTime = Date.now();
+    
     const results = await executor.execute(code, language, testCases);
     const executionDuration = Date.now() - startTime;
 
     const passedCount = results.filter(r => r.passed).length;
     const failedCount = results.length - passedCount;
 
+    // Get the mapped language from the executor's language mapping
+    const mappedLanguage = LANGUAGE_MAPPING[language] || language;
+
     return NextResponse.json({
       results,
       executionInfo: {
-        language: SUPPORTED_LANGUAGES[language],
+        originalLanguage: language,
+        mappedLanguage: mappedLanguage,
+        language: SUPPORTED_LANGUAGES[mappedLanguage],
         timestamp: new Date().toISOString(),
         totalTestCases: testCases.length,
         passedTestCases: passedCount,

@@ -35,12 +35,13 @@ export default function LevelProblemsPage() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [levelSubmissionId, setLevelSubmissionId] = useState(null);
   const timerRef = useRef();
+  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
 
   // Current problem
   const currentProblem = problems[currentProblemIndex];
   const currentCode = currentProblem ? (problemCodes[currentProblem._id] || '') : '';
   const currentLanguage = currentProblem ? (problemLanguages[currentProblem._id] || 'javascript') : 'javascript';
-
+  
   useEffect(() => {
     if (language && category && level) {
       fetchLevelProblems();
@@ -63,6 +64,13 @@ export default function LevelProblemsPage() {
     }
   }, [timeLeft, sessionStarted]);
 
+  // Update current language when problem changes
+  useEffect(() => {
+    if (currentProblem && problemLanguages[currentProblem._id]) {
+      // This will trigger a re-render with the correct language
+    }
+  }, [currentProblemIndex, problemLanguages]);
+
   const fetchLevelProblems = async () => {
     try {
       const response = await fetch(`/api/problems/levels/${level}?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`);
@@ -76,8 +84,10 @@ export default function LevelProblemsPage() {
         const codes = {};
         const langs = {};
         data.problems.forEach(problem => {
-          codes[problem._id] = problem.starterCode || '';
-          langs[problem._id] = problem.programmingLanguage || 'javascript';
+          // Default to JavaScript console.log if no starter code
+          const defaultStarterCode = problem.starterCode || 'console.log("Hello, World!");';
+          codes[problem._id] = defaultStarterCode;
+          langs[problem._id] = 'javascript'; // Always default to JavaScript
         });
         setProblemCodes(codes);
         setProblemLanguages(langs);
@@ -181,7 +191,7 @@ export default function LevelProblemsPage() {
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
         code: problemCodes[problem._id] || '',
-        submissionLanguage: problemLanguages[problem._id] || language || 'javascript'
+        submissionLanguage: problemLanguages[problem._id] || 'javascript'
       }));
 
       console.log('Submitting data:', { language, category, problemSubmissions });
@@ -223,10 +233,17 @@ export default function LevelProblemsPage() {
 
   const updateCurrentLanguage = (newLanguage) => {
     if (!currentProblem) return;
+    const languageToSet = newLanguage || 'javascript'; // Default to JavaScript
+    
+    console.log('Updating language for problem:', currentProblem._id, 'from', currentLanguage, 'to', languageToSet);
+    
     setProblemLanguages(prev => ({
       ...prev,
-      [currentProblem._id]: newLanguage
+      [currentProblem._id]: languageToSet
     }));
+    
+    // Force a re-render to update the UI
+    setForceUpdate(prev => prev + 1);
   };
 
   const goToPrevious = () => {
@@ -509,19 +526,24 @@ export default function LevelProblemsPage() {
               <div className="border-b border-gray-200 p-4 flex justify-between items-center">
                 <div className="flex items-center space-x-2">
                   <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
-                  <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-700 capitalize">{currentLanguage}</span>
                 </div>
-                <select
-                  value={currentLanguage}
-                  onChange={(e) => updateCurrentLanguage(e.target.value)}
-                  className="border border-gray-300 rounded px-3 py-1 text-sm text-black bg-white"
-                >
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="java">Java</option>
-                  <option value="cpp">C++</option>
-                  <option value="c">C</option>
-                </select>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm font-medium text-gray-700">Language:</span>
+                  <select
+                    value={currentLanguage}
+                    onChange={(e) => {
+                      updateCurrentLanguage(e.target.value);
+                    }}
+                    className="border-2 border-gray-300 rounded-lg px-4 py-2 text-sm text-black bg-white font-medium focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-colors"
+                  >
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="c">C</option>
+                  </select>
+                  
+                </div>
               </div>
               
               <div className="p-0 flex-1 min-h-[384px]">

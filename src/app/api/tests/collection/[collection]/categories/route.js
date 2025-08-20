@@ -2,11 +2,9 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../../../lib/mongodb';
 import Test from '../../../../../../models/Test';
 
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   try {
-    await dbConnect();
-    
-    const { collection } = params;
+    const { collection } = await params;
     
     if (!collection) {
       return NextResponse.json({ error: 'Collection parameter is required' }, { status: 400 });

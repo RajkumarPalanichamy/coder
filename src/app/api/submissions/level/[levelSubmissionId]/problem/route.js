@@ -14,7 +14,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { levelSubmissionId } = params;
+    const { levelSubmissionId } = await params;
     const body = await request.json();
     const { problemId, code, language } = body;
 
@@ -157,7 +157,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { levelSubmissionId } = params;
+    const { levelSubmissionId } = await params;
 
     // Find the level submission with populated data
     const levelSubmission = await LevelSubmission.findOne({

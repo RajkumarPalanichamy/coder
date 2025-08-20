@@ -5,7 +5,8 @@ import Problem from '@/models/Problem';
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    
+    const { id } = await params;
     const problem = await Problem.findById(id);
     if (!problem) {
       return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
@@ -19,7 +20,8 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    
+    const { id } = await params;
     const body = await request.json();
     const problem = await Problem.findById(id);
     if (!problem) {
@@ -47,7 +49,8 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
-    const { id } = params;
+    
+    const { id } = await params;
     const problem = await Problem.findById(id);
     if (!problem) {
       return NextResponse.json({ error: 'Problem not found' }, { status: 404 });

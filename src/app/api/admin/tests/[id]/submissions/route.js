@@ -7,7 +7,8 @@ export async function GET(req, { params }) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
-  const submissions = await StudentTestSubmission.find({ test: params.id })
+  const { id } = await params;
+  const submissions = await StudentTestSubmission.find({ test: id })
     .populate('student', 'firstName lastName email')
     .sort({ submittedAt: -1 });
   return NextResponse.json(submissions);

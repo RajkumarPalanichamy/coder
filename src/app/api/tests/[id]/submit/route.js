@@ -13,15 +13,17 @@ export async function POST(req, context) {
     requireStudent(user);
     const { answers } = await req.json();
     
+    const { id } = await params;
+    
     console.log('Test Submission Request:', {
-      testId: params.id,
+      testId: id,
       userId: user._id,
       answersLength: answers?.length
     });
 
-    const test = await Test.findById(params.id).populate('mcqs');
+    const test = await Test.findById(id).populate('mcqs');
     if (!test) {
-      console.error('Test not found:', params.id);
+      console.error('Test not found:', id);
       return NextResponse.json({ error: 'Test not found' }, { status: 404 });
     }
 

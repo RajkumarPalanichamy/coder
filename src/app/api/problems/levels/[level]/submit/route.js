@@ -7,16 +7,13 @@ export async function POST(request, { params }) {
   try {
     await connectDB();
     
-    // TEMPORARY FIX: Use a default user ID for testing
-    // TODO: Restore proper authentication after testing
-    let userId = request.headers.get('user-id');
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
     if (!userId) {
-      // Use a default test user ID
-      userId = '507f1f77bcf86cd799439011'; // This is a valid MongoDB ObjectId format
-      console.log('WARNING: Using default user ID for testing. This should be fixed in production!');
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { level } = params;
+    const { level } = await params;
     const body = await request.json();
     const { language, category, problemSubmissions } = body;
 
@@ -199,16 +196,13 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
     
-    // TEMPORARY FIX: Use a default user ID for testing
-    // TODO: Restore proper authentication after testing
-    let userId = request.headers.get('user-id');
+    // Get user info from headers (set by middleware)
+    const userId = request.headers.get('user-id');
     if (!userId) {
-      // Use a default test user ID
-      userId = '507f1f77bcf86cd799439011'; // This is a valid MongoDB ObjectId format
-      console.log('WARNING: Using default user ID for testing. This should be fixed in production!');
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const { level } = params;
+    const { level } = await params;
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language');
     const category = searchParams.get('category');

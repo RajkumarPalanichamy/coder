@@ -2,11 +2,9 @@ import { NextResponse } from 'next/server';
 import dbConnect from '../../../../../../../lib/mongodb';
 import Test from '../../../../../../../models/Test';
 
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   try {
-    await dbConnect();
-    
-    const { collection, category } = params;
+    const { collection, category } = await params;
     
     if (!collection || !category) {
       return NextResponse.json({ error: 'Collection and category parameters are required' }, { status: 400 });

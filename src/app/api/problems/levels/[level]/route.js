@@ -6,7 +6,7 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
     
-    const { level } = params;
+    const { level } = await params;
     const { searchParams } = new URL(request.url);
     const rawLanguage = searchParams.get('language');
     const rawCategory = searchParams.get('category');

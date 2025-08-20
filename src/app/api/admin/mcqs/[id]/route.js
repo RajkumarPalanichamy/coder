@@ -5,7 +5,8 @@ import { getUserFromRequest, requireAdmin } from '@/lib/auth';
 
 export async function GET(req, { params }) {
   await dbConnect();
-  const mcq = await MCQ.findById(params.id);
+  const { id } = await params;
+  const mcq = await MCQ.findById(id);
   if (!mcq) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json(mcq);
 }
@@ -14,9 +15,10 @@ export async function PUT(req, { params }) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
+  const { id } = await params;
   const { question, options, correctOption, language, test } = await req.json();
   const mcq = await MCQ.findByIdAndUpdate(
-    params.id,
+    id,
     { question, options, correctOption, language, test },
     { new: true }
   );
@@ -28,7 +30,8 @@ export async function DELETE(req, { params }) {
   await dbConnect();
   const user = await getUserFromRequest(req);
   requireAdmin(user);
-  const mcq = await MCQ.findByIdAndDelete(params.id);
+  const { id } = await params;
+  const mcq = await MCQ.findByIdAndDelete(id);
   if (!mcq) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ success: true });
 } 

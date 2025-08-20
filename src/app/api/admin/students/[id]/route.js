@@ -5,7 +5,8 @@ import User from '@/models/User';
 export async function GET(request, { params }) {
   try {
     await connectDB();
-    const student = await User.findById(params.id).select('-password');
+    const { id } = await params;
+    const student = await User.findById(id).select('-password');
     if (!student || student.role !== 'student') {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
@@ -18,8 +19,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectDB();
+    const { id } = await params;
     const body = await request.json();
-    const student = await User.findById(params.id);
+    const student = await User.findById(id);
     if (!student || student.role !== 'student') {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
@@ -41,7 +43,8 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectDB();
-    const student = await User.findById(params.id);
+    const { id } = await params;
+    const student = await User.findById(id);
     if (!student || student.role !== 'student') {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
