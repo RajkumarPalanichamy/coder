@@ -8,7 +8,7 @@ export function middleware(request) {
   console.log('MIDDLEWARE: Request for', pathname);
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/register', '/'];
+  const publicRoutes = ['/login', '/register', '/', '/api/check-env', '/api/test-auth', '/api/debug-dashboard', '/test-auth'];
   
   // Admin-only routes
   const adminRoutes = ['/admin', '/api/admin'];
@@ -28,6 +28,7 @@ export function middleware(request) {
 
   // If accessing a public route, allow access
   if (isPublicRoute) {
+    console.log('MIDDLEWARE: Public route, allowing access');
     return NextResponse.next();
   }
 
@@ -39,20 +40,20 @@ export function middleware(request) {
   }
 
   try {
-    console.log('MIDDLEWARE: Entered try block for JWT verification');
-    console.log('MIDDLEWARE: About to verify JWT');
-    console.log('MIDDLEWARE: JWT_SECRET', JWT_SECRET);
+    console.log('MIDDLEWARE: Verifying JWT token');
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('MIDDLEWARE: JWT decoded', decoded);
+    console.log('MIDDLEWARE: JWT verified successfully, user role:', decoded.role);
     
     // If accessing admin route, check if user is admin
     if (isAdminRoute && decoded.role !== 'admin') {
+      console.log('MIDDLEWARE: Non-admin user trying to access admin route, redirecting to /unauthorized');
       const unauthorizedUrl = new URL('/unauthorized', request.url);
       return NextResponse.redirect(unauthorizedUrl);
     }
 
     // If admin tries to access student dashboard, redirect to admin dashboard
     if (isStudentDashboard && decoded.role === 'admin') {
+      console.log('MIDDLEWARE: Admin user trying to access student dashboard, redirecting to /admin/dashboard');
       const adminDashboardUrl = new URL('/admin/dashboard', request.url);
       return NextResponse.redirect(adminDashboardUrl);
     }
@@ -71,10 +72,11 @@ export function middleware(request) {
       });
     }
 
+    console.log('MIDDLEWARE: Authentication successful, allowing access');
     return NextResponse.next();
 
   } catch (error) {
-    console.log('MIDDLEWARE: JWT verification failed', error);
+    console.log('MIDDLEWARE: JWT verification failed', error.message);
     // Invalid token, redirect to login
     const loginUrl = new URL('/login', request.url);
     const response = NextResponse.redirect(loginUrl);
@@ -84,7 +86,8 @@ export function middleware(request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 0
+      maxAge: 0,
+      path: '/'
     });
     
     return response;

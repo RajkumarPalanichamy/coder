@@ -45,9 +45,9 @@ export default function Login() {
 
       // Redirect based on user role
       if (data.user.role === 'admin') {
-        window.location.href = '/admin/dashboard';
+        router.push('/admin/dashboard');
       } else {
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }
 
     } catch (error) {

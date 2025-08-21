@@ -1,17 +1,23 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const envCheck = {
-    MONGODB_URI: process.env.MONGODB_URI ? '✅ Set' : '❌ Missing',
-    JWT_SECRET: process.env.JWT_SECRET ? '✅ Set' : '❌ Missing',
-    JUDGE0_API_KEY: process.env.JUDGE0_API_KEY ? '✅ Set' : '❌ Missing (Optional)',
-    JUDGE0_URL: process.env.JUDGE0_URL ? '✅ Set' : '❌ Missing (Optional)',
-    NODE_ENV: process.env.NODE_ENV || 'development'
-  };
+  try {
+    const envVars = {
+      NODE_ENV: process.env.NODE_ENV,
+      JWT_SECRET: process.env.JWT_SECRET ? 'Set (length: ' + process.env.JWT_SECRET.length + ')' : 'Not set',
+      MONGODB_URI: process.env.MONGODB_URI ? 'Set' : 'Not set',
+      // Don't expose sensitive values, just check if they exist
+    };
 
-  return NextResponse.json({
-    message: 'Environment check',
-    environment: envCheck,
-    timestamp: new Date().toISOString()
-  });
+    return NextResponse.json({
+      message: 'Environment check',
+      environment: envVars,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Environment check failed', details: error.message },
+      { status: 500 }
+    );
+  }
 } 
