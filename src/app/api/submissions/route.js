@@ -10,7 +10,7 @@ export async function GET(request) {
     await connectDB();
     
     // Get authenticated user
-    const user = await getUserFromRequest(request);
+    const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json(
         { error: 'User not authenticated' },

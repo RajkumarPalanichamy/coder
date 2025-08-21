@@ -4,16 +4,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export function getUserFromRequest(request) {
   try {
+    console.log('AUTH: getUserFromRequest called');
+    console.log('AUTH: Request method:', request.method);
+    console.log('AUTH: Request URL:', request.url);
+    
     // Get token from cookies
     const token = request.cookies.get('token')?.value;
     
     if (!token) {
       console.log('AUTH: No token found in cookies');
       console.log('AUTH: Available cookies:', request.cookies.getAll());
+      console.log('AUTH: Cookie header:', request.headers.get('cookie'));
       return null;
     }
     
     console.log('AUTH: Token found, attempting to verify');
+    console.log('AUTH: JWT_SECRET being used:', JWT_SECRET);
+    
     // Verify and decode token
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log('AUTH: Token decoded successfully:', decoded);
@@ -26,6 +33,7 @@ export function getUserFromRequest(request) {
     };
   } catch (error) {
     console.error('AUTH: Token verification failed:', error.message);
+    console.error('AUTH: Full error:', error);
     return null;
   }
 }

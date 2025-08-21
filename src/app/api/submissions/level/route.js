@@ -6,15 +6,21 @@ import Submission, { LevelSubmission } from '@/models/Submission';
 // GET - Fetch level submissions for a user
 export async function GET(request) {
   try {
+    console.log('Level submissions API - Starting request');
     await connectDB();
     
     // Get authenticated user
+    console.log('Level submissions API - Getting user from request');
     const user = getUserFromRequest(request);
+    console.log('Level submissions API - User result:', user);
+    
     if (!user) {
+      console.log('Level submissions API - No user found, returning 401');
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
     
     const userId = user.userId;
+    console.log('Level submissions API - User ID:', userId);
 
     const { searchParams } = new URL(request.url);
     const level = searchParams.get('level');

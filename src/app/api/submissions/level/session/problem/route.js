@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import { getUserFromRequest } from '@/lib/auth';
-import Problem from '@/models/Problem';
-import Submission, { LevelSubmission } from '@/models/Submission';
+import connectDB from '../../../../../../lib/mongodb';
+import { getUserFromRequest } from '../../../../../../lib/auth';
+import Problem from '../../../../../../models/Problem';
+import Submission, { LevelSubmission } from '../../../../../../models/Submission';
 
 // POST - Submit a single problem within a level session
 export async function POST(request, { params }) {
