@@ -9,9 +9,11 @@ export function getUserFromRequest(request) {
     
     if (!token) {
       console.log('AUTH: No token found in cookies');
+      console.log('AUTH: Available cookies:', request.cookies.getAll());
       return null;
     }
     
+    console.log('AUTH: Token found, attempting to verify');
     // Verify and decode token
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log('AUTH: Token decoded successfully:', decoded);

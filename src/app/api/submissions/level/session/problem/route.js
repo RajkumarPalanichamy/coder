@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+import { getUserFromRequest } from '@/lib/auth';
 import Problem from '@/models/Problem';
 import Submission, { LevelSubmission } from '@/models/Submission';
 
@@ -8,11 +9,13 @@ export async function POST(request, { params }) {
   try {
     await connectDB();
     
-    // Get user info from headers (set by middleware)
-    const userId = request.headers.get('user-id');
-    if (!userId) {
+    // Get authenticated user
+    const user = getUserFromRequest(request);
+    if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const userId = user.userId;
 
     const { levelSubmissionId } = await params;
     const body = await request.json();
@@ -151,11 +154,13 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
     
-    // Get user info from headers (set by middleware)
-    const userId = request.headers.get('user-id');
-    if (!userId) {
+    // Get authenticated user
+    const user = getUserFromRequest(request);
+    if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const userId = user.userId;
 
     const { levelSubmissionId } = await params;
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+import { getUserFromRequest } from '@/lib/auth';
 import Submission, { LevelSubmission } from '@/models/Submission';
 
 // GET - Fetch level submissions for a user
@@ -7,11 +8,13 @@ export async function GET(request) {
   try {
     await connectDB();
     
-    // Get user info from headers (set by middleware)
-    const userId = request.headers.get('user-id');
-    if (!userId) {
+    // Get authenticated user
+    const user = getUserFromRequest(request);
+    if (!user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const userId = user.userId;
 
     const { searchParams } = new URL(request.url);
     const level = searchParams.get('level');
@@ -70,14 +73,13 @@ export async function POST(request) {
   try {
     await connectDB();
     
-    // TEMPORARY FIX: Use a default user ID for testing
-    // TODO: Restore proper authentication after testing
-    let userId = request.headers.get('user-id');
-    if (!userId) {
-      // Use a default test user ID
-      userId = '507f1f77bcf86cd799439011'; // This is a valid MongoDB ObjectId format
-      console.log('WARNING: Using default user ID for testing. This should be fixed in production!');
+    // Get authenticated user
+    const user = getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const userId = user.userId;
 
     const body = await request.json();
     const { level, language, category } = body;
