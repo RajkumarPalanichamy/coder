@@ -690,7 +690,6 @@ export default function ProblemPage() {
                   <ChevronLeft className="h-5 w-5 mr-2" />
                   <div className="text-left">
                     <div className="text-xs text-gray-500">Previous</div>
-                    <div className="text-sm">{navigation.previous.title}</div>
                   </div>
                 </button>
               ) : (
@@ -704,7 +703,6 @@ export default function ProblemPage() {
                 >
                   <div className="text-right">
                     <div className="text-xs text-gray-500">Next</div>
-                    <div className="text-sm">{navigation.next.title}</div>
                   </div>
                   <ChevronRight className="h-5 w-5 ml-2" />
                 </button>
