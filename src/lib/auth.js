@@ -33,3 +33,23 @@ export function requireAdmin(user) {
     throw new Error('Admin access required');
   }
 }
+
+export function requireStudent(user) {
+  if (!user || user.role !== 'student') {
+    throw new Error('Student access required');
+  }
+}
+
+export async function verifyAuth(request, requireAdminRole = false) {
+  const user = getUserFromRequest(request);
+  
+  if (!user) {
+    return { isValid: false, user: null };
+  }
+  
+  if (requireAdminRole && user.role !== 'admin') {
+    return { isValid: false, user: null };
+  }
+  
+  return { isValid: true, user };
+}
