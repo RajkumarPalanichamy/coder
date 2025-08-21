@@ -175,7 +175,7 @@ const ZenithMentorPromotion = () => {
           </div>
           <div className="bg-green-50 rounded-lg p-6">
             <h3 className="text-xl font-semibold text-green-700 mb-2">Hiring</h3>
-            <p className="text-gray-700">Role: Aptitude Trainer / Soft Skill Trainer</p>
+            <p className="text-gray-700">Role: Trainer</p>
             <p className="text-lg font-bold text-indigo-600 mt-2">Salary: 3 LPA</p>
           </div>
         </div>
