@@ -35,16 +35,16 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 rounded-lg bg-cyber-blue opacity-20 animate-pulse"></div>
               </div>
-              <span className="ml-3 text-2xl font-bold text-gray-800 neon-text animate-pulse-neon">
+              <span className="ml-3 text-2xl font-bold text-white neon-text animate-pulse-neon">
                 Zenith Mentor
               </span>
             </div>
             <div className="flex space-x-4">
               <Link 
                 href="/login"
-                className="relative px-6 py-2 bg-gradient-to-r from-cyber-blue to-electric-purple text-white font-semibold rounded-lg overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(0,102,255,0.5)]"
+                className="relative px-6 py-2 bg-gradient-to-r from-cyber-blue to-electric-purple text-white font-semibold rounded-lg overflow-hidden group transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(0,245,255,0.5)]"
               >
-                <span className="relative z-10">Enter the Portal</span>
+                <span className="relative z-10">Enter the Matrix</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-neon-pink to-cyber-blue opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
             </div>
@@ -67,26 +67,26 @@ export default function Home() {
               </span>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-800 mb-6 animate-slide-up">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-6 animate-slide-up">
               <span className="block">Transcend Your</span>
               <span className="block bg-gradient-to-r from-cyber-blue via-neon-pink to-electric-purple bg-clip-text text-transparent animate-pulse-neon">
                 Coding Reality
               </span>
               <span className="block text-4xl sm:text-5xl lg:text-6xl mt-2">
-                with <span className="neon-text text-gray-800">Zenith Mentor</span>
+                with <span className="neon-text">Zenith Mentor</span>
               </span>
             </h1>
 
-            <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-600 leading-relaxed animate-slide-up" style={{animationDelay: '0.3s'}}>
-              Enter a dimension where artificial intelligence meets human expertise. 
-              Master coding through immersive challenges, AI-powered feedback, and 
+            <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-300 leading-relaxed animate-slide-up" style={{animationDelay: '0.3s'}}>
+              Enter a dimension where expert mentorship meets cutting-edge technology. 
+              Master coding through immersive challenges, personalized feedback, and 
               <span className="text-cyber-blue font-semibold"> quantum-leap learning experiences</span>.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up" style={{animationDelay: '0.6s'}}>
               <Link
                 href="/login"
-                className="group relative px-8 py-4 bg-gradient-to-r from-cyber-blue to-electric-purple text-white font-bold text-lg rounded-xl overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-[0_0_50px_rgba(0,102,255,0.6)] transform hover:-translate-y-1"
+                className="group relative px-8 py-4 bg-gradient-to-r from-cyber-blue to-electric-purple text-white font-bold text-lg rounded-xl overflow-hidden transition-all duration-500 hover:scale-110 hover:shadow-[0_0_50px_rgba(0,245,255,0.6)] transform hover:-translate-y-1"
               >
                 <span className="relative z-10 flex items-center">
                   <Zap className="w-6 h-6 mr-2" />
@@ -96,10 +96,10 @@ export default function Home() {
                 <div className="absolute inset-0 bg-white opacity-10 group-hover:opacity-20 transition-opacity duration-300"></div>
               </Link>
 
-              <div className="flex items-center space-x-6 text-gray-500">
+              <div className="flex items-center space-x-6 text-gray-400">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-matrix-green rounded-full animate-pulse mr-2"></div>
-                  <span>AI-Powered</span>
+                  <span>Advanced</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-cyber-blue rounded-full animate-pulse mr-2"></div>
@@ -114,28 +114,28 @@ export default function Home() {
 
             {/* Holographic display effect */}
             <div className="mt-16 relative">
-              <div className="glass-dark rounded-2xl p-8 max-w-4xl mx-auto animate-slide-up border border-gray-200 shadow-xl" style={{animationDelay: '0.9s'}}>
+              <div className="glass-dark rounded-2xl p-8 max-w-4xl mx-auto animate-slide-up" style={{animationDelay: '0.9s'}}>
                 <div className="grid grid-cols-3 gap-8 text-center">
                   <div className="group">
                     <div className="w-16 h-16 bg-gradient-to-r from-cyber-blue to-electric-purple rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:animate-spin transition-all duration-300">
                       <Brain className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">10K+</h3>
-                    <p className="text-gray-600">Neural Pathways</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">10K+</h3>
+                    <p className="text-gray-400">Learning Pathways</p>
                   </div>
                   <div className="group">
                     <div className="w-16 h-16 bg-gradient-to-r from-neon-pink to-cyber-blue rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:animate-bounce transition-all duration-300">
                       <Cpu className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">99.9%</h3>
-                    <p className="text-gray-600">Success Rate</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">99.9%</h3>
+                    <p className="text-gray-400">Success Rate</p>
                   </div>
                   <div className="group">
                     <div className="w-16 h-16 bg-gradient-to-r from-electric-purple to-neon-pink rounded-xl mx-auto mb-4 flex items-center justify-center group-hover:animate-pulse transition-all duration-300">
                       <Sparkles className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">∞</h3>
-                    <p className="text-gray-600">Possibilities</p>
+                    <h3 className="text-2xl font-bold text-white mb-2">∞</h3>
+                    <p className="text-gray-400">Possibilities</p>
                   </div>
                 </div>
               </div>
@@ -151,30 +151,30 @@ export default function Home() {
             <div className="inline-block px-6 py-2 bg-gradient-to-r from-electric-purple to-cyber-blue text-white text-sm font-bold rounded-full mb-6 animate-pulse">
               ⚡ QUANTUM FEATURES
             </div>
-            <h2 className="text-5xl font-extrabold text-gray-800 mb-6">
+            <h2 className="text-5xl font-extrabold text-white mb-6">
               <span className="bg-gradient-to-r from-cyber-blue to-neon-pink bg-clip-text text-transparent">
                 Neural Network
               </span>
               <br />
-              <span className="neon-text text-gray-800">Learning Modules</span>
+              <span className="neon-text">Learning Modules</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experience the future of coding education through our AI-enhanced learning ecosystem
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Experience the future of coding education through our enhanced learning ecosystem
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Feature Card 1 */}
             <div className="group relative">
-              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:rotate-1 hover:shadow-[0_20px_50px_rgba(0,102,255,0.2)] border border-cyber-blue/30 bg-white/80">
-                <div className="absolute inset-0 bg-gradient-to-br from-soft-blue to-soft-purple rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:rotate-1 hover:shadow-[0_20px_50px_rgba(0,245,255,0.3)] border border-cyber-blue/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyber-blue/10 to-electric-purple/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-gradient-to-br from-cyber-blue to-electric-purple rounded-xl flex items-center justify-center mb-6 group-hover:animate-spin transition-all duration-300">
                     <BookOpen className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4 neon-text">Quantum Problems</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Dive into multi-dimensional coding challenges that adapt to your skill level in real-time using advanced AI algorithms.
+                  <h3 className="text-2xl font-bold text-white mb-4 neon-text">Quantum Problems</h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Dive into multi-dimensional coding challenges that adapt to your skill level in real-time using advanced algorithms.
                   </p>
                   <div className="mt-6 flex items-center text-cyber-blue text-sm font-semibold">
                     <span>Level 1 → ∞</span>
@@ -186,14 +186,14 @@ export default function Home() {
 
             {/* Feature Card 2 */}
             <div className="group relative">
-              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:-rotate-1 hover:shadow-[0_20px_50px_rgba(255,20,147,0.2)] border border-neon-pink/30 bg-white/80">
-                <div className="absolute inset-0 bg-gradient-to-br from-soft-pink to-soft-blue rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:-rotate-1 hover:shadow-[0_20px_50px_rgba(255,0,128,0.3)] border border-neon-pink/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-neon-pink/10 to-cyber-blue/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-gradient-to-br from-neon-pink to-cyber-blue rounded-xl flex items-center justify-center mb-6 group-hover:animate-bounce transition-all duration-300">
                     <Trophy className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4 neon-text">Neural Analytics</h3>
-                  <p className="text-gray-600 leading-relaxed">
+                  <h3 className="text-2xl font-bold text-white mb-4 neon-text">Advanced Analytics</h3>
+                  <p className="text-gray-300 leading-relaxed">
                     Witness your progress through holographic visualizations and quantum-enhanced performance metrics.
                   </p>
                   <div className="mt-6 flex items-center text-neon-pink text-sm font-semibold">
@@ -206,15 +206,15 @@ export default function Home() {
 
             {/* Feature Card 3 */}
             <div className="group relative">
-              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:rotate-1 hover:shadow-[0_20px_50px_rgba(106,90,205,0.2)] border border-electric-purple/30 bg-white/80">
-                <div className="absolute inset-0 bg-gradient-to-br from-soft-purple to-soft-pink rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:rotate-1 hover:shadow-[0_20px_50px_rgba(138,43,226,0.3)] border border-electric-purple/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-electric-purple/10 to-neon-pink/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-gradient-to-br from-electric-purple to-neon-pink rounded-xl flex items-center justify-center mb-6 group-hover:animate-pulse transition-all duration-300">
                     <Code className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4 neon-text">Omni-Language</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Master JavaScript, Python, Java, C++, and C through our universal coding interface with AI assistance.
+                  <h3 className="text-2xl font-bold text-white mb-4 neon-text">Omni-Language</h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Master JavaScript, Python, Java, C++, and C through our universal coding interface with expert assistance.
                   </p>
                   <div className="mt-6 flex items-center text-electric-purple text-sm font-semibold">
                     <span>5+ Languages</span>
@@ -226,15 +226,15 @@ export default function Home() {
 
             {/* Feature Card 4 */}
             <div className="group relative">
-              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:-rotate-1 hover:shadow-[0_20px_50px_rgba(0,200,81,0.2)] border border-matrix-green/30 bg-white/80">
-                <div className="absolute inset-0 bg-gradient-to-br from-soft-green to-soft-blue rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="glass-dark rounded-2xl p-8 h-full transform transition-all duration-500 hover:scale-105 hover:-rotate-1 hover:shadow-[0_20px_50px_rgba(0,255,65,0.3)] border border-matrix-green/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-matrix-green/10 to-cyber-blue/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-gradient-to-br from-matrix-green to-cyber-blue rounded-xl flex items-center justify-center mb-6 group-hover:animate-spin transition-all duration-300">
                     <Users className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4 neon-text">AI Mentorship</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Connect with quantum-enhanced AI mentors and human experts for personalized guidance on your coding odyssey.
+                  <h3 className="text-2xl font-bold text-white mb-4 neon-text">Expert Mentorship</h3>
+                  <p className="text-gray-300 leading-relaxed">
+                    Connect with quantum-enhanced mentors and human experts for personalized guidance on your coding odyssey.
                   </p>
                   <div className="mt-6 flex items-center text-matrix-green text-sm font-semibold">
                     <span>24/7 Guidance</span>
@@ -252,7 +252,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 bg-gradient-to-t from-light-gray to-white border-t border-gray-200">
+      <footer className="relative z-10 bg-gradient-to-t from-dark-void to-matrix-gradient border-t border-cyber-blue/20">
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           {/* Glowing divider */}
           <div className="h-px bg-gradient-to-r from-transparent via-cyber-blue to-transparent mb-12"></div>
@@ -268,11 +268,11 @@ export default function Home() {
                   height={48} 
                   className="h-12 w-12 rounded-xl shadow-lg" 
                 />
-                <span className="ml-3 text-3xl font-bold text-gray-800 neon-text">
+                <span className="ml-3 text-3xl font-bold text-white neon-text">
                   Zenith Mentor
                 </span>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Transcending the boundaries of traditional coding education through 
                 <span className="text-cyber-blue font-semibold"> quantum-enhanced learning</span>.
               </p>
@@ -280,23 +280,23 @@ export default function Home() {
 
             {/* Quick Links */}
             <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-800 mb-6 neon-text">Neural Pathways</h3>
+              <h3 className="text-xl font-bold text-white mb-6 neon-text">Learning Pathways</h3>
               <div className="space-y-3">
-                <Link href="/login" className="block text-gray-600 hover:text-cyber-blue transition-colors duration-300 hover:animate-pulse">
+                <Link href="/login" className="block text-gray-300 hover:text-cyber-blue transition-colors duration-300 hover:animate-pulse">
                   Access Portal
                 </Link>
-                <Link href="/problems" className="block text-gray-600 hover:text-neon-pink transition-colors duration-300 hover:animate-pulse">
+                <Link href="/problems" className="block text-gray-300 hover:text-neon-pink transition-colors duration-300 hover:animate-pulse">
                   Quantum Challenges
                 </Link>
-                <Link href="/dashboard" className="block text-gray-600 hover:text-electric-purple transition-colors duration-300 hover:animate-pulse">
-                  Neural Dashboard
+                <Link href="/dashboard" className="block text-gray-300 hover:text-electric-purple transition-colors duration-300 hover:animate-pulse">
+                  Progress Dashboard
                 </Link>
               </div>
             </div>
 
             {/* Connect Section */}
             <div className="text-center md:text-right">
-              <h3 className="text-xl font-bold text-gray-800 mb-6 neon-text">Connect to the Matrix</h3>
+              <h3 className="text-xl font-bold text-white mb-6 neon-text">Connect to the Matrix</h3>
               <div className="flex justify-center md:justify-end space-x-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-cyber-blue to-electric-purple rounded-xl flex items-center justify-center hover:animate-spin transition-all duration-300 cursor-pointer">
                   <Zap className="w-6 h-6 text-white" />
@@ -308,20 +308,20 @@ export default function Home() {
                   <Cpu className="w-6 h-6 text-white" />
                 </div>
               </div>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-300 text-sm">
                 Status: <span className="text-matrix-green animate-pulse">● Online</span>
               </p>
             </div>
           </div>
 
           {/* Bottom Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
+          <div className="mt-12 pt-8 border-t border-cyber-blue/20">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-500 text-sm mb-4 md:mb-0">
+              <p className="text-gray-400 text-sm mb-4 md:mb-0">
                 &copy; 2024 Zenith Mentor. All rights reserved. 
-                <span className="text-cyber-blue"> Powered by Quantum AI</span>
+                <span className="text-cyber-blue"> Powered by Quantum Technology</span>
               </p>
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <div className="flex items-center space-x-4 text-sm text-gray-400">
                 <span>System Status:</span>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-matrix-green rounded-full animate-pulse mr-2"></div>
