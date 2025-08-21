@@ -190,7 +190,11 @@ export default function AdminLevelSubmissionDetailsPage() {
               <div className="flex items-center">
                 <User className="h-4 w-4 text-gray-400 mr-2" />
                 <div>
-                  <p className="font-medium">{submission.user?.name || 'N/A'}</p>
+                  <p className="font-medium">
+                    {submission.user?.firstName && submission.user?.lastName 
+                      ? `${submission.user.firstName} ${submission.user.lastName}`
+                      : submission.user?.username || 'N/A'}
+                  </p>
                   <p className="text-sm text-gray-500">{submission.user?.email || 'N/A'}</p>
                 </div>
               </div>

@@ -20,15 +20,15 @@ export async function GET(request) {
 
     // Fetch problem submissions
     const problemSubmissions = await Submission.find({ 
-      user: user._id, 
-      // Ensure this is a problem submission (you might need to add a type field)
+      user: user.userId,
+      isLevelSubmission: { $ne: true } // Exclude level submissions
     })
       .populate('problem', 'title difficulty category')
       .sort({ submittedAt: -1 });
 
     // Fetch test submissions
     const testSubmissions = await StudentTestSubmission.find({ 
-      student: user._id 
+      student: user.userId 
     })
       .populate({
         path: 'test',

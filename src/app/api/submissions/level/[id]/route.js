@@ -16,14 +16,19 @@ export async function GET(request, { params }) {
     
     const { id } = await params;
 
+    // Build query based on user role
+    const query = { _id: id };
+    
+    // If not admin, restrict to user's own submissions
+    if (authResult.user.role !== 'admin') {
+      query.user = authResult.user.userId || authResult.user.id;
+    }
+
     // Find the level submission with populated data
-    const levelSubmission = await LevelSubmission.findOne({
-      _id: id,
-      user: authResult.user.id
-    })
+    const levelSubmission = await LevelSubmission.findOne(query)
     .populate({
       path: 'user',
-      select: 'name email'
+      select: 'username email firstName lastName'
     })
     .populate({
       path: 'problemSubmissions.problem',

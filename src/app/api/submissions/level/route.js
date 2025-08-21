@@ -37,7 +37,8 @@ export async function GET(request) {
       .sort({ startTime: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('problems.problem', 'title difficulty')
+      .populate('problemSubmissions.problem', 'title difficulty')
+      .populate('problemSubmissions.submission', 'status score')
       .lean();
 
     // Get total count for pagination

@@ -37,8 +37,10 @@ function SubmissionsContent() {
       const data = await response.json();
 
       if (response.ok) {
-        setSubmissions(data.submissions);
+        console.log('Fetched submissions:', data.submissions);
+        setSubmissions(data.submissions || []);
       } else {
+        console.error('Failed to fetch submissions:', data);
         setError(data.error || 'Failed to fetch submissions');
       }
     } catch (err) {
@@ -55,9 +57,10 @@ function SubmissionsContent() {
       const data = await response.json();
 
       if (response.ok) {
+        console.log('Fetched level submissions:', data.levelSubmissions);
         setLevelSubmissions(data.levelSubmissions || []);
       } else {
-        console.error('Error fetching level submissions:', data.error);
+        console.error('Error fetching level submissions:', data);
       }
     } catch (err) {
       console.error('Error fetching level submissions:', err);

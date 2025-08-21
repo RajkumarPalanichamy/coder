@@ -51,5 +51,13 @@ export async function verifyAuth(request, requireAdminRole = false) {
     return { isValid: false, user: null };
   }
   
-  return { isValid: true, user };
+  // Ensure consistent user object structure
+  return { 
+    isValid: true, 
+    user: {
+      ...user,
+      id: user.userId, // Add id field for compatibility
+      userId: user.userId
+    }
+  };
 }

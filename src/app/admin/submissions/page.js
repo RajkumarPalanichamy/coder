@@ -429,7 +429,9 @@ export default function AdminSubmissionsPage() {
                         <tr key={submission._id} className="hover:bg-gray-50">
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
-                              {submission.user?.name || 'N/A'}
+                              {submission.user?.firstName && submission.user?.lastName 
+                                ? `${submission.user.firstName} ${submission.user.lastName}`
+                                : submission.user?.username || 'N/A'}
                             </div>
                             <div className="text-sm text-gray-500">
                               {submission.user?.email || 'N/A'}

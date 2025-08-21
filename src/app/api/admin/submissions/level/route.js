@@ -40,7 +40,7 @@ export async function GET(request) {
     const levelSubmissions = await LevelSubmission.find(filter)
       .populate({
         path: 'user',
-        select: 'name email'
+        select: 'username email firstName lastName'
       })
       .populate({
         path: 'problemSubmissions.problem',
