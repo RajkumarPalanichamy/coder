@@ -1,0 +1,343 @@
+/* Landing Page Specific Styles */
+
+/* Particle animation background */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #00f5ff;
+  border-radius: 50%;
+  animation: float 20s linear infinite;
+  opacity: 0.7;
+}
+
+.particle:nth-child(2n) {
+  background: #ff0080;
+  animation-duration: 25s;
+}
+
+.particle:nth-child(3n) {
+  background: #8a2be2;
+  animation-duration: 30s;
+}
+
+/* Glassmorphism utility for landing */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Neon text effect for landing */
+.neon-text {
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.8), 
+               0 0 20px rgba(0, 245, 255, 0.6), 
+               0 0 30px rgba(0, 245, 255, 0.4);
+}
+
+/* Landing page keyframes */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px);
+  }
+  50% { 
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes glow {
+  0% { 
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+  }
+  100% { 
+    box-shadow: 0 0 30px rgba(0, 245, 255, 0.8);
+  }
+}
+
+@keyframes slideUp {
+  0% { 
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  100% { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% { 
+    opacity: 0;
+  }
+  100% { 
+    opacity: 1;
+  }
+}
+
+@keyframes pulseNeon {
+  0%, 100% { 
+    text-shadow: 0 0 5px rgba(0, 245, 255, 0.5), 
+                 0 0 10px rgba(0, 245, 255, 0.5), 
+                 0 0 15px rgba(0, 245, 255, 0.5);
+  }
+  50% { 
+    text-shadow: 0 0 10px rgba(0, 245, 255, 0.8), 
+                 0 0 20px rgba(0, 245, 255, 0.8), 
+                 0 0 30px rgba(0, 245, 255, 0.8);
+  }
+}
+
+/* Landing page specific animation classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out;
+}
+
+.animate-pulse-neon {
+  animation: pulseNeon 2s ease-in-out infinite;
+}
+
+/* Landing page background */
+.landing-bg {
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+  color: white;
+}
+
+/* Landing page custom colors */
+.text-cyber-blue {
+  color: #00f5ff;
+}
+
+.text-neon-pink {
+  color: #ff0080;
+}
+
+.text-electric-purple {
+  color: #8a2be2;
+}
+
+.text-matrix-green {
+  color: #00ff41;
+}
+
+.bg-cyber-blue {
+  background-color: #00f5ff;
+}
+
+.bg-neon-pink {
+  background-color: #ff0080;
+}
+
+.bg-electric-purple {
+  background-color: #8a2be2;
+}
+
+.bg-matrix-green {
+  background-color: #00ff41;
+}
+
+/* Landing page gradients */
+.bg-cyber-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-neon-gradient {
+  background: linear-gradient(45deg, #ff0080, #00f5ff, #8a2be2);
+}
+
+.bg-matrix-gradient {
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+.bg-glass-gradient {
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+}
+
+/* Landing page border colors */
+.border-cyber-blue {
+  border-color: #00f5ff;
+}
+
+.border-neon-pink {
+  border-color: #ff0080;
+}
+
+.border-electric-purple {
+  border-color: #8a2be2;
+}
+
+.border-matrix-green {
+  border-color: #00ff41;
+}
+
+/* Landing page border opacity variants */
+.border-cyber-blue\/20 {
+  border-color: rgba(0, 245, 255, 0.2);
+}
+
+.border-cyber-blue\/30 {
+  border-color: rgba(0, 245, 255, 0.3);
+}
+
+.border-neon-pink\/20 {
+  border-color: rgba(255, 0, 128, 0.2);
+}
+
+.border-neon-pink\/30 {
+  border-color: rgba(255, 0, 128, 0.3);
+}
+
+.border-electric-purple\/30 {
+  border-color: rgba(138, 43, 226, 0.3);
+}
+
+.border-matrix-green\/30 {
+  border-color: rgba(0, 255, 65, 0.3);
+}
+
+/* Landing page gradient backgrounds with opacity */
+.from-cyber-blue\/10 {
+  --tw-gradient-from: rgba(0, 245, 255, 0.1);
+}
+
+.to-electric-purple\/10 {
+  --tw-gradient-to: rgba(138, 43, 226, 0.1);
+}
+
+.from-neon-pink\/10 {
+  --tw-gradient-from: rgba(255, 0, 128, 0.1);
+}
+
+.to-cyber-blue\/10 {
+  --tw-gradient-to: rgba(0, 245, 255, 0.1);
+}
+
+.from-electric-purple\/10 {
+  --tw-gradient-from: rgba(138, 43, 226, 0.1);
+}
+
+.to-neon-pink\/10 {
+  --tw-gradient-to: rgba(255, 0, 128, 0.1);
+}
+
+.from-matrix-green\/10 {
+  --tw-gradient-from: rgba(0, 255, 65, 0.1);
+}
+
+/* Landing page hover shadows */
+.hover\:shadow-cyber {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover\:shadow-cyber:hover {
+  box-shadow: 0 0 50px rgba(0, 245, 255, 0.6);
+}
+
+.hover\:shadow-neon:hover {
+  box-shadow: 0 20px 50px rgba(255, 0, 128, 0.3);
+}
+
+.hover\:shadow-purple:hover {
+  box-shadow: 0 20px 50px rgba(138, 43, 226, 0.3);
+}
+
+.hover\:shadow-green:hover {
+  box-shadow: 0 20px 50px rgba(0, 255, 65, 0.3);
+}
+
+.hover\:shadow-blue:hover {
+  box-shadow: 0 20px 50px rgba(0, 245, 255, 0.3);
+}
+
+/* Landing page specific utility classes */
+.landing-container {
+  overflow-x: hidden;
+}
+
+/* Landing page scrollbar styling */
+.landing-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.landing-page::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+
+.landing-page::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #00f5ff, #8a2be2);
+  border-radius: 4px;
+}
+
+.landing-page::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #ff0080, #00f5ff);
+}
+
+/* Responsive adjustments for landing page */
+@media (max-width: 768px) {
+  .particles {
+    display: none; /* Hide particles on mobile for performance */
+  }
+  
+  .neon-text {
+    text-shadow: 0 0 5px rgba(0, 245, 255, 0.6);
+  }
+}
+
+/* Landing page specific hover effects */
+.landing-card {
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.landing-card:hover {
+  transform: translateY(-10px) scale(1.02);
+}
+
+/* Landing page button effects */
+.landing-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.landing-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.landing-button:hover::before {
+  left: 100%;
+}

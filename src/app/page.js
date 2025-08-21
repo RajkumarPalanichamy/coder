@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { Code, Users, Trophy, BookOpen, Zap, Brain, Cpu, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import './landing.css';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-matrix-gradient relative overflow-hidden">
+    <div className="landing-page landing-container min-h-screen bg-matrix-gradient relative overflow-hidden">
       {/* Animated Particle Background */}
       <div className="particles">
         {[...Array(50)].map((_, i) => (
