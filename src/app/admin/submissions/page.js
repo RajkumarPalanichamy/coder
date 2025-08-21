@@ -7,7 +7,12 @@ import {
   Code, 
   Trash2, 
   Filter, 
-  ArrowUpDown 
+  ArrowUpDown,
+  Layers,
+  FileText,
+  Target,
+  Award,
+  Timer
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useRouter } from 'next/navigation';
@@ -20,10 +25,12 @@ export default function AdminSubmissionsPage() {
   };
   const [problemSubmissions, setProblemSubmissions] = useState([]);
   const [testSubmissions, setTestSubmissions] = useState([]);
+  const [levelSubmissions, setLevelSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: 'submittedAt', direction: 'desc' });
+  const [activeTab, setActiveTab] = useState('individual'); // 'individual' or 'level'
 
   useEffect(() => {
     fetchSubmissions();
@@ -33,25 +40,29 @@ export default function AdminSubmissionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [problemRes, testRes] = await Promise.all([
+      const [problemRes, testRes, levelRes] = await Promise.all([
         fetch('/api/admin/submissions', { credentials: 'include' }),
         fetch('/api/admin/tests/submissions', { credentials: 'include' }),
+        fetch('/api/admin/submissions/level', { credentials: 'include' })
       ]);
       
-      if (!problemRes.ok || !testRes.ok) {
+      if (!problemRes.ok || !testRes.ok || !levelRes.ok) {
         throw new Error('Failed to fetch submissions');
       }
       
       const problemData = await problemRes.json();
       const testData = await testRes.json();
+      const levelData = await levelRes.json();
       
       setProblemSubmissions(problemData.submissions || []);
       setTestSubmissions(testData.submissions || []);
+      setLevelSubmissions(levelData.levelSubmissions || []);
     } catch (e) {
       console.error('Submissions fetch error:', e);
       setError(e.message);
       setProblemSubmissions([]);
       setTestSubmissions([]);
+      setLevelSubmissions([]);
     } finally {
       setLoading(false);
     }
@@ -61,9 +72,14 @@ export default function AdminSubmissionsPage() {
     if (!confirm('Are you sure you want to delete this submission?')) return;
     
     try {
-      const url = type === 'problem' 
-        ? `/api/admin/submissions/${id}` 
-        : `/api/admin/tests/submissions/${id}`;
+      let url;
+      if (type === 'problem') {
+        url = `/api/admin/submissions/${id}`;
+      } else if (type === 'test') {
+        url = `/api/admin/tests/submissions/${id}`;
+      } else if (type === 'level') {
+        url = `/api/admin/submissions/level?id=${id}`;
+      }
       
       const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
       
@@ -104,6 +120,30 @@ export default function AdminSubmissionsPage() {
           color: 'bg-blue-100 text-blue-800',
           icon: Clock,
           text: 'Pending'
+        };
+      case 'in_progress':
+        return {
+          color: 'bg-yellow-100 text-yellow-800',
+          icon: Clock,
+          text: 'In Progress'
+        };
+      case 'completed':
+        return {
+          color: 'bg-green-100 text-green-800',
+          icon: CheckCircle,
+          text: 'Completed'
+        };
+      case 'submitted':
+        return {
+          color: 'bg-indigo-100 text-indigo-800',
+          icon: Award,
+          text: 'Submitted'
+        };
+      case 'time_expired':
+        return {
+          color: 'bg-red-100 text-red-800',
+          icon: Timer,
+          text: 'Time Expired'
         };
       default:
         return {
@@ -156,6 +196,35 @@ export default function AdminSubmissionsPage() {
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Submissions</h1>
         
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 mb-6 bg-white rounded-lg shadow p-1">
+          <button
+            onClick={() => setActiveTab('individual')}
+            className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+              activeTab === 'individual'
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4 inline-block mr-2" />
+            Individual Submissions
+          </button>
+          <button
+            onClick={() => setActiveTab('level')}
+            className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+              activeTab === 'level'
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Layers className="w-4 h-4 inline-block mr-2" />
+            Level Submissions
+          </button>
+        </div>
+        
+        {/* Conditional Content Based on Tab */}
+        {activeTab === 'individual' ? (
+          <>
         {/* Filters and Controls */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex space-x-2">
@@ -305,6 +374,138 @@ export default function AdminSubmissionsPage() {
           <div className="text-center py-8 bg-white rounded-lg shadow mt-4">
             <p className="text-gray-600">No submissions found.</p>
           </div>
+        )}
+        </>
+        ) : (
+          /* Level Submissions Tab */
+          <>
+            {/* Level Submissions Table */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">Level-based Submissions</h2>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Student
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Level
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Language
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Progress
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Score
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Time Used
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Submitted At
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {levelSubmissions.map((submission) => {
+                      const statusStyle = getStatusStyle(submission.status);
+                      const StatusIcon = statusStyle.icon;
+                      
+                      return (
+                        <tr key={submission._id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {submission.user?.name || 'N/A'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {submission.user?.email || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                              submission.level === 'level1' ? 'bg-green-100 text-green-800' :
+                              submission.level === 'level2' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {submission.level === 'level1' ? 'Level 1' :
+                               submission.level === 'level2' ? 'Level 2' : 'Level 3'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {submission.category}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 capitalize">
+                              {submission.programmingLanguage}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${statusStyle.color}`}>
+                              {StatusIcon && <StatusIcon className="h-4 w-4 inline-block mr-1" />}
+                              {statusStyle.text}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {submission.completedProblems}/{submission.totalProblems}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className={`text-sm font-bold ${
+                              submission.totalScore >= 90 ? 'text-green-600' :
+                              submission.totalScore >= 70 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {submission.totalScore}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {Math.floor(submission.timeUsed / 60)}m {submission.timeUsed % 60}s
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(submission.createdAt).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => router.push(`/admin/submissions/level/${submission._id}`)}
+                              className="text-indigo-600 hover:text-indigo-900 mr-3"
+                            >
+                              View Details
+                            </button>
+                            <button
+                              onClick={() => handleDelete(submission._id, 'level')}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="h-4 w-4 inline" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* No Level Submissions Message */}
+            {levelSubmissions.length === 0 && (
+              <div className="text-center py-8 bg-white rounded-lg shadow mt-4">
+                <p className="text-gray-600">No level submissions found.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

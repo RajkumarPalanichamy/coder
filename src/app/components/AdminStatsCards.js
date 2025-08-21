@@ -1,8 +1,8 @@
-import { Users, BookOpen, BarChart3, TrendingUp } from 'lucide-react';
+import { Users, BookOpen, BarChart3, TrendingUp, Layers } from 'lucide-react';
 
 export default function AdminStatsCards({ stats }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div className="bg-gradient-to-br from-indigo-50 to-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
         <div className="flex items-center justify-between">
           <div>
@@ -47,6 +47,22 @@ export default function AdminStatsCards({ stats }) {
           </div>
           <div className="bg-violet-100/50 p-3 rounded-lg">
             <BarChart3 className="h-8 w-8 text-violet-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-amber-600/80">Level Submissions</p>
+            <p className="text-3xl font-bold text-amber-900 mt-2">{stats.totalLevelSubmissions || 0}</p>
+            <p className="text-sm text-amber-600/60 mt-2">
+              <Layers className="h-4 w-4 inline mr-1" />
+              Batch attempts
+            </p>
+          </div>
+          <div className="bg-amber-100/50 p-3 rounded-lg">
+            <Layers className="h-8 w-8 text-amber-600" />
           </div>
         </div>
       </div>
