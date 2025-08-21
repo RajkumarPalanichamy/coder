@@ -671,12 +671,12 @@ export default function LevelProblemsPage() {
           <button
             onClick={goToPrevious}
             disabled={currentProblemIndex === 0}
-            className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center px-6 py-3 bg-indigo-600 border border-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 hover:border-indigo-700 transition-colors duration-200 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="h-5 w-5 mr-2" />
             <div className="text-left">
-              <div className="text-sm text-gray-500">Previous</div>
-              <div className="text-sm">Problem {currentProblemIndex}</div>
+              <div className="text-sm text-white">Previous</div>
+              <div className="text-sm text-white">Problem {currentProblemIndex}</div>
             </div>
           </button>
 
@@ -695,11 +695,11 @@ export default function LevelProblemsPage() {
           <button
             onClick={goToNext}
             disabled={currentProblemIndex === problems.length - 1}
-            className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center px-6 py-3 bg-indigo-600 border border-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 hover:border-indigo-700 transition-colors duration-200 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="text-right">
-              <div className="text-sm text-gray-500">Next</div>
-              <div className="text-sm">Problem {currentProblemIndex + 2}</div>
+              <div className="text-sm text-white">Next</div>
+              <div className="text-sm text-white">Problem {currentProblemIndex + 2}</div>
             </div>
             <ChevronRight className="h-5 w-5 ml-2" />
           </button>
