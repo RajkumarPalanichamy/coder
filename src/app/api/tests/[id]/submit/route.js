@@ -17,7 +17,7 @@ export async function POST(req, context) {
     
     console.log('Test Submission Request:', {
       testId: id,
-      userId: user._id,
+      userId: user.userId,
       answersLength: answers?.length
     });
 
@@ -37,11 +37,11 @@ export async function POST(req, context) {
     }
 
     // Check if already submitted
-    const existing = await StudentTestSubmission.findOne({ student: user._id, test: test._id });
+    const existing = await StudentTestSubmission.findOne({ student: user.userId, test: test._id });
     if (existing) {
       console.warn('Test already submitted:', {
         testId: test._id,
-        studentId: user._id
+        studentId: user.userId
       });
       return NextResponse.json({ error: 'Already submitted' }, { status: 400 });
     }
@@ -58,7 +58,7 @@ export async function POST(req, context) {
 
     // Save submission
     const submission = await StudentTestSubmission.create({
-      student: user._id,
+      student: user.userId,
       test: test._id,
       answers,
       score: percentageScore,

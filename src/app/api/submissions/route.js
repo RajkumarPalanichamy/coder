@@ -19,14 +19,17 @@ export async function GET(request) {
     }
 
     // Fetch problem submissions
+    console.log('Fetching problem submissions for user:', user.userId);
     const problemSubmissions = await Submission.find({ 
       user: user.userId,
       isLevelSubmission: { $ne: true } // Exclude level submissions
     })
       .populate('problem', 'title difficulty category')
       .sort({ submittedAt: -1 });
+    console.log('Found problem submissions:', problemSubmissions.length);
 
     // Fetch test submissions
+    console.log('Fetching test submissions for student:', user.userId);
     const testSubmissions = await StudentTestSubmission.find({ 
       student: user.userId 
     })
@@ -39,6 +42,7 @@ export async function GET(request) {
         select: 'firstName lastName email'
       })
       .sort({ submittedAt: -1 });
+    console.log('Found test submissions:', testSubmissions.length);
 
     // Combine and sort submissions
     const combinedSubmissions = [
