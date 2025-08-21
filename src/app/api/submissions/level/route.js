@@ -1,17 +1,26 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+import { getUserFromRequest } from '@/lib/auth';
 import Submission, { LevelSubmission } from '@/models/Submission';
 
 // GET - Fetch level submissions for a user
 export async function GET(request) {
   try {
+    console.log('Level submissions API - Starting request');
     await connectDB();
     
-    // Get user info from headers (set by middleware)
-    const userId = request.headers.get('user-id');
-    if (!userId) {
+    // Get authenticated user
+    console.log('Level submissions API - Getting user from request');
+    const user = getUserFromRequest(request);
+    console.log('Level submissions API - User result:', user);
+    
+    if (!user) {
+      console.log('Level submissions API - No user found, returning 401');
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const userId = user.userId;
+    console.log('Level submissions API - User ID:', userId);
 
     const { searchParams } = new URL(request.url);
     const level = searchParams.get('level');
@@ -37,7 +46,8 @@ export async function GET(request) {
       .sort({ startTime: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('problems.problem', 'title difficulty')
+      .populate('problemSubmissions.problem', 'title difficulty')
+      .populate('problemSubmissions.submission', 'status score')
       .lean();
 
     // Get total count for pagination
@@ -69,14 +79,13 @@ export async function POST(request) {
   try {
     await connectDB();
     
-    // TEMPORARY FIX: Use a default user ID for testing
-    // TODO: Restore proper authentication after testing
-    let userId = request.headers.get('user-id');
-    if (!userId) {
-      // Use a default test user ID
-      userId = '507f1f77bcf86cd799439011'; // This is a valid MongoDB ObjectId format
-      console.log('WARNING: Using default user ID for testing. This should be fixed in production!');
+    // Get authenticated user
+    const user = getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
+    
+    const userId = user.userId;
 
     const body = await request.json();
     const { level, language, category } = body;

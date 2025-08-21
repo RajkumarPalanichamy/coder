@@ -10,7 +10,7 @@ export async function GET(request) {
     await connectDB();
     
     // Get authenticated user
-    const user = await getUserFromRequest(request);
+    const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json(
         { error: 'User not authenticated' },
@@ -19,16 +19,19 @@ export async function GET(request) {
     }
 
     // Fetch problem submissions
+    console.log('Fetching problem submissions for user:', user.userId);
     const problemSubmissions = await Submission.find({ 
-      user: user._id, 
-      // Ensure this is a problem submission (you might need to add a type field)
+      user: user.userId,
+      isLevelSubmission: { $ne: true } // Exclude level submissions
     })
       .populate('problem', 'title difficulty category')
       .sort({ submittedAt: -1 });
+    console.log('Found problem submissions:', problemSubmissions.length);
 
     // Fetch test submissions
+    console.log('Fetching test submissions for student:', user.userId);
     const testSubmissions = await StudentTestSubmission.find({ 
-      student: user._id 
+      student: user.userId 
     })
       .populate({
         path: 'test',
@@ -39,6 +42,7 @@ export async function GET(request) {
         select: 'firstName lastName email'
       })
       .sort({ submittedAt: -1 });
+    console.log('Found test submissions:', testSubmissions.length);
 
     // Combine and sort submissions
     const combinedSubmissions = [

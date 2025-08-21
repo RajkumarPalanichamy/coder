@@ -11,7 +11,7 @@ export async function GET(req, { params }) {
   const { id } = await params;
   const test = await Test.findById(id).populate('mcqs');
   if (!test) return NextResponse.json({ error: 'Test not found' }, { status: 404 });
-  const submission = await StudentTestSubmission.findOne({ student: user._id, test: test._id });
+  const submission = await StudentTestSubmission.findOne({ student: user.userId, test: test._id });
   if (!submission) return NextResponse.json({ error: 'No submission' }, { status: 404 });
   const correctAnswers = test.mcqs.map(mcq => mcq.correctOption);
   return NextResponse.json({ answers: submission.answers, score: submission.score, correctAnswers });
