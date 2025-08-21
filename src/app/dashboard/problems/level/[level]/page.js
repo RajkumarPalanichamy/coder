@@ -400,7 +400,7 @@ export default function LevelProblemsPage() {
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <button
                 onClick={() => router.push('/dashboard/problems')}
@@ -421,6 +421,8 @@ export default function LevelProblemsPage() {
               <span className="text-sm text-gray-500">Progress: {getProgress()}</span>
             </div>
           </div>
+          
+
         </div>
       </header>
 
@@ -441,7 +443,7 @@ export default function LevelProblemsPage() {
 
             </div>
             <div className="flex items-center space-x-4">
-              {!sessionStarted ? (
+              {!sessionStarted && (
                 <button
                   onClick={startLevelSession}
                   className="flex items-center bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 shadow"
@@ -449,26 +451,21 @@ export default function LevelProblemsPage() {
                   <Play className="h-4 w-4 mr-2" />
                   Start Level Session
                 </button>
-              ) : (
-                <button
-                  onClick={handleSubmitAll}
-                  disabled={submitting}
-                  className="flex items-center bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow"
-                >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Submit All Problems ({getProgress()})
-                    </>
-                  )}
-                </button>
               )}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Problem Status Card positioned after timer */}
+      <div className="w-full bg-gray-50 border-b border-gray-200 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="">
+            <ProblemStatusCard
+              totalProblems={problems.length}
+              answeredCount={getAnsweredCount()}
+              currentProblemIndex={currentProblemIndex}
+            />
           </div>
         </div>
       </div>
@@ -643,14 +640,28 @@ export default function LevelProblemsPage() {
             </div>
           </div>
 
-          {/* Problem Status Card - moved below the main content */}
-          <div className="mt-8">
-            <ProblemStatusCard
-              totalProblems={problems.length}
-              answeredCount={getAnsweredCount()}
-              currentProblemIndex={currentProblemIndex}
-            />
-          </div>
+          {/* Submit Button - positioned at bottom right */}
+          {sessionStarted && (
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleSubmitAll}
+                disabled={submitting}
+                className="flex items-center bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg font-semibold text-lg"
+              >
+                {submitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-5 w-5 mr-3" />
+                    Submit All Problems ({getProgress()})
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

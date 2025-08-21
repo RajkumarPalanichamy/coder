@@ -97,7 +97,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <div className="text-red-500 bg-red-50 p-3 rounded border">{error}</div>}
       <div>
-        <label className="block font-medium mb-1">Title</label>
+        <label className="block font-medium mb-1">Level</label>
         <input
           className="w-full border px-3 py-2 rounded text-black"
           value={title}
