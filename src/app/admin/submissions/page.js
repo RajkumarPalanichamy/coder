@@ -12,10 +12,13 @@ import {
   FileText,
   Target,
   Award,
-  Timer
+  Timer,
+  FileSpreadsheet,
+  CheckSquare
 } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useRouter } from 'next/navigation';
+import { exportSubmissionsToExcel, exportSelectedSubmissionsToExcel } from '../../../lib/excelExport';
 
 export default function AdminSubmissionsPage() {
   const router = useRouter();
@@ -31,6 +34,8 @@ export default function AdminSubmissionsPage() {
   const [filter, setFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState({ key: 'submittedAt', direction: 'desc' });
   const [activeTab, setActiveTab] = useState('individual'); // 'individual' or 'level'
+  const [selectedSubmissions, setSelectedSubmissions] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     fetchSubmissions();
@@ -91,6 +96,75 @@ export default function AdminSubmissionsPage() {
     } catch (error) {
       console.error('Delete submission error:', error);
       alert('Failed to delete submission');
+    }
+  };
+
+  // Handle individual checkbox selection
+  const handleSelectSubmission = (submissionId) => {
+    setSelectedSubmissions(prev => {
+      if (prev.includes(submissionId)) {
+        return prev.filter(id => id !== submissionId);
+      } else {
+        return [...prev, submissionId];
+      }
+    });
+  };
+
+  // Handle select all checkbox
+  const handleSelectAll = () => {
+    if (activeTab === 'individual') {
+      const allIds = sortedSubmissions.map(sub => sub._id);
+      if (selectAll) {
+        setSelectedSubmissions([]);
+      } else {
+        setSelectedSubmissions(allIds);
+      }
+    } else {
+      const allIds = levelSubmissions.map(sub => sub._id);
+      if (selectAll) {
+        setSelectedSubmissions([]);
+      } else {
+        setSelectedSubmissions(allIds);
+      }
+    }
+    setSelectAll(!selectAll);
+  };
+
+  // Export all submissions to Excel
+  const handleExportAll = () => {
+    if (activeTab === 'individual') {
+      const fileName = `all_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
+      if (filter === 'problem') {
+        exportSubmissionsToExcel(problemSubmissions, fileName, 'problem');
+      } else if (filter === 'test') {
+        exportSubmissionsToExcel(testSubmissions, fileName, 'test');
+      } else {
+        // Export combined submissions with proper type handling
+        const allSubmissions = sortedSubmissions.map(sub => ({
+          ...sub,
+          submissionType: sub.type
+        }));
+        exportSubmissionsToExcel(allSubmissions, fileName, 'problem');
+      }
+    } else {
+      const fileName = `level_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
+      exportSubmissionsToExcel(levelSubmissions, fileName, 'level');
+    }
+  };
+
+  // Export selected submissions to Excel
+  const handleExportSelected = () => {
+    if (selectedSubmissions.length === 0) {
+      alert('Please select submissions to export');
+      return;
+    }
+
+    const fileName = `selected_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    if (activeTab === 'individual') {
+      exportSelectedSubmissionsToExcel(sortedSubmissions, selectedSubmissions, fileName, filter === 'test' ? 'test' : 'problem');
+    } else {
+      exportSelectedSubmissionsToExcel(levelSubmissions, selectedSubmissions, fileName, 'level');
     }
   };
 
@@ -199,7 +273,11 @@ export default function AdminSubmissionsPage() {
         {/* Tab Navigation */}
         <div className="flex space-x-1 mb-6 bg-white rounded-lg shadow p-1">
           <button
-            onClick={() => setActiveTab('individual')}
+            onClick={() => {
+              setActiveTab('individual');
+              setSelectedSubmissions([]);
+              setSelectAll(false);
+            }}
             className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === 'individual'
                 ? 'bg-indigo-600 text-white'
@@ -210,7 +288,11 @@ export default function AdminSubmissionsPage() {
             Individual Submissions
           </button>
           <button
-            onClick={() => setActiveTab('level')}
+            onClick={() => {
+              setActiveTab('level');
+              setSelectedSubmissions([]);
+              setSelectAll(false);
+            }}
             className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === 'level'
                 ? 'bg-indigo-600 text-white'
@@ -259,6 +341,29 @@ export default function AdminSubmissionsPage() {
               Tests
             </button>
           </div>
+          
+          {/* Excel Export Buttons */}
+          <div className="flex space-x-2">
+            <button
+              onClick={handleExportSelected}
+              disabled={selectedSubmissions.length === 0}
+              className={`px-3 py-1 rounded flex items-center ${
+                selectedSubmissions.length > 0
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-1" />
+              Export Selected ({selectedSubmissions.length})
+            </button>
+            <button
+              onClick={handleExportAll}
+              className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 flex items-center"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-1" />
+              Export All
+            </button>
+          </div>
         </div>
 
         {/* Submissions Table */}
@@ -266,6 +371,14 @@ export default function AdminSubmissionsPage() {
           <table className="min-w-full bg-white shadow rounded-lg">
             <thead>
               <tr>
+                <th className="px-4 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                </th>
                 <th className="px-4 py-2">Type</th>
                 <th className="px-4 py-2">Student</th>
                 <th className="px-4 py-2">
@@ -315,6 +428,14 @@ export default function AdminSubmissionsPage() {
                 
                 return (
                   <tr key={sub._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedSubmissions.includes(sub._id)}
+                        onChange={() => handleSelectSubmission(sub._id)}
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      />
+                    </td>
                     <td className="px-4 py-2 capitalize">
                       <span className={`px-2 py-1 rounded text-xs ${
                         sub.type === 'problem' 
@@ -379,6 +500,29 @@ export default function AdminSubmissionsPage() {
         ) : (
           /* Level Submissions Tab */
           <>
+            {/* Excel Export Buttons for Level Submissions */}
+            <div className="flex justify-end mb-4 space-x-2">
+              <button
+                onClick={handleExportSelected}
+                disabled={selectedSubmissions.length === 0}
+                className={`px-3 py-1 rounded flex items-center ${
+                  selectedSubmissions.length > 0
+                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-1" />
+                Export Selected ({selectedSubmissions.length})
+              </button>
+              <button
+                onClick={handleExportAll}
+                className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 flex items-center"
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-1" />
+                Export All
+              </button>
+            </div>
+            
             {/* Level Submissions Table */}
             <div className="bg-white shadow rounded-lg">
               <div className="p-4 border-b">
@@ -388,6 +532,14 @@ export default function AdminSubmissionsPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          checked={selectAll}
+                          onChange={handleSelectAll}
+                          className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        />
+                      </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Student
                       </th>
@@ -427,6 +579,14 @@ export default function AdminSubmissionsPage() {
                       
                       return (
                         <tr key={submission._id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <input
+                              type="checkbox"
+                              checked={selectedSubmissions.includes(submission._id)}
+                              onChange={() => handleSelectSubmission(submission._id)}
+                              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                            />
+                          </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900">
                               {submission.user?.firstName && submission.user?.lastName 
