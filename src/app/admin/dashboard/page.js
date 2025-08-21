@@ -392,7 +392,7 @@ export default function AdminDashboard() {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-4">You don't have permission to access the admin dashboard.</p>
+          <p className="text-gray-600 mb-4">You don&apos;t have permission to access the admin dashboard.</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -442,7 +442,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {user?.firstName}! Here's what's happening with your platform.</p>
+              <p className="text-gray-600">Welcome back, {user?.firstName}! Here&apos;s what&apos;s happening with your platform.</p>
             </div>
             <AdminNotifications />
           </div>
