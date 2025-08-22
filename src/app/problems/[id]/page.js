@@ -78,7 +78,8 @@ export default function ProblemPage() {
   };
 
   const handleStartProblem = () => {
-    setProblemStarted(true);
+    // Redirect to full-page problem view
+    router.push(`/problems/${params.id}/full-page`);
   };
 
   const handleExitProblem = () => {
