@@ -207,7 +207,34 @@ export default function AdminLevelSubmissionDetailsPage() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Submissions
           </button>
-          <h1 className="text-2xl font-bold">Level Submission Details</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Level Submission Details</h1>
+            {(() => {
+              const passedProblems = submission.problemSubmissions?.filter(ps => 
+                ps.submission?.passFailStatus === 'passed'
+              ).length || 0;
+              const totalProblems = submission.totalProblems || 0;
+              const isLevelPassed = passedProblems >= Math.ceil(totalProblems * 0.6); // 60% threshold
+              
+              return (
+                <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                  isLevelPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {isLevelPassed ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Level Passed
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-5 w-5 mr-2" />
+                      Level Failed
+                    </>
+                  )}
+                </span>
+              );
+            })()}
+          </div>
         </div>
 
         {/* Submission Overview */}
@@ -312,7 +339,7 @@ export default function AdminLevelSubmissionDetailsPage() {
             <BarChart className="h-5 w-5 mr-2" />
             Progress Summary
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-indigo-600">
                 {submission.completedProblems}/{submission.totalProblems}
@@ -331,6 +358,18 @@ export default function AdminLevelSubmissionDetailsPage() {
               </p>
               <p className="text-sm text-gray-600">Total Points</p>
             </div>
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-purple-600">
+                {(() => {
+                  const passedProblems = submission.problemSubmissions?.filter(ps => 
+                    ps.submission?.passFailStatus === 'passed'
+                  ).length || 0;
+                  const totalProblems = submission.totalProblems || 0;
+                  return totalProblems > 0 ? Math.round((passedProblems / totalProblems) * 100) : 0;
+                })()}%
+              </p>
+              <p className="text-sm text-gray-600">Pass Rate</p>
+            </div>
           </div>
           
           {/* Pass/Fail Summary */}
@@ -341,33 +380,54 @@ export default function AdminLevelSubmissionDetailsPage() {
                 const passFailSummary = {
                   passed: 0,
                   failed: 0,
-                  notAttempted: 0
+                  not_attempted: 0
                 };
                 
                 submission.problemSubmissions?.forEach(ps => {
                   if (ps.submission?.passFailStatus) {
                     passFailSummary[ps.submission.passFailStatus]++;
                   } else {
-                    passFailSummary.notAttempted++;
+                    passFailSummary.not_attempted++;
                   }
                 });
                 
                 return (
                   <>
                     {passFailSummary.passed > 0 && (
-                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                        Passed: {passFailSummary.passed}
-                      </span>
+                      (() => {
+                        const style = getPassFailStyle('passed');
+                        const Icon = style.icon;
+                        return (
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${style.color}`}>
+                            <Icon className="h-4 w-4 mr-1" />
+                            Passed: {passFailSummary.passed}
+                          </span>
+                        );
+                      })()
                     )}
                     {passFailSummary.failed > 0 && (
-                      <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                        Failed: {passFailSummary.failed}
-                      </span>
+                      (() => {
+                        const style = getPassFailStyle('failed');
+                        const Icon = style.icon;
+                        return (
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${style.color}`}>
+                            <Icon className="h-4 w-4 mr-1" />
+                            Failed: {passFailSummary.failed}
+                          </span>
+                        );
+                      })()
                     )}
-                    {passFailSummary.notAttempted > 0 && (
-                      <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
-                        Not Attempted: {passFailSummary.notAttempted}
-                      </span>
+                    {passFailSummary.not_attempted > 0 && (
+                      (() => {
+                        const style = getPassFailStyle('not_attempted');
+                        const Icon = style.icon;
+                        return (
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${style.color}`}>
+                            <Icon className="h-4 w-4 mr-1" />
+                            Not Attempted: {passFailSummary.not_attempted}
+                          </span>
+                        );
+                      })()
                     )}
                   </>
                 );
