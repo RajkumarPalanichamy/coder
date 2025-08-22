@@ -85,7 +85,7 @@ export default function ProblemPage() {
     router.push('/dashboard');
   };
 
-  const handleRun = async () => {
+  const handleRunCode = async () => {
     setRunningCode(true);
     setRunResult(null);
     setCanSubmit(false);
@@ -357,183 +357,154 @@ export default function ProblemPage() {
 
   // Show the actual problem interface (after user clicks "Start Problem")
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="flex items-center text-gray-700 hover:text-indigo-600 mr-4"
-              >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                Back
-              </button>
-              <h1 className="text-xl font-bold text-gray-900">{problem.title}</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(problem.difficulty)}`}>
-                {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
+      <header className="bg-white shadow-sm">
+        <div className="mx-auto px-4">
+          <div className="flex justify-between items-center h-12">
+            <div className="flex items-center gap-4">
+              <span className="bg-yellow-400 text-black px-4 py-1 rounded font-medium text-sm">
+                Programming Challenge ({problem.marks || 6})
               </span>
-              <span className="text-sm text-gray-500">{problem.category}</span>
-              {problem.programmingLanguage && (
-                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded capitalize">
-                  {problem.programmingLanguage}
-                </span>
-              )}
+            </div>
+            <div className="flex items-center text-lg font-medium">
+              <span className="mr-2">Time Left :</span>
+              <span className="font-mono">
+                {timeLeft !== null && timeLeft > 0 
+                  ? `${Math.floor(timeLeft / 3600).toString().padStart(2, '0')} : ${Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0')} : ${(timeLeft % 60).toString().padStart(2, '0')}`
+                  : '00 : 00 : 00'
+                }
+              </span>
             </div>
           </div>
         </div>
       </header>
-      
-      {/* Timer */}
-      {problem.timeLimit && timeLeft !== null && timeLeft > 0 && (
-        <div className="w-full bg-yellow-50 border-b border-yellow-200 py-2 flex justify-center items-center">
-          <span className="text-lg font-semibold text-yellow-800">
-            Time Left: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')} min
-          </span>
-        </div>
-      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Problem Description */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Problem Description</h2>
-              {problem.programmingLanguage && (
-                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded capitalize">
-                  {problem.programmingLanguage}
-                </span>
-              )}
-            </div>
-            <div className="prose max-w-none">
-              <p className="text-gray-700 mb-4 whitespace-pre-wrap">{problem.description}</p>
+      <div className="mx-auto px-4 py-4">
+        <div className="flex gap-4">
+          {/* Left side - Problem Description */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="mb-4">
+                <h2 className="text-lg font-medium mb-1">
+                  Answer The Following&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Marks : {problem.marks || 15}&nbsp;&nbsp;Negative Marks : 0
+                </h2>
+                <h3 className="text-base font-medium mb-3 text-gray-700">
+                  {problem.title}
+                </h3>
+              </div>
               
-              {problem.inputFormat && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-900 mb-2">Input Format</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">{problem.inputFormat}</p>
+              <details className="mb-4">
+                <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800">
+                  Instructions:
+                </summary>
+                <div className="mt-2 p-4 bg-gray-50 rounded text-sm text-gray-700">
+                  <p>Click to view instructions...</p>
                 </div>
-              )}
-              
-              {problem.outputFormat && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-900 mb-2">Output Format</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">{problem.outputFormat}</p>
+              </details>
+
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-800 mb-2">Problem Statement:</h4>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {problem.description}
                 </div>
-              )}
-              
-              {problem.constraints && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-900 mb-2">Constraints</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">{problem.constraints}</p>
-                </div>
-              )}
-              
-              {problem.examples && problem.examples.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="text-md font-semibold text-gray-900 mb-2">Examples</h3>
-                  {problem.examples.map((example, index) => (
-                    <div key={index} className="mb-4 p-4 bg-gray-50 rounded">
-                      <h4 className="font-medium text-gray-900 mb-2">Example {index + 1}</h4>
-                      <div className="mb-2">
-                        <span className="font-medium text-gray-700">Input:</span>
-                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">{example.input}</pre>
-                      </div>
-                      <div className="mb-2">
-                        <span className="font-medium text-gray-700">Output:</span>
-                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">{example.output}</pre>
-                      </div>
-                      {example.explanation && (
-                        <div>
-                          <span className="font-medium text-gray-700">Explanation:</span>
-                          <p className="mt-1 text-sm text-gray-600">{example.explanation}</p>
+                
+                {problem.examples && problem.examples.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <div className="text-gray-700">
+                      <div className="mb-2">Example :</div>
+                      {problem.examples.map((example, index) => (
+                        <div key={index} className="ml-4 font-mono text-sm">
+                          <div>Position {example.input}</div>
+                          <div className="ml-12">{example.output}</div>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Code Editor */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Code Editor</h2>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center px-3 py-1 text-sm text-gray-600 hover:text-gray-900"
-                >
-                  <Copy className="h-4 w-4 mr-1" />
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="text-sm border border-gray-300 rounded px-2 py-1"
-                >
-                  <option value="javascript">JavaScript</option>
-                  <option value="python">Python</option>
-                  <option value="java">Java</option>
-                  <option value="cpp">C++</option>
-                  <option value="c">C</option>
-                </select>
+          {/* Right side - Code Editor */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-sm">
+              <div className="flex items-center justify-between p-3 border-b border-gray-200">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">Language</label>
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className="text-sm border border-gray-300 rounded px-2 py-1"
+                  >
+                    <option value="c">C</option>
+                    <option value="cpp">C++</option>
+                    <option value="java">Java</option>
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">Theme</label>
+                  <select className="text-sm border border-gray-300 rounded px-2 py-1">
+                    <option>Tomorrow</option>
+                    <option>Dark</option>
+                    <option>Light</option>
+                  </select>
+                </div>
               </div>
-            </div>
-            
-            <div className="h-96">
-              <MonacoEditor
-                height="100%"
-                language={language}
-                code={code}
-                onChange={(value) => setCode(value || '')}
-                onMount={(editor) => { codeRef.current = editor; }}
-                starterCode={problem?.starterCode}
-                showToolbar={true}
-                className="border rounded-lg overflow-hidden"
-              />
-            </div>
-            
-            <div className="p-4 border-t border-gray-200">
-              <div className="space-y-4">
-                {/* Code Executor Component */}
-                <CodeExecutor
-                  code={code}
-                  language={language}
-                  testCases={(problem?.testCases || []).filter(tc => !tc.isHidden)}
-                  onExecutionComplete={(results) => {
-                    setRunTestResults(results.results);
-                    setRunResult({
-                      status: results.summary?.allPassed ? 'success' : 'info',
-                      message: results.notice || `Execution completed: ${results.summary?.passed}/${results.summary?.total} test cases passed`,
-                      summary: results.summary
-                    });
-                    setCanSubmit(results.summary?.allPassed || false);
-                    setRunError('');
-                  }}
-                  disabled={runningCode || submitting}
-                />
-                
-                {/* Additional Actions */}
-                <div className="flex space-x-2">
+              
+              <div className="border-b border-gray-200 px-3 py-2">
+                <span className="text-sm text-gray-600">Enter your code here</span>
+              </div>
+              
+              <div className="h-96 relative">
+                <div className="absolute left-0 top-0 bottom-0 w-12 bg-gray-50 border-r border-gray-200 text-right text-xs text-gray-500 py-2 pr-2">
+                  {Array.from({ length: 20 }, (_, i) => (
+                    <div key={i} className="leading-6">{i + 1}</div>
+                  ))}
+                </div>
+                <div className="ml-12 h-full">
+                  <MonacoEditor
+                    height="100%"
+                    language={language}
+                    code={code}
+                    onChange={(value) => setCode(value || '')}
+                    onMount={(editor) => { codeRef.current = editor; }}
+                    starterCode={problem?.starterCode}
+                    showToolbar={false}
+                    className="border-0"
+                    options={{
+                      lineNumbers: 'off',
+                      folding: false,
+                      lineDecorationsWidth: 0,
+                      lineNumbersMinChars: 0,
+                      glyphMargin: false,
+                      scrollBeyondLastLine: false,
+                      minimap: { enabled: false }
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 border-t border-gray-200">
+                <div className="flex gap-2">
+                  <button className="text-sm text-gray-600 hover:text-gray-800">
+                    Reset
+                  </button>
+                  <button
+                    onClick={handleRunCode}
+                    disabled={runningCode}
+                    className="text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    {runningCode ? 'Running...' : 'Run'}
+                  </button>
                   <button
                     onClick={handleSubmit}
                     disabled={submitting || !canSubmit}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="text-sm text-gray-600 hover:text-gray-800"
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {submitting ? 'Submitting...' : 'Submit Solution'}
-                  </button>
-                  <button
-                    onClick={handleSaveCode}
-                    className="flex items-center px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Code
+                    {submitting ? 'Submitting...' : 'Submit'}
                   </button>
                 </div>
               </div>
@@ -541,177 +512,24 @@ export default function ProblemPage() {
           </div>
         </div>
 
-        {/* Results Section */}
-        {(runResult || result || runError) && (
-          <div className="mt-8 bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Results</h3>
-            
-            {runError && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded">
-                <div className="flex items-center">
-                  <XCircle className="h-5 w-5 text-red-600 mr-2" />
-                  <span className="font-medium text-red-800">Error</span>
-                </div>
-                <p className="mt-1 text-red-700">{runError}</p>
-              </div>
-            )}
-
-            {result && (
-              <div className="mb-4">
-                <div className={`p-4 rounded border ${
-                  result.submission.status === 'accepted' 
-                    ? 'bg-green-50 border-green-200 text-green-800'
-                    : result.submission.status === 'wrong_answer'
-                    ? 'bg-red-50 border-red-200 text-red-800'
-                    : result.submission.status === 'runtime_error'
-                    ? 'bg-orange-50 border-orange-200 text-orange-800'
-                    : 'bg-gray-50 border-gray-200 text-gray-800'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      {result.submission.status === 'accepted' ? (
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                      ) : (
-                        <XCircle className="h-5 w-5 mr-2" />
-                      )}
-                      <span className="font-medium">
-                        {result.submission.status === 'accepted' ? 'Accepted' : 
-                         result.submission.status === 'wrong_answer' ? 'Wrong Answer' :
-                         result.submission.status === 'runtime_error' ? 'Runtime Error' : 
-                         result.submission.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {result.executionTime && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                          {result.executionTime}
-                        </span>
-                      )}
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        result.submission.status === 'accepted' 
-                          ? 'bg-green-100 text-green-700'
-                          : result.submission.status === 'wrong_answer'
-                          ? 'bg-red-100 text-red-700'
-                          : result.submission.status === 'runtime_error'
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        Score: {result.submission.score || 0}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {runTestResults && runTestResults.length > 0 && (
-              <div className="space-y-4">
-                {sampleResults.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Sample Test Cases</h4>
-                    <div className="space-y-2">
-                      {sampleResults.map((testResult, index) => (
-                        <div key={index} className={`p-3 rounded border ${
-                          testResult.status === 'passed' 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
-                        }`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              {testResult.status === 'passed' ? (
-                                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-red-600 mr-2" />
-                              )}
-                              <span className={`font-medium ${
-                                testResult.status === 'passed' ? 'text-green-800' : 'text-red-800'
-                              }`}>
-                                Test Case {index + 1}: {testResult.status === 'passed' ? 'Passed' : 'Failed'}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {result.executionTime && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                  {result.executionTime}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          {testResult.error && (
-                            <p className="mt-2 text-sm text-red-700">{testResult.error}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {hiddenResults.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Hidden Test Cases</h4>
-                    <div className="space-y-2">
-                      {hiddenResults.map((testResult, index) => (
-                        <div key={index} className={`p-3 rounded border ${
-                          testResult.status === 'passed' 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
-                        }`}>
-                          <div className="flex items-center">
-                            {testResult.status === 'passed' ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                            ) : (
-                              <XCircle className="h-4 w-4 text-red-600 mr-2" />
-                            )}
-                            <span className={`font-medium ${
-                              testResult.status === 'passed' ? 'text-green-800' : 'text-red-800'
-                            }`}>
-                              Hidden Test {index + 1}: {testResult.status === 'passed' ? 'Passed' : 'Failed'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Navigation */}
-        {navigation && (navigation.previous || navigation.next) && (
-          <div className="mt-8 flex justify-center">
-            <div className="flex justify-center items-center space-x-6">
-              {navigation.previous ? (
-                <button
-                  onClick={() => router.push(`/problems/${navigation.previous.id}`)}
-                  className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
-                >
-                  <ChevronLeft className="h-5 w-5 mr-2" />
-                  <div className="text-left">
-                    <div className="text-xs text-gray-500">Previous</div>
-                  </div>
-                </button>
-              ) : (
-                <div className="w-48"></div>
-              )}
-
-              {navigation.next ? (
-                <button
-                  onClick={() => router.push(`/problems/${navigation.next.id}`)}
-                  className="flex items-center px-6 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 text-gray-700 font-medium"
-                >
-                  <div className="text-right">
-                    <div className="text-xs text-gray-500">Next</div>
-                  </div>
-                  <ChevronRight className="h-5 w-5 ml-2" />
-                </button>
-              ) : (
-                <div className="w-48"></div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Bottom Navigation Buttons */}
+        <div className="flex justify-center gap-3 mt-6">
+          <button className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+            Previous
+          </button>
+          <button className="px-8 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
+            Clear
+          </button>
+          <button className="px-8 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors">
+            Mark
+          </button>
+          <button className="px-8 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+            Next
+          </button>
+                    <button className="px-6 py-2 bg-teal-500 text-white rounded hover:bg-teal-600 transition-colors">
+            End Test
+          </button>
+        </div>
       </div>
     </div>
   );
