@@ -272,15 +272,6 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
           completedProblems++;
         }
 
-        // Count by pass/fail status for better tracking
-        if (ps.submission.passFailStatus === 'passed') {
-          summary.accepted++;
-        } else if (ps.submission.passFailStatus === 'failed') {
-          summary.wrongAnswer++;
-        } else if (ps.submission.passFailStatus === 'not_attempted') {
-          summary.pending++;
-        }
-
         // Keep existing status summary for backward compatibility
         switch (ps.submission.status) {
           case 'accepted':
@@ -307,6 +298,8 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
     });
 
     this.submissionSummary = summary;
+    // Remove passFailSummary counting
+    // this.passFailSummary = passFailSummary;
     this.completedProblems = completedProblems;
     this.version = (this.version || 0) + 1;
     

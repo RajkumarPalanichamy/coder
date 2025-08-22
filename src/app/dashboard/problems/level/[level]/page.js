@@ -243,21 +243,9 @@ export default function LevelProblemsPage() {
         problemId: problem._id,
         code: problemCodes[problem._id] || currentCode || '', // Use problem-specific code or fallback to current code
         submissionLanguage: problemLanguages[problem._id] || 'javascript',
-        status: problemStatuses[problem._id] || 'not_attempted'
+        status: problemStatuses[problem._id] || 'not_attempted', // This will be used as passFailStatus
+        passFailStatus: problemStatuses[problem._id] || 'not_attempted' // Explicit pass/fail status
       }));
-
-      // Debug: Log what's being submitted
-      console.log('🔍 Debug: Submitting problems with status:');
-      problemSubmissions.forEach((sub, index) => {
-        console.log(`Problem ${index + 1}:`, {
-          problemId: sub.problemId,
-          status: sub.status,
-          hasCode: !!sub.code,
-          codeLength: sub.code?.length || 0
-        });
-      });
-
-      console.log('Submitting data:', { language, category, problemSubmissions });
 
       const response = await fetch(`/api/problems/levels/${level}/submit`, {
         method: 'POST',
