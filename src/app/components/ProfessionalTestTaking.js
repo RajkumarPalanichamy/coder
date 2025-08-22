@@ -130,52 +130,48 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
 
   if (showReview) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="fixed inset-0 bg-white text-gray-900 flex flex-col overflow-hidden z-50">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <h1 className="text-lg font-semibold text-gray-900">{test.title}</h1>
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
-                  <span>Question {currentQuestion + 1} of {totalQuestions}</span>
-                  <span>•</span>
-                  <span>Answered: {getAnsweredCount()}/{totalQuestions}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  showWarning 
-                    ? 'bg-red-100 text-red-800 animate-pulse' 
-                    : timeLeft <= 600 
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-green-100 text-green-800'
-                }`}>
-                  ⏱️ {formatTime(timeLeft)}
-                </div>
-                
-                <button
-                  onClick={handleReviewToggle}
-                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors"
-                >
-                  Back to Questions
-                </button>
-                
-                <button
-                  onClick={handleExit}
-                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition-colors"
-                >
-                  Exit
-                </button>
-              </div>
+        <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center space-x-6">
+            <h1 className="text-lg font-semibold text-gray-900">{test.title}</h1>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <span>Question {currentQuestion + 1} of {totalQuestions}</span>
+              <span>•</span>
+              <span>Answered: {getAnsweredCount()}/{totalQuestions}</span>
             </div>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+              showWarning 
+                ? 'bg-red-100 text-red-800 animate-pulse' 
+                : timeLeft <= 600 
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-green-100 text-green-800'
+            }`}>
+              ⏱️ {formatTime(timeLeft)}
+            </div>
+            
+            <button
+              onClick={handleReviewToggle}
+              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors"
+            >
+              Back to Questions
+            </button>
+            
+            <button
+              onClick={handleExit}
+              className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors"
+            >
+              Exit
+            </button>
           </div>
         </div>
 
         {/* Review Content */}
-        <div className="max-w-7xl mx-auto p-4">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">Review Your Answers</h2>
               <button
@@ -213,216 +209,208 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="fixed inset-0 bg-white text-gray-900 flex flex-col overflow-hidden z-50">
       {/* Top Bar */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-lg text-sm font-medium">
-                {test.title} ({totalQuestions})
+      <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleExit}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            End & Exit
+          </button>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">Professional Test... ({totalQuestions})</h1>
+            <p className="text-sm text-gray-500">{test.title}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
+            showWarning 
+              ? 'bg-red-100 text-red-800 animate-pulse' 
+              : timeLeft <= 600 
+                ? 'bg-yellow-100 text-yellow-800'
+                : 'bg-green-100 text-green-800'
+          }`}>
+            Time Left: {formatTime(timeLeft)}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left Panel - Question Content */}
+        <div className="w-3/4 bg-white border-r border-gray-200 overflow-y-auto">
+          <div className="p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-blue-600 mb-2">Answer The Following</h2>
+              <div className="flex items-center gap-4 mb-4">
+                <span className="text-sm text-gray-600">
+                  Q{currentQuestion + 1}-{test.mcqs[currentQuestion].category || 'B'}
+                </span>
+                <div className="bg-green-100 border border-green-200 px-3 py-1 rounded-lg">
+                  <span className="text-sm font-medium text-green-800">Marks: 1</span>
+                </div>
+                <div className="bg-red-100 border border-red-200 px-3 py-1 rounded-lg">
+                  <span className="text-sm font-medium text-red-800">Negative Marks: 0</span>
+                </div>
               </div>
+              <p className="text-lg text-gray-800 leading-relaxed mb-6">
+                {test.mcqs[currentQuestion].question}
+              </p>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                showWarning 
-                  ? 'bg-red-100 text-red-800 animate-pulse' 
-                  : timeLeft <= 600 
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-green-100 text-green-800'
-              }`}>
-                Time Left: {formatTime(timeLeft)}
+
+            <div className="space-y-3 mb-8">
+              {test.mcqs[currentQuestion].options.map((option, index) => (
+                <label
+                  key={index}
+                  className={`
+                    flex items-center p-4 border rounded-lg cursor-pointer transition-all
+                    ${answers[currentQuestion] === index
+                      ? 'border-indigo-500 bg-indigo-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  <input
+                    type="radio"
+                    name={`question-${currentQuestion}`}
+                    value={index}
+                    checked={answers[currentQuestion] === index}
+                    onChange={() => handleAnswerSelect(currentQuestion, index)}
+                    className="mr-3 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-gray-800">{option}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel - Question Navigation & Summary */}
+        <div className="w-1/4 bg-gray-50 flex flex-col">
+          {/* Questions Navigation */}
+          <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
+            <h3 className="font-semibold text-gray-900 mb-3">Questions</h3>
+            <div className="grid grid-cols-5 gap-2">
+              {Array.from({ length: totalQuestions }, (_, index) => {
+                const status = getQuestionStatus(index);
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleQuestionJump(index)}
+                    className={`
+                      w-8 h-8 rounded-full text-xs font-medium transition-colors
+                      ${status === 'current' 
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' 
+                        : status === 'answered'
+                          ? 'bg-green-500 text-white'
+                          : status === 'marked'
+                            ? 'bg-yellow-500 text-white'
+                            : 'bg-blue-500 text-white hover:bg-blue-600'
+                      }
+                    `}
+                  >
+                    {index + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Summary Section */}
+          <div className="bg-white p-4 flex-shrink-0">
+            <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span>Total Questions</span>
+                <span className="font-medium">{totalQuestions}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  Answered
+                </span>
+                <span className="font-medium">{getAnsweredCount()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                  Not Answered
+                </span>
+                <span className="font-medium">{totalQuestions - getAnsweredCount()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                  Marked
+                </span>
+                <span className="font-medium">{markedQuestions.size}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content Area (Left) */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Answer The Following
-                </h2>
-                <div className="text-sm text-gray-600 mb-2">
-                  Q{currentQuestion + 1}-{test.mcqs[currentQuestion].category || 'B'}
-                </div>
-                <p className="text-lg text-gray-800 leading-relaxed mb-4">
-                  {test.mcqs[currentQuestion].question}
-                </p>
-                <div className="text-sm text-gray-600 mb-6">
-                  Marks: 1 Negative Marks: 0
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-8">
-                {test.mcqs[currentQuestion].options.map((option, index) => (
-                  <label
-                    key={index}
-                    className={`
-                      flex items-center p-4 border rounded-lg cursor-pointer transition-all
-                      ${answers[currentQuestion] === index
-                        ? 'border-indigo-500 bg-indigo-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }
-                    `}
-                  >
-                    <input
-                      type="radio"
-                      name={`question-${currentQuestion}`}
-                      value={index}
-                      checked={answers[currentQuestion] === index}
-                      onChange={() => handleAnswerSelect(currentQuestion, index)}
-                      className="mr-3 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span className="text-gray-800">{option}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="space-y-4">
-              {/* Questions Answered Section */}
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900">Questions Answered</h3>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  {Array.from({ length: totalQuestions }, (_, index) => {
-                    const status = getQuestionStatus(index);
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleQuestionJump(index)}
-                        className={`
-                          w-10 h-10 rounded-full text-sm font-medium transition-colors
-                          ${status === 'current' 
-                            ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' 
-                            : status === 'answered'
-                              ? 'bg-green-500 text-white'
-                              : status === 'marked'
-                                ? 'bg-yellow-500 text-white'
-                                : 'bg-blue-500 text-white hover:bg-blue-600'
-                          }
-                        `}
-                      >
-                        {index + 1}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Summary Section */}
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span>Total Number of questions</span>
-                    <span className="font-medium">{totalQuestions}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      Answered
-                    </span>
-                    <span className="font-medium">{getAnsweredCount()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                      Not Answered
-                    </span>
-                    <span className="font-medium">{totalQuestions - getAnsweredCount()}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                      Marked for review
-                    </span>
-                    <span className="font-medium">{markedQuestions.size}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Bottom Navigation Bar */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors border border-gray-300">
+            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            Report Error
+          </button>
         </div>
-
-                 {/* Bottom Navigation Bar */}
-         <div className="mt-6 bg-white rounded-lg shadow-sm p-4">
-           <div className="flex items-center justify-between">
-             <div className="flex items-center space-x-3">
-               <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                 Report Error
-               </button>
-             </div>
-             
-             <div className="flex items-center space-x-3">
-               <button
-                 onClick={handlePrevious}
-                 disabled={currentQuestion === 0}
-                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
-               >
-                 Previous
-               </button>
-               
-               <button
-                 onClick={handleClearAnswer}
-                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-               >
-                 Clear
-               </button>
-               
-               <button
-                 onClick={handleMarkQuestion}
-                 className={`px-4 py-2 rounded-lg transition-colors text-sm ${
-                   markedQuestions.has(currentQuestion)
-                     ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                     : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                 }`}
-               >
-                 Mark
-               </button>
-               
-               {currentQuestion < totalQuestions - 1 ? (
-                 <button
-                   onClick={handleNext}
-                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                 >
-                   Next
-                 </button>
-               ) : (
-                 <button
-                   onClick={handleNext}
-                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                 >
-                   Next
-                 </button>
-               )}
-             </div>
-             
-             <div className="flex items-center space-x-3">
-               <button
-                 onClick={handleReviewToggle}
-                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-               >
-                 End Test
-               </button>
-             </div>
-           </div>
-         </div>
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handlePrevious}
+            disabled={currentQuestion === 0}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          
+          <button
+            onClick={handleClearAnswer}
+            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+          >
+            Clear
+          </button>
+          
+          <button
+            onClick={handleMarkQuestion}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              markedQuestions.has(currentQuestion)
+                ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                : 'bg-yellow-500 text-white hover:bg-yellow-600'
+            }`}
+          >
+            Mark
+          </button>
+          
+          <button
+            onClick={handleNext}
+            disabled={currentQuestion === totalQuestions - 1}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleReviewToggle}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            End Test
+          </button>
+        </div>
       </div>
 
       {/* Time warning modal */}

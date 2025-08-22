@@ -540,6 +540,19 @@ export default function LevelProblemsPage() {
                   automaticLayout: true,
                   lineNumbers: 'on',
                   tabSize: 2,
+                  // Disable code suggestions and IntelliSense
+                  suggestOnTriggerCharacters: false,
+                  quickSuggestions: false,
+                  parameterHints: { enabled: false },
+                  hover: { enabled: false },
+                  contextmenu: false,
+                  suggest: { showKeywords: false, showSnippets: false, showClasses: false, showFunctions: false, showVariables: false, showConstants: false, showEnums: false, showEnumsMembers: false, showColors: false, showFiles: false, showReferences: false, showFolders: false, showTypeParameters: false, showWords: false, showUsers: false, showIssues: false },
+                  acceptSuggestionOnCommitCharacter: false,
+                  acceptSuggestionOnEnter: 'off',
+                  tabCompletion: 'off',
+                  wordBasedSuggestions: 'off',
+                  suggestSelection: 'first',
+                  suggest: false,
                 }}
                 onChange={(value) => updateCurrentCode(value || '')}
               />
