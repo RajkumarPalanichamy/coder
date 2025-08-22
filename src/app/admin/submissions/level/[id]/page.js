@@ -135,6 +135,35 @@ export default function AdminLevelSubmissionDetailsPage() {
     }
   };
 
+  const getPassFailStyle = (passFailStatus) => {
+    switch (passFailStatus) {
+      case 'passed':
+        return {
+          color: 'bg-green-100 text-green-800',
+          icon: CheckCircle,
+          text: 'Passed'
+        };
+      case 'failed':
+        return {
+          color: 'bg-red-100 text-red-800',
+          icon: XCircle,
+          text: 'Failed'
+        };
+      case 'not_attempted':
+        return {
+          color: 'bg-gray-100 text-gray-800',
+          icon: Clock,
+          text: 'Not Attempted'
+        };
+      default:
+        return {
+          color: 'bg-gray-100 text-gray-800',
+          icon: Clock,
+          text: 'N/A'
+        };
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -184,7 +213,7 @@ export default function AdminLevelSubmissionDetailsPage() {
         {/* Submission Overview */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Overview</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <p className="text-sm text-gray-500 mb-1">Student</p>
               <div className="flex items-center">
@@ -223,6 +252,44 @@ export default function AdminLevelSubmissionDetailsPage() {
             </div>
             
             <div>
+              <p className="text-sm text-gray-500 mb-1">Level Result</p>
+              {(() => {
+                const passedProblems = submission.problemSubmissions?.filter(ps => 
+                  ps.submission?.passFailStatus === 'passed'
+                ).length || 0;
+                const totalProblems = submission.totalProblems || 0;
+                const isLevelPassed = passedProblems >= Math.ceil(totalProblems * 0.6); // 60% threshold
+                
+                return (
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                    isLevelPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {isLevelPassed ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Passed
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Failed
+                      </>
+                    )}
+                  </span>
+                );
+              })()}
+              <p className="text-sm text-gray-500 mt-1">
+                {(() => {
+                  const passedProblems = submission.problemSubmissions?.filter(ps => 
+                    ps.submission?.passFailStatus === 'passed'
+                  ).length || 0;
+                  const totalProblems = submission.totalProblems || 0;
+                  return `${passedProblems}/${totalProblems} problems passed`;
+                })()}
+              </p>
+            </div>
+            
+            <div>
               <p className="text-sm text-gray-500 mb-1">Timing</p>
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 text-gray-400 mr-2" />
@@ -254,7 +321,7 @@ export default function AdminLevelSubmissionDetailsPage() {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">
-                {submission.totalScore}%
+                {submission.totalScore || 0}%
               </p>
               <p className="text-sm text-gray-600">Total Score</p>
             </div>
@@ -263,6 +330,48 @@ export default function AdminLevelSubmissionDetailsPage() {
                 {submission.totalPoints || 0}
               </p>
               <p className="text-sm text-gray-600">Total Points</p>
+            </div>
+          </div>
+          
+          {/* Pass/Fail Summary */}
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-sm font-medium text-gray-700 mb-2">Pass/Fail Summary</p>
+            <div className="flex flex-wrap gap-2">
+              {(() => {
+                const passFailSummary = {
+                  passed: 0,
+                  failed: 0,
+                  notAttempted: 0
+                };
+                
+                submission.problemSubmissions?.forEach(ps => {
+                  if (ps.submission?.passFailStatus) {
+                    passFailSummary[ps.submission.passFailStatus]++;
+                  } else {
+                    passFailSummary.notAttempted++;
+                  }
+                });
+                
+                return (
+                  <>
+                    {passFailSummary.passed > 0 && (
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        Passed: {passFailSummary.passed}
+                      </span>
+                    )}
+                    {passFailSummary.failed > 0 && (
+                      <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                        Failed: {passFailSummary.failed}
+                      </span>
+                    )}
+                    {passFailSummary.notAttempted > 0 && (
+                      <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                        Not Attempted: {passFailSummary.notAttempted}
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
           
@@ -340,6 +449,9 @@ export default function AdminLevelSubmissionDetailsPage() {
                     Execution Time
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pass/Fail
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -394,6 +506,22 @@ export default function AdminLevelSubmissionDetailsPage() {
                           `${ps.submission.executionTime}ms` : 
                           'N/A'
                         }
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {ps.submission?.passFailStatus ? (
+                          (() => {
+                            const passFailStyle = getPassFailStyle(ps.submission.passFailStatus);
+                            const PassFailIcon = passFailStyle.icon;
+                            return (
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${passFailStyle.color}`}>
+                                <PassFailIcon className="h-3 w-3 mr-1" />
+                                {passFailStyle.text}
+                              </span>
+                            );
+                          })()
+                        ) : (
+                          'N/A'
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {ps.submission && (
