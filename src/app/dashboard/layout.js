@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {!shouldHideSidebar && <StudentSidebar onLogout={handleLogout} />}
-      <main className="flex-1 px-0 md:px-8 py-0 md:py-8 relative">
+      <main className="flex-1 px-0 md:px-8 py-0 md:py-8 relative ml-20 md:ml-72 transition-all duration-300">
         {children}
       </main>
     </div>

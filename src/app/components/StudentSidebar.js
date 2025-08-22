@@ -112,18 +112,20 @@ export default function StudentSidebar({ onLogout }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('main');
-  const [progress, setProgress] = useState({
-    completed: 12,
-    total: 25,
-    streak: 5,
-    level: 'Intermediate',
-    rank: 'Top 15%',
-    points: 1250
+  const [weeklyProgress, setWeeklyProgress] = useState({
+    dayStreak: 0,
+    completed: 0,
+    progress: 0,
+    rank: 'Top 50%',
+    points: 0,
+    solvedProblems: 0,
+    totalProblems: 0
   });
+  const [progressLoading, setProgressLoading] = useState(true);
 
   useEffect(() => {
     fetchUser();
-    fetchProgress();
+    fetchWeeklyProgress();
   }, []);
 
   // Close mobile menu when screen size changes
@@ -144,31 +146,36 @@ export default function StudentSidebar({ onLogout }) {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
-        if (data.user.role === 'admin') {
-          router.push('/admin/dashboard');
+        // Only redirect if user is admin and we have router access
+        if (data.user.role === 'admin' && typeof window !== 'undefined') {
+          window.location.href = '/admin/dashboard';
         }
       } else if (res.status === 401) {
-        router.push('/login');
+        // Only redirect if we have router access
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
       }
-    } catch {
-      router.push('/login');
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      // Only redirect if we have router access
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
   };
 
-  const fetchProgress = async () => {
+  const fetchWeeklyProgress = async () => {
     try {
-      // Simulate fetching progress data
-      // In real app, this would come from an API
-      setProgress({
-        completed: Math.floor(Math.random() * 20) + 5,
-        total: 25,
-        streak: Math.floor(Math.random() * 10) + 1,
-        level: ['Beginner', 'Intermediate', 'Advanced'][Math.floor(Math.random() * 3)],
-        rank: ['Top 5%', 'Top 15%', 'Top 25%', 'Top 50%'][Math.floor(Math.random() * 4)],
-        points: Math.floor(Math.random() * 2000) + 500
-      });
+      const res = await fetch('/api/user/weekly-progress', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setWeeklyProgress(data);
+      }
     } catch (error) {
-      console.error('Error fetching progress:', error);
+      console.error('Error fetching weekly progress:', error);
+    } finally {
+      setProgressLoading(false);
     }
   };
 
@@ -197,7 +204,7 @@ export default function StudentSidebar({ onLogout }) {
 
   const pathname = usePathname();
   const initials = user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() : '';
-  const progressPercentage = Math.round((progress.completed / progress.total) * 100);
+  const progressPercentage = weeklyProgress.totalProblems > 0 ? Math.round((weeklyProgress.solvedProblems / weeklyProgress.totalProblems) * 100) : 0;
 
   // Mobile menu component
   const MobileMenu = () => (
@@ -217,14 +224,24 @@ export default function StudentSidebar({ onLogout }) {
         
         {/* Mobile Profile Section */}
         <div className="p-4 border-b border-gray-200">
-          {user && (
+          {user ? (
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-lg font-bold text-indigo-700">
-                {user.firstName?.[0]?.toUpperCase()}
+              <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                {initials}
               </div>
               <div>
-                <div className="font-semibold text-gray-800">{user.firstName} {user.lastName}</div>
-                <div className="text-sm text-gray-500">{user.email}</div>
+                <h3 className="font-semibold text-gray-800">
+                  {user.firstName} {user.lastName}
+                </h3>
+                <p className="text-sm text-gray-600">{user.email}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gray-200 rounded-full animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2 animate-pulse"></div>
+                <div className="h-3 bg-gray-200 rounded w-32 animate-pulse"></div>
               </div>
             </div>
           )}
@@ -232,48 +249,129 @@ export default function StudentSidebar({ onLogout }) {
 
         {/* Mobile Navigation */}
         <nav className="p-4">
-          {navItems.map(({ label, href, icon: Icon, description, badge }) => {
-            const isActive = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors ${
-                  isActive ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <div className="flex-1">
-                  <div className="font-medium">{label}</div>
-                  <div className="text-sm text-gray-500">{description}</div>
+          {navItems.map(({ label, href, icon: Icon, description, badge }) => (
+            <Link
+              key={label}
+              href={href}
+              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors ${
+                pathname === href
+                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Icon className="w-5 h-5" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{label}</span>
+                  {badge && (
+                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                      {badge}
+                    </span>
+                  )}
                 </div>
-                {badge && (
-                  <span className="px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">
-                    {badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+                <p className="text-sm text-gray-500">{description}</p>
+              </div>
+            </Link>
+          ))}
         </nav>
 
         {/* Mobile Quick Actions */}
         <div className="p-4 border-t border-gray-200">
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
+            {quickActions.map(({ label, icon: Icon, action, color }) => (
               <button
-                key={action.action}
+                key={action}
                 onClick={() => {
-                  handleQuickAction(action.action);
+                  handleQuickAction(action);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`${action.color} text-white text-xs font-medium px-3 py-2 rounded-lg hover:opacity-90 transition-all duration-200`}
+                className={`${color} text-white p-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity`}
               >
-                {action.label}
+                <Icon className="w-4 h-4 mx-auto mb-1" />
+                {label}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Mobile Stats Summary */}
+        <div className="p-4 border-t border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
+            This Week
+          </h3>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-indigo-50 rounded-lg p-2">
+              {progressLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-indigo-200 rounded mb-1"></div>
+                  <div className="h-3 bg-indigo-200 rounded"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="text-lg font-bold text-indigo-700">{weeklyProgress.dayStreak}</div>
+                  <div className="text-xs text-indigo-600">Day Streak</div>
+                </>
+              )}
+            </div>
+            <div className="bg-green-50 rounded-lg p-2">
+              {progressLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-green-200 rounded mb-1"></div>
+                  <div className="h-3 bg-green-200 rounded"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="text-lg font-bold text-green-700">{weeklyProgress.completed}</div>
+                  <div className="text-xs text-green-600">Completed</div>
+                </>
+              )}
+            </div>
+            <div className="bg-purple-50 rounded-lg p-2">
+              {progressLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-purple-200 rounded mb-1"></div>
+                  <div className="h-3 bg-purple-200 rounded"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="text-lg font-bold text-purple-700">{progressPercentage}%</div>
+                  <div className="text-xs text-purple-600">Progress</div>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {/* Additional Stats */}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="bg-yellow-50 rounded-lg p-2 text-center">
+              {progressLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-yellow-200 rounded mb-1"></div>
+                  <div className="h-3 bg-yellow-200 rounded"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="text-sm font-bold text-yellow-700">{weeklyProgress.rank}</div>
+                  <div className="text-xs text-yellow-600">Rank</div>
+                </>
+              )}
+            </div>
+            <div className="bg-blue-50 rounded-lg p-2 text-center">
+              {progressLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-blue-200 rounded mb-1"></div>
+                  <div className="h-3 bg-blue-200 rounded"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="text-sm font-bold text-blue-700">{weeklyProgress.points}</div>
+                  <div className="text-xs text-blue-600">Points</div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -284,9 +382,10 @@ export default function StudentSidebar({ onLogout }) {
               onLogout();
               setIsMobileMenuOpen(false);
             }}
-            className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium transition-colors"
+            className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
-            Logout
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
           </button>
         </div>
       </div>
@@ -308,11 +407,11 @@ export default function StudentSidebar({ onLogout }) {
       </div>
 
       {/* Desktop Sidebar */}
-      <aside className={`sticky top-0 h-screen bg-white shadow-xl flex flex-col z-30 transition-all duration-300 overflow-y-auto ${
+      <aside className={`fixed top-0 left-0 h-screen bg-white shadow-xl flex flex-col z-30 transition-all duration-300 overflow-y-auto ${
         isCollapsed ? 'w-20' : 'w-20 md:w-72'
       }`}>
         {/* Logo / App Name */}
-        <div className="flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-gradient-to-r from-indigo-600 to-indigo-700">
+        <div className="sticky top-0 z-10 flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-gradient-to-r from-indigo-600 to-indigo-700">
           <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="h-10 w-10 rounded-lg shadow-lg" />
           {!isCollapsed && (
             <span className="hidden md:inline ml-3 text-xl font-bold text-white tracking-tight">Zenith Mentor</span>
@@ -320,180 +419,187 @@ export default function StudentSidebar({ onLogout }) {
         </div>
 
         {/* Profile Section */}
-        <div className={`${!isCollapsed ? 'hidden md:flex' : 'hidden'} flex-col items-center px-4 pt-4 pb-2 border-b border-gray-100`}>
+        <div className="p-4 border-b border-gray-100">
           {user && (
-            <>
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-xl font-bold text-indigo-700 mb-3 border-4 border-white shadow-lg">
-                  {user.firstName?.[0]?.toUpperCase()}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                </div>
+            <StudentProfileCard 
+              user={user} 
+              isCollapsed={isCollapsed}
+              notifications={notifications}
+              onNotificationClick={() => setNotifications(0)}
+            />
+          )}
+          {!user && (
+            <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+              <div className="animate-pulse">
+                <div className="w-20 h-20 rounded-full bg-gray-200 mb-4"></div>
+                <div className="h-6 bg-gray-200 rounded w-32 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-20"></div>
               </div>
-              <span className="font-semibold text-gray-800 text-lg leading-tight text-center mb-1">
-                {user.firstName} {user.lastName}
-              </span>
-              <span className="text-sm text-gray-500 mb-2">{user.email}</span>
-              
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                <div 
-                  className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
-              </div>
-              <div className="flex items-center justify-between w-full text-xs text-gray-600">
-                <span>Level {progress.level}</span>
-                <span>{progress.completed}/{progress.total}</span>
-              </div>
-            </>
+            </div>
           )}
         </div>
 
         {/* Quick Actions */}
-        <div className={`${!isCollapsed ? 'hidden md:block' : 'hidden'} px-4 py-4 border-b border-gray-100`}>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-            <Zap className="w-4 h-4 mr-2 text-indigo-600" />
-            Quick Actions
+        <div className="p-4 border-b border-gray-100">
+          <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
+            {!isCollapsed && 'Quick Actions'}
           </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {quickActions.map((action) => (
+          <div className={`grid gap-2 ${isCollapsed ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            {quickActions.map(({ label, icon: Icon, action, color }) => (
               <button
-                key={action.action}
-                onClick={() => handleQuickAction(action.action)}
-                className={`${action.color} text-white text-xs font-medium px-3 py-2 rounded-lg hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-1`}
+                key={action}
+                onClick={() => handleQuickAction(action)}
+                className={`${color} text-white p-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity ${
+                  isCollapsed ? 'p-2' : ''
+                }`}
+                title={isCollapsed ? label : undefined}
               >
-                <action.icon className="w-3 h-3" />
-                {action.label}
+                <Icon className={`${isCollapsed ? 'w-5 h-5 mx-auto' : 'w-4 h-4 mr-2'} inline`} />
+                {!isCollapsed && label}
               </button>
             ))}
           </div>
         </div>
 
-       
-
-        {/* Navigation */}
-        <nav className="flex-1 flex flex-col gap-1 py-4 px-3 md:px-4 bg-white">
-          {navItems.map(({ label, href, icon: Icon, description, badge }) => {
-            const isActive = pathname === href;
-            return (
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="p-4">
+            <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
+              {!isCollapsed && 'Navigation'}
+            </h3>
+            {navItems.map(({ label, href, icon: Icon, description, badge }) => (
               <Link
-                key={href}
+                key={label}
                 href={href}
-                className={`group relative flex flex-col md:flex-row md:items-center gap-2 md:gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-150 hover:bg-indigo-50
-                  ${isActive 
-                    ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-semibold shadow-sm' 
-                    : 'text-gray-600 hover:text-indigo-700'}
-                `}
-                title={isCollapsed ? label : undefined}
+                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors group ${
+                  pathname === href
+                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                <div className="flex items-center gap-2 md:gap-3">
-                  <Icon className={`h-5 w-5 ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600'}`} />
-                  {!isCollapsed && (
-                    <div className="hidden md:flex flex-col">
-                      <span className="font-medium">{label}</span>
-                      <span className="text-xs text-gray-500">{description}</span>
-                    </div>
-                  )}
-                  {badge && !isCollapsed && (
-                    <span className="hidden md:inline-block px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-full">
-                      {badge}
-                    </span>
-                  )}
-                </div>
+                <Icon className="w-5 h-5 flex-shrink-0" />
                 {!isCollapsed && (
-                  <ChevronRight className={`hidden md:block h-4 w-4 ml-auto transition-transform duration-200
-                    ${isActive ? 'text-indigo-600 translate-x-0' : 'text-gray-300 -translate-x-2 group-hover:translate-x-0 group-hover:text-indigo-600'}
-                  `} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium truncate">{label}</span>
+                      {badge && (
+                        <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex-shrink-0">
+                          {badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 truncate">{description}</p>
+                  </div>
                 )}
               </Link>
-            );
-          })}
-        </nav>
-         {/* Stats Summary */}
-         <div className={`${!isCollapsed ? 'hidden md:block' : 'hidden'} px-4 py-4 border-b border-gray-100`}>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-            <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
-            This Week
-          </h3>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-indigo-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-indigo-700">{progress.streak}</div>
-              <div className="text-xs text-indigo-600">Day Streak</div>
+            ))}
+          </nav>
+
+          {/* Stats Summary */}
+          <div className={`${!isCollapsed ? 'hidden md:block' : 'hidden'} px-4 py-4 border-b border-gray-100`}>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
+              This Week
+            </h3>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-indigo-50 rounded-lg p-2">
+                {progressLoading ? (
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-indigo-200 rounded mb-1"></div>
+                    <div className="h-3 bg-indigo-200 rounded"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-lg font-bold text-indigo-700">{weeklyProgress.dayStreak}</div>
+                    <div className="text-xs text-indigo-600">Day Streak</div>
+                  </>
+                )}
+              </div>
+              <div className="bg-green-50 rounded-lg p-2">
+                {progressLoading ? (
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-green-200 rounded mb-1"></div>
+                    <div className="h-3 bg-green-200 rounded"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-lg font-bold text-green-700">{weeklyProgress.completed}</div>
+                    <div className="text-xs text-green-600">Completed</div>
+                  </>
+                )}
+              </div>
+              <div className="bg-purple-50 rounded-lg p-2">
+                {progressLoading ? (
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-purple-200 rounded mb-1"></div>
+                    <div className="h-3 bg-purple-200 rounded"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-lg font-bold text-purple-700">{progressPercentage}%</div>
+                    <div className="text-xs text-purple-600">Progress</div>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-green-700">{progress.completed}</div>
-              <div className="text-xs text-green-600">Completed</div>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-2">
-              <div className="text-lg font-bold text-purple-700">{progressPercentage}%</div>
-              <div className="text-xs text-purple-600">Progress</div>
-            </div>
-          </div>
-          
-          {/* Additional Stats */}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="bg-yellow-50 rounded-lg p-2 text-center">
-              <div className="text-sm font-bold text-yellow-700">{progress.rank}</div>
-              <div className="text-xs text-yellow-600">Rank</div>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-2 text-center">
-              <div className="text-sm font-bold text-blue-700">{progress.points}</div>
-              <div className="text-xs text-blue-600">Points</div>
+            
+            {/* Additional Stats */}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="bg-yellow-50 rounded-lg p-2 text-center">
+                {progressLoading ? (
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-yellow-200 rounded mb-1"></div>
+                    <div className="h-3 bg-yellow-200 rounded"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-sm font-bold text-yellow-700">{weeklyProgress.rank}</div>
+                    <div className="text-xs text-yellow-600">Rank</div>
+                  </>
+                )}
+              </div>
+              <div className="bg-blue-50 rounded-lg p-2 text-center">
+                {progressLoading ? (
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-blue-200 rounded mb-1"></div>
+                    <div className="h-3 bg-blue-200 rounded"></div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-sm font-bold text-blue-700">{weeklyProgress.points}</div>
+                    <div className="text-xs text-blue-600">Points</div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-auto border-t border-gray-100">
-          {/* Notifications */}
-          <div className={`${!isCollapsed ? 'hidden md:flex' : 'hidden'} items-center justify-between px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors`}>
-            {/* <div className="flex items-center gap-2">
-              <Bell className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600">Notifications</span>
-            </div> */}
-            {/* {notifications > 0 && (
-              <span className="bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                {notifications}
-              </span>
-            )} */}
-          </div>
-
-          {/* Settings */}
-          {/* <div className={`${!isCollapsed ? 'hidden md:flex' : 'hidden'} items-center gap-2 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors`}>
-            <Settings className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Settings</span>
-          </div> */}
-
-          {/* Toggle Collapse Button */}
-          <div className="px-3 md:px-4 py-2">
-            <button
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="w-full px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors flex items-center justify-center"
-              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            >
-              <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`} />
-              {!isCollapsed && <span className="ml-2 text-sm">Collapse</span>}
-            </button>
-          </div>
-
-          {/* Logout */}
-          <div className="px-3 md:px-4 py-3">
+        <div className="mt-auto border-t border-gray-100 sticky bottom-0 bg-white">
+          <div className="p-4">
             <button
               onClick={onLogout}
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium text-sm transition-all duration-200 shadow-sm group"
-              title={isCollapsed ? 'Logout' : undefined}
+              className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <LogOut className="h-5 w-5 transition-transform duration-200 group-hover:-translate-x-1" />
-              {!isCollapsed && <span className="hidden md:inline">Logout</span>}
+              <LogOut className="w-5 h-5" />
+              {!isCollapsed && <span>Logout</span>}
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && <MobileMenu />}
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-lg"
+      >
+        <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
     </>
   );
 } 
