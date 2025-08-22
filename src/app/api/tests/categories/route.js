@@ -1,50 +1,38 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '../../../../lib/mongodb';
-import Test from '../../../../models/Test';
+import connectDB from '@/lib/mongodb';
+import Test from '@/models/Test';
 
-export async function GET(req) {
+export async function GET() {
   try {
-    await dbConnect();
+    await connectDB();
     
-    // Aggregate tests by category and count them
-    const categories = await Test.aggregate([
-      {
-        // Filter out tests without categories or with null/empty categories
-        $match: {
-          category: { $exists: true, $ne: null, $ne: "" }
-        }
-      },
-      {
-        $group: {
-          _id: "$category",
-          count: { $sum: 1 },
-          tests: { $push: { _id: "$_id", title: "$title", description: "$description" } }
-        }
-      },
-      {
-        $project: {
-          category: "$_id",
-          count: 1,
-          tests: 1,
-          _id: 0
-        }
-      },
-      {
-        $sort: { category: 1 }
-      }
-    ]);
-
-    // Additional filtering on the result to ensure category is valid
-    const validCategories = categories.filter(cat => 
-      cat && 
-      cat.category && 
-      typeof cat.category === 'string' && 
-      cat.category.trim().length > 0
+    // Get all unique categories
+    const categories = await Test.distinct('category', { isActive: true });
+    
+    // Get test count for each category
+    const categoriesWithCounts = await Promise.all(
+      categories.map(async (category) => {
+        const count = await Test.countDocuments({ 
+          category: category, 
+          isActive: true 
+        });
+        
+        return { 
+          name: category, 
+          testCount: count 
+        };
+      })
     );
 
-    return NextResponse.json(validCategories);
+    // Sort categories by test count (descending)
+    const sortedCategories = categoriesWithCounts.sort((a, b) => b.testCount - a.testCount);
+
+    return NextResponse.json({ categories: sortedCategories });
   } catch (error) {
     console.error('Error fetching test categories:', error);
-    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
