@@ -25,6 +25,11 @@ export default function Home() {
       setIsTyping(true);
       setDisplayText('');
 
+      // Add initial delay for first tagline
+      if (currentTaglineIndex === 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
       // Type out the current tagline
       for (let i = 0; i < currentTagline.length; i++) {
         await new Promise(resolve => setTimeout(resolve, 80));
@@ -97,7 +102,7 @@ export default function Home() {
             </h1>
 
             {/* Typo Animation Section */}
-            <div className="typo-animation-container mb-8">
+            <div className="typo-animation-container mb-8 animate-slide-up">
               <div className={`typo-text-wrapper ${isVisible ? 'typo-fade-in' : 'typo-fade-out'}`}>
                 <span className="typo-text text-2xl font-semibold text-gray-medium">
                   {displayText}
