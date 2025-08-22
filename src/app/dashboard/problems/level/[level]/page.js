@@ -27,6 +27,7 @@ export default function LevelProblemsPage() {
    
   // Store code for each problem
   const [problemLanguages, setProblemLanguages] = useState({});
+  const [problemCodes, setProblemCodes] = useState({}); // Add back problemCodes state
   const [runResults, setRunResults] = useState({});
   const [markedProblems, setMarkedProblems] = useState(new Set()); // Add marked problems state
   const [problemStatuses, setProblemStatuses] = useState({}); // Track pass/fail status for each problem
@@ -72,6 +73,13 @@ export default function LevelProblemsPage() {
     }
   }, [currentProblemIndex, problemLanguages]);
 
+  // Update current code when switching problems
+  useEffect(() => {
+    if (currentProblem && problemCodes[currentProblem._id] !== undefined) {
+      setCurrentCode(problemCodes[currentProblem._id] || '');
+    }
+  }, [currentProblemIndex, currentProblem, problemCodes]);
+
   // Remove auto-save functionality
 
   const fetchLevelProblems = async () => {
@@ -87,12 +95,15 @@ export default function LevelProblemsPage() {
          
         // Initialize code and language for each problem
         const langs = {};
+        const codes = {};
         data.problems.forEach(problem => {
           // Default to JavaScript console.log if no starter code
           const defaultStarterCode = problem.starterCode || 'console.log("Hello, World!");';
           langs[problem._id] = 'javascript'; // Always default to JavaScript
+          codes[problem._id] = defaultStarterCode; // Initialize with starter code
         });
         setProblemLanguages(langs);
+        setProblemCodes(codes);
          
       } else {
         console.error('Error fetching level problems:', data.error);
@@ -155,6 +166,13 @@ export default function LevelProblemsPage() {
       if (response.ok) {
         // Track pass/fail status instead of saving code
         const allPassed = data.results && data.results.every(r => r.passed);
+        
+        // Save the current code to this problem's code
+        setProblemCodes(prev => ({
+          ...prev,
+          [currentProblem._id]: currentCode
+        }));
+        
         setProblemStatuses(prev => ({
           ...prev,
           [currentProblem._id]: allPassed ? 'passed' : 'failed'
@@ -223,8 +241,8 @@ export default function LevelProblemsPage() {
     try {
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
-        code: currentCode, // Just submit current code
-        submissionLanguage: currentLanguage,
+        code: problemCodes[problem._id] || currentCode || '', // Use problem-specific code or fallback to current code
+        submissionLanguage: problemLanguages[problem._id] || 'javascript',
         status: problemStatuses[problem._id] || 'not_attempted'
       }));
 
@@ -286,6 +304,12 @@ export default function LevelProblemsPage() {
     if (!currentProblem) return;
     const codeValue = value || '';
     setCurrentCode(codeValue);
+    
+    // Also save to problem-specific codes
+    setProblemCodes(prev => ({
+      ...prev,
+      [currentProblem._id]: codeValue
+    }));
   };
 
   const updateCurrentLanguage = (newLanguage) => {
@@ -363,6 +387,10 @@ export default function LevelProblemsPage() {
     
     if (confirm('Are you sure you want to clear all code for this problem?')) {
       setCurrentCode('');
+      setProblemCodes(prev => ({
+        ...prev,
+        [currentProblem._id]: ''
+      }));
       setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
     }
   };

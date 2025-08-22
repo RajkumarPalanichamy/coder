@@ -201,12 +201,9 @@ const levelSubmissionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  // Remove pass/fail summary counting - just track individual status
-  // passFailSummary: {
-  //   passed: { type: Number, default: 0 },
-  //   failed: { type: Number, default: 0 },
-  //   notAttempted: { type: Number, default: 0 }
-  // },
+  // Remove all scoring fields completely
+  // totalScore: { type: Number, default: 0 },
+  // totalPoints: { type: Number, default: 0 },
   // Submission metadata
   isCompleted: {
     type: Boolean,
@@ -275,12 +272,23 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
           completedProblems++;
         }
 
+        // Count by pass/fail status for better tracking
+        if (ps.submission.passFailStatus === 'passed') {
+          summary.accepted++;
+        } else if (ps.submission.passFailStatus === 'failed') {
+          summary.wrongAnswer++;
+        } else if (ps.submission.passFailStatus === 'not_attempted') {
+          summary.pending++;
+        }
+
         // Keep existing status summary for backward compatibility
         switch (ps.submission.status) {
           case 'accepted':
+          case 'passed':
             summary.accepted++;
             break;
           case 'wrong_answer':
+          case 'failed':
             summary.wrongAnswer++;
             break;
           case 'time_limit_exceeded':
@@ -299,8 +307,6 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
     });
 
     this.submissionSummary = summary;
-    // Remove passFailSummary counting
-    // this.passFailSummary = passFailSummary;
     this.completedProblems = completedProblems;
     this.version = (this.version || 0) + 1;
     

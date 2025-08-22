@@ -49,47 +49,56 @@ export async function POST(request, { params }) {
     }
 
     // Validate required fields
+    console.log('🔍 Debug: Validation check:', {
+      hasLanguage: !!language,
+      hasCategory: !!category,
+      hasProblemSubmissions: !!problemSubmissions,
+      isArray: Array.isArray(problemSubmissions),
+      problemSubmissionsLength: problemSubmissions?.length,
+      problemSubmissionsType: typeof problemSubmissions,
+      problemSubmissions: problemSubmissions
+    });
+    
     if (!language || !category || !problemSubmissions || !Array.isArray(problemSubmissions)) {
-      console.log('Validation failed:', { language, category, problemSubmissions: !!problemSubmissions, isArray: Array.isArray(problemSubmissions) });
+      console.log('❌ Validation failed:', { 
+        language, 
+        category, 
+        problemSubmissions: !!problemSubmissions, 
+        isArray: Array.isArray(problemSubmissions),
+        problemSubmissionsType: typeof problemSubmissions,
+        problemSubmissionsLength: problemSubmissions?.length
+      });
       return NextResponse.json(
         { error: 'Language, category, and problemSubmissions are required' },
         { status: 400 }
       );
     }
 
-    // Check if user already has a level submission for this combination
-    const existingLevelSubmission = await LevelSubmission.findOne({
-      user: userId,
-      level,
-      category,
-      programmingLanguage: language,
-      status: { $in: ['in_progress', 'completed', 'submitted'] }
-    });
-
-    console.log('Existing submission check:', { userId, level, category, language, existing: !!existingLevelSubmission });
-
-    if (existingLevelSubmission) {
-      console.log('Found existing submission:', existingLevelSubmission._id);
-      return NextResponse.json(
-        { error: '⚠️ You already have a submission for this level!\n\nPlease check your submissions page to view your results.' },
-        { status: 400 }
-      );
-    }
-
-    console.log('No existing submission found, proceeding with new submission');
-
     // Get all problems for this level to validate submissions
-    const problems = await Problem.find({
+    const problemsQuery = {
       programmingLanguage: language,
       category: category,
       difficulty: level,
       isActive: true
-    }).select('_id title problemTimeAllowed points');
+    };
+    
+    console.log('🔍 Debug: Problems query:', problemsQuery);
+    
+    const problems = await Problem.find(problemsQuery).select('_id title problemTimeAllowed points');
 
-    console.log('Problems query result:', { count: problems.length, query: { programmingLanguage: language, category, difficulty: level, isActive: true } });
+    console.log('🔍 Debug: Problems query result:', { 
+      count: problems.length, 
+      query: problemsQuery,
+      problems: problems.map(p => ({ id: p._id, title: p.title }))
+    });
 
     if (problems.length === 0) {
-      console.log('No problems found for level');
+      console.log('❌ No problems found for level, returning 404 error:', {
+        query: problemsQuery,
+        language,
+        category,
+        level
+      });
       return NextResponse.json(
         { error: 'No problems found for this level' },
         { status: 404 }
@@ -100,38 +109,115 @@ export async function POST(request, { params }) {
     const totalTimeMinutes = problems.reduce((sum, problem) => sum + (problem.problemTimeAllowed || 0), 0);
     const timeAllowedSeconds = totalTimeMinutes * 60;
 
-    // Remove totalPoints calculation since we're not using scoring
-    // const totalPoints = problems.reduce((sum, problem) => sum + (problem.points || 0), 0);
-
-    // Create level submission record
-    const levelSubmission = new LevelSubmission({
+    // Check if user already has a level submission for this combination
+    console.log('🔍 Debug: Checking for existing submission:', {
+      userId,
+      level,
+      category,
+      language,
+      query: {
+        user: userId,
+        level,
+        category,
+        programmingLanguage: language,
+        status: { $in: ['in_progress', 'completed', 'submitted'] }
+      }
+    });
+    
+    const existingLevelSubmission = await LevelSubmission.findOne({
       user: userId,
       level,
       category,
       programmingLanguage: language,
-      status: 'in_progress',
-      startTime: new Date(),
-      timeAllowed: timeAllowedSeconds,
-      totalProblems: problems.length,
-      // Remove totalPoints
-      // totalPoints,
-      problemSubmissions: []
+      status: { $in: ['in_progress', 'completed', 'submitted'] }
     });
 
-    await levelSubmission.save();
+    console.log('🔍 Debug: Existing submission check result:', { 
+      userId, 
+      level, 
+      category, 
+      language, 
+      existing: !!existingLevelSubmission,
+      existingId: existingLevelSubmission?._id,
+      existingStatus: existingLevelSubmission?.status,
+      existingProblemSubmissionsCount: existingLevelSubmission?.problemSubmissions?.length || 0
+    });
+
+    let levelSubmission;
+
+    // If there's an existing submission, check if it's incomplete (no problemSubmissions)
+    if (existingLevelSubmission) {
+      if (existingLevelSubmission.problemSubmissions && existingLevelSubmission.problemSubmissions.length > 0) {
+        // This submission already has problems, don't allow resubmission
+        console.log('❌ Found existing submission with problems, returning 400 error:', {
+          existingId: existingLevelSubmission._id,
+          existingStatus: existingLevelSubmission.status,
+          existingCreatedAt: existingLevelSubmission.createdAt,
+          problemSubmissionsCount: existingLevelSubmission.problemSubmissions.length
+        });
+        return NextResponse.json(
+          { error: '⚠️ You already have a submission for this level!\n\nPlease check your submissions page to view your results.' },
+          { status: 400 }
+        );
+      } else {
+        // This submission exists but has no problems, we can complete it
+        console.log('✅ Found existing incomplete submission, will complete it:', {
+          existingId: existingLevelSubmission._id,
+          existingStatus: existingLevelSubmission.status
+        });
+        
+        // Use the existing submission instead of creating a new one
+        levelSubmission = existingLevelSubmission;
+      }
+    } else {
+      console.log('No existing submission found, will create new one');
+      
+      // Create new level submission record
+      levelSubmission = new LevelSubmission({
+        user: userId,
+        level,
+        category,
+        programmingLanguage: language,
+        status: 'in_progress',
+        startTime: new Date(),
+        timeAllowed: timeAllowedSeconds,
+        totalProblems: problems.length,
+        problemSubmissions: [] // Start with empty array
+      });
+    }
 
     // Process each problem submission
     const submissionResults = [];
     
+    console.log('🔍 Debug: Starting to process problem submissions:', {
+      totalProblems: problems.length,
+      problemSubmissionsReceived: problemSubmissions.length,
+      problems: problems.map(p => ({ id: p._id, title: p.title })),
+      receivedProblemSubmissions: problemSubmissions, // Log the actual data received
+      levelSubmissionId: levelSubmission._id,
+      levelSubmissionStatus: levelSubmission.status
+    });
+    
     for (let i = 0; i < problemSubmissions.length; i++) {
       const problemSubmission = problemSubmissions[i];
       const { problemId, code, submissionLanguage } = problemSubmission;
+      
+      console.log(`🔍 Debug: Processing problem ${i + 1}:`, {
+        problemId,
+        hasCode: !!code,
+        codeLength: code?.length || 0,
+        submissionLanguage,
+        status: problemSubmission.status
+      });
 
       // Validate problem exists in this level
       const problem = problems.find(p => p._id.toString() === problemId);
       if (!problem) {
+        console.log(`❌ Problem ${problemId} not found in level, skipping`);
         continue; // Skip invalid problems
       }
+      
+      console.log(`✅ Problem ${problemId} found, creating submission`);
 
       try {
         // Create individual submission
@@ -148,19 +234,37 @@ export async function POST(request, { params }) {
             programmingLanguage: language,
             submissionOrder: i + 1
           },
-          status: 'pending', // Will be updated by execution engine
-          // Add pass/fail status from frontend
+          // Use the passFailStatus from frontend instead of always 'pending'
+          status: problemSubmission.status || 'not_attempted',
+          // Also set passFailStatus for consistency
           passFailStatus: problemSubmission.status || 'not_attempted'
         });
 
+        console.log(`🔍 Debug: Created submission object:`, {
+          submissionId: submission._id,
+          problemId: submission.problem,
+          hasCode: !!submission.code,
+          passFailStatus: submission.passFailStatus
+        });
+
         await submission.save();
+        console.log(`✅ Submission saved successfully with ID: ${submission._id}`);
 
         // Add to level submission
-        levelSubmission.problemSubmissions.push({
+        const problemSubmissionEntry = {
           problem: problemId,
           submission: submission._id,
           order: i + 1
-        });
+        };
+        
+        console.log(`🔍 Debug: Adding to problemSubmissions:`, problemSubmissionEntry);
+        console.log(`🔍 Debug: Before push - problemSubmissions length:`, levelSubmission.problemSubmissions.length);
+        console.log(`🔍 Debug: Before push - problemSubmissions content:`, JSON.stringify(levelSubmission.problemSubmissions));
+        
+        levelSubmission.problemSubmissions.push(problemSubmissionEntry);
+        
+        console.log(`🔍 Debug: After push - problemSubmissions length:`, levelSubmission.problemSubmissions.length);
+        console.log(`🔍 Debug: After push - problemSubmissions content:`, JSON.stringify(levelSubmission.problemSubmissions));
 
         submissionResults.push({
           problemId,
@@ -184,12 +288,28 @@ export async function POST(request, { params }) {
     }
 
     // Update level submission with problem submissions
+    console.log('🔍 Debug: About to save level submission with problemSubmissions:', {
+      levelSubmissionId: levelSubmission._id,
+      problemSubmissionsCount: levelSubmission.problemSubmissions.length,
+      problemSubmissions: levelSubmission.problemSubmissions,
+      isNewSubmission: !existingLevelSubmission
+    });
+    
+    // Save the levelSubmission with all problemSubmissions included
     await levelSubmission.save();
     
     console.log('🔍 Debug: Level submission saved with problemSubmissions:', {
       levelSubmissionId: levelSubmission._id,
       problemSubmissionsCount: levelSubmission.problemSubmissions.length,
       problemSubmissions: levelSubmission.problemSubmissions
+    });
+    
+    // Verify the data was actually saved by fetching it again
+    const verificationSubmission = await LevelSubmission.findById(levelSubmission._id);
+    console.log('🔍 Debug: Verification after save:', {
+      levelSubmissionId: verificationSubmission._id,
+      problemSubmissionsCount: verificationSubmission.problemSubmissions.length,
+      problemSubmissions: verificationSubmission.problemSubmissions
     });
 
     // Remove waiting and scoring logic
@@ -239,8 +359,13 @@ export async function POST(request, { params }) {
 
   } catch (error) {
     console.error('Error creating level submission:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
