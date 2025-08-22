@@ -1,9 +1,54 @@
+'use client';
+
 import Link from 'next/link';
 import { Code, Users, Trophy, BookOpen, Zap, Brain, TrendingUp, Award } from 'lucide-react';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import './landing.css';
 
 export default function Home() {
+  const [currentTaglineIndex, setCurrentTaglineIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const taglines = [
+    "Your Placement Success is Our Goal",
+    "At Zenith Mentor Elevate, Empower, Excel",
+    "At Zenith Mentor Success Starts Here",
+    "At Zenith Mentor Guiding You to Excellence"
+  ];
+
+  useEffect(() => {
+    const typeTagline = async () => {
+      const currentTagline = taglines[currentTaglineIndex];
+      setIsTyping(true);
+      setDisplayText('');
+
+      // Type out the current tagline
+      for (let i = 0; i < currentTagline.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 80));
+        setDisplayText(currentTagline.slice(0, i + 1));
+      }
+
+      // Wait before moving to next tagline
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      setIsTyping(false);
+      
+      // Fade out effect
+      setIsVisible(false);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Move to next tagline
+      setCurrentTaglineIndex((prev) => (prev + 1) % taglines.length);
+      
+      // Fade in effect
+      setIsVisible(true);
+    };
+
+    typeTagline();
+  }, [currentTaglineIndex]);
+
   return (
     <div className="landing-page bg-gradient-subtle min-h-screen">
       {/* Navigation */}
@@ -50,6 +95,16 @@ export default function Home() {
                 Expert Mentorship
               </span>
             </h1>
+
+            {/* Typo Animation Section */}
+            <div className="typo-animation-container mb-8">
+              <div className={`typo-text-wrapper ${isVisible ? 'typo-fade-in' : 'typo-fade-out'}`}>
+                <span className="typo-text text-2xl font-semibold text-gray-medium">
+                  {displayText}
+                  <span className={`typo-cursor ${isTyping ? 'typo-cursor-blink' : ''}`}>|</span>
+                </span>
+              </div>
+            </div>
 
             <p className="text-lg text-gray-medium max-w-3xl mx-auto mb-8 animate-slide-up">
               Advance your programming skills through personalized mentorship, 
