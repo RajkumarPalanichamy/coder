@@ -45,15 +45,11 @@ export default function LevelSubmissionDetailsPage() {
       }
 
       const data = await response.json();
-      console.log('🔍 Debug: Received submission data:', data);
       setSubmission(data.levelSubmission);
       
       // Select first problem by default
       if (data.levelSubmission?.problemSubmissions?.length > 0) {
-        console.log('🔍 Debug: Setting first problem:', data.levelSubmission.problemSubmissions[0]);
         setSelectedProblem(data.levelSubmission.problemSubmissions[0]);
-      } else {
-        console.log('🔍 Debug: No problem submissions found in data');
       }
     } catch (err) {
       console.error('Error fetching submission details:', err);

@@ -86,10 +86,6 @@ export async function POST(request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    console.log('Creating problem with user:', user);
-    console.log('User ID type:', typeof user.userId);
-    console.log('User ID value:', user.userId);
 
     // Normalize language name for consistency
     const normalizeLanguage = (lang) => {
@@ -131,8 +127,6 @@ export async function POST(request) {
       problemTimeAllowed: body.timeLimit ? Math.ceil(body.timeLimit / 60) : undefined, // Convert seconds back to minutes for problemTimeAllowed
       createdBy: user.userId
     };
-    
-    console.log('Problem data being created:', problemData);
     
     const problem = await Problem.create(problemData);
 

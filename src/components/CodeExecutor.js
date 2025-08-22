@@ -82,7 +82,6 @@ export default function CodeExecutor({
 
       if (isJudge0Available) {
         // Use real Judge0 execution
-        console.log('Using Judge0 for code execution');
         const response = await fetch('/api/execute', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -102,7 +101,6 @@ export default function CodeExecutor({
         results = await response.json();
       } else {
         // Use mock execution
-        console.log('Using mock execution (Judge0 not available)');
         results = await mockExecution(code, language, testCases);
       }
 
@@ -110,7 +108,6 @@ export default function CodeExecutor({
       onExecutionComplete?.(results);
 
     } catch (err) {
-      console.error('Code execution error:', err);
       setError(err.message || 'An error occurred during code execution');
     } finally {
       setIsExecuting(false);

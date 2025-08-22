@@ -304,8 +304,6 @@ export default function LevelProblemsPage() {
     if (!currentProblem) return;
     const languageToSet = newLanguage || 'javascript'; // Default to JavaScript
      
-    console.log('Updating language for problem:', currentProblem._id, 'from', currentLanguage, 'to', languageToSet);
-     
     setProblemLanguages(prev => ({
       ...prev,
       [currentProblem._id]: languageToSet

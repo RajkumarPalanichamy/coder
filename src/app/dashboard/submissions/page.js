@@ -37,14 +37,11 @@ function SubmissionsContent() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('Fetched submissions:', data.submissions);
         setSubmissions(data.submissions || []);
       } else {
-        console.error('Failed to fetch submissions:', data);
         setError(data.error || 'Failed to fetch submissions');
       }
     } catch (err) {
-      console.error('Error fetching submissions:', err);
       setError('Network error. Please try again.');
     }
   };
@@ -57,14 +54,12 @@ function SubmissionsContent() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('🔍 Debug: Fetched level submissions:', data.levelSubmissions);
-        console.log('🔍 Debug: First level submission details:', data.levelSubmissions[0]);
         setLevelSubmissions(data.levelSubmissions || []);
       } else {
-        console.error('Error fetching level submissions:', data);
+        // Handle error silently
       }
     } catch (err) {
-      console.error('Error fetching level submissions:', err);
+      // Handle error silently
     } finally {
       setLoading(false);
     }

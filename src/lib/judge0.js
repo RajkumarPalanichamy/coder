@@ -213,8 +213,6 @@ export class Judge0Service {
       const expectedOutput = (testCase.output || '').toString();
 
       try {
-        console.log(`Executing test case ${i + 1}/${testCases.length}...`);
-        
         const token = await this.submitCode(code, langConfig.id, input);
         const result = await this.pollForResult(token);
         const processedResult = this.processResult(result, input, expectedOutput, i + 1);
@@ -225,8 +223,7 @@ export class Judge0Service {
         if (i < testCases.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
-      } catch (error) {
-        console.error(`Error executing test case ${i + 1}:`, error);
+              } catch (error) {
         results.push({
           testCaseNumber: i + 1,
           input,
@@ -324,10 +321,8 @@ export class Judge0Service {
           if (response.status === 429) {
             // Rate limited, increase wait time
             currentInterval *= 2;
-            console.warn(`Rate limited, increasing poll interval to ${currentInterval}ms`);
           } else {
             const errorText = await response.text();
-            console.error(`Poll attempt ${attempts + 1}: HTTP ${response.status}`, errorText);
           }
         } else {
           const result = await response.json();
@@ -345,7 +340,6 @@ export class Judge0Service {
         currentInterval = Math.min(currentInterval * this.backoffFactor, 5000);
         
       } catch (error) {
-        console.error(`Error polling result (attempt ${attempts + 1}):`, error);
         attempts++;
         await new Promise(resolve => setTimeout(resolve, currentInterval));
       }
@@ -453,7 +447,6 @@ export class Judge0Service {
       if (!str) return '';
       return Buffer.from(str.toString(), 'utf-8').toString('base64');
     } catch (error) {
-      console.warn('Failed to encode string to base64:', error);
       return str; // Return original string if encoding fails
     }
   }
@@ -466,7 +459,6 @@ export class Judge0Service {
       if (!str) return '';
       return Buffer.from(str, 'base64').toString('utf-8');
     } catch (error) {
-      console.warn('Failed to decode base64 string:', error);
       return str; // Return original string if decoding fails
     }
   }

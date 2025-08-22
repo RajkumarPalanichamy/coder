@@ -102,8 +102,6 @@ export default function ProblemPage() {
     }
     try {
       // Real Judge0 execution
-      console.log('Running Judge0 execution for sample test cases');
-      
       const response = await fetch('/api/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,9 +116,6 @@ export default function ProblemPage() {
       const data = await response.json();
       if (!response.ok) {
         setRunError(data.error || 'Code execution failed.');
-        if (data.details) {
-          console.error('Execution error details:', data.details);
-        }
         return;
       }
       
@@ -145,7 +140,6 @@ export default function ProblemPage() {
       // If all passed, allow submit
       setCanSubmit(results.every(r => r.passed));
     } catch (err) {
-      console.error('Error running code:', err);
       setRunError('Error running code. Please check your network connection and try again.');
     } finally {
       setRunningCode(false);
@@ -206,7 +200,6 @@ export default function ProblemPage() {
         }
       }
     } catch (error) {
-      console.error('Submission error:', error);
       setResult({
         status: 'error',
         message: 'Network error occurred. Please try again.'
@@ -218,7 +211,6 @@ export default function ProblemPage() {
 
   const handleSaveCode = () => {
     // This could be enhanced to actually save to backend
-    console.log('Code saved:', code);
   };
 
   const getDifficultyColor = (difficulty) => {

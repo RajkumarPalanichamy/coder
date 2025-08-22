@@ -154,12 +154,10 @@ export default function MonacoEditor({
     // Add custom key bindings
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
       // Save functionality (can be customized)
-      console.log('Save triggered');
     });
     
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, () => {
       // Run code functionality (can be customized)
-      console.log('Run triggered');
     });
 
     // Configure language-specific features

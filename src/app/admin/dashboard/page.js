@@ -63,7 +63,6 @@ export default function AdminDashboard() {
     // Add a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (loading) {
-        console.log('Loading timeout reached, setting loading to false');
         setLoading(false);
       }
     }, 5000); // Reduced to 5 seconds
@@ -79,7 +78,6 @@ export default function AdminDashboard() {
 
   const fetchUser = async () => {
     try {
-      console.log('Fetching user data...');
       setLoading(true);
       setAuthError(null);
       
@@ -88,32 +86,26 @@ export default function AdminDashboard() {
         // Add timeout to prevent hanging requests
         signal: AbortSignal.timeout(10000) // 10 second timeout
       });
-      console.log('User API response status:', res.status);
       
       if (res.ok) {
         const data = await res.json();
-        console.log('User data received:', data.user);
         setUser(data.user);
         
         if (data.user.role !== 'admin') {
-          console.error('User is not an admin, redirecting to dashboard');
           router.push('/dashboard');
           return;
         }
         
         // User is admin, continue with dashboard data
-        console.log('User is admin, fetching dashboard data...');
         await Promise.all([
           fetchDashboardData(),
           fetchTests()
         ]);
       } else if (res.status === 401) {
-        console.log('Authentication required - middleware will handle redirect');
         setAuthError('Authentication required. Please log in.');
         setLoading(false);
         return;
       } else {
-        console.error('Unexpected response status:', res.status);
         setAuthError(`Unexpected error: ${res.status}`);
         setLoading(false);
       }
