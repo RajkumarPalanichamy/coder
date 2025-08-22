@@ -195,7 +195,7 @@ function SubmissionsContent() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Submissions</h1>
+        <h1 className="text-2xl font-bold" style={{ color: '#000000' }}>My Submissions</h1>
         
         <div className="flex space-x-2">
           <button

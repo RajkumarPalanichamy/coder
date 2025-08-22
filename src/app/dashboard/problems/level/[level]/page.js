@@ -29,6 +29,7 @@ export default function LevelProblemsPage() {
   const [problemCodes, setProblemCodes] = useState({});
   const [problemLanguages, setProblemLanguages] = useState({});
   const [runResults, setRunResults] = useState({});
+  const [markedProblems, setMarkedProblems] = useState(new Set()); // Add marked problems state
    
   // Timer state for entire level
   const [timeLeft, setTimeLeft] = useState(null);
@@ -287,6 +288,31 @@ export default function LevelProblemsPage() {
     return Object.values(problemCodes).filter(code => code && code.trim() !== '').length;
   };
 
+  const handleMarkProblem = () => {
+    if (!currentProblem) return;
+    
+    const newMarked = new Set(markedProblems);
+    if (newMarked.has(currentProblem._id)) {
+      newMarked.delete(currentProblem._id);
+    } else {
+      newMarked.add(currentProblem._id);
+    }
+    setMarkedProblems(newMarked);
+  };
+
+  const handleClearProblem = () => {
+    if (!currentProblem) return;
+    
+    if (confirm('Are you sure you want to clear all code for this problem?')) {
+      updateCurrentCode('');
+      setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
+    }
+  };
+
+  const isProblemMarked = (problemId) => {
+    return markedProblems.has(problemId);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -426,6 +452,8 @@ export default function LevelProblemsPage() {
             totalProblems={problems.length}
             answeredCount={getAnsweredCount()}
             currentProblemIndex={currentProblemIndex}
+            problemCodes={problemCodes}
+            markedProblems={markedProblems}
           />
         </div>
       </div>
@@ -649,11 +677,21 @@ export default function LevelProblemsPage() {
           >
             Previous
           </button>
-          <button className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors">
+          <button
+            onClick={handleClearProblem}
+            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+          >
             Clear
           </button>
-          <button className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors">
-            Mark
+          <button
+            onClick={handleMarkProblem}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isProblemMarked(currentProblem._id)
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+          >
+            {isProblemMarked(currentProblem._id) ? 'Unmark' : 'Mark'}
           </button>
           <button
             onClick={goToNext}
