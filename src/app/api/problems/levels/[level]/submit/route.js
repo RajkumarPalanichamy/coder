@@ -57,26 +57,26 @@ export async function POST(request, { params }) {
       );
     }
 
-    // TEMPORARILY DISABLED: Check if user already has a level submission for this combination
-    // const existingLevelSubmission = await LevelSubmission.findOne({
-    //   user: userId,
-    //   level,
-    //   category,
-    //   programmingLanguage: language,
-    //   status: { $in: ['in_progress', 'completed'] }
-    // });
+    // Check if user already has a level submission for this combination
+    const existingLevelSubmission = await LevelSubmission.findOne({
+      user: userId,
+      level,
+      category,
+      programmingLanguage: language,
+      status: { $in: ['in_progress', 'completed', 'submitted'] }
+    });
 
-    // console.log('Existing submission check:', { userId, level, category, language, existing: !!existingLevelSubmission });
+    console.log('Existing submission check:', { userId, level, category, language, existing: !!existingLevelSubmission });
 
-    // if (existingLevelSubmission) {
-    //   console.log('Found existing submission:', existingLevelSubmission._id);
-    //   return NextResponse.json(
-    //     { error: 'You already have an active submission for this level' },
-    //     { status: 400 }
-    //   );
-    // }
+    if (existingLevelSubmission) {
+      console.log('Found existing submission:', existingLevelSubmission._id);
+      return NextResponse.json(
+        { error: '⚠️ You already have a submission for this level!\n\nPlease check your submissions page to view your results.' },
+        { status: 400 }
+      );
+    }
 
-    console.log('TEMP: Skipped existing submission check for testing');
+    console.log('No existing submission found, proceeding with new submission');
 
     // Get all problems for this level to validate submissions
     const problems = await Problem.find({
@@ -100,7 +100,8 @@ export async function POST(request, { params }) {
     const totalTimeMinutes = problems.reduce((sum, problem) => sum + (problem.problemTimeAllowed || 0), 0);
     const timeAllowedSeconds = totalTimeMinutes * 60;
 
-    const totalPoints = problems.reduce((sum, problem) => sum + (problem.points || 0), 0);
+    // Remove totalPoints calculation since we're not using scoring
+    // const totalPoints = problems.reduce((sum, problem) => sum + (problem.points || 0), 0);
 
     // Create level submission record
     const levelSubmission = new LevelSubmission({
@@ -112,7 +113,8 @@ export async function POST(request, { params }) {
       startTime: new Date(),
       timeAllowed: timeAllowedSeconds,
       totalProblems: problems.length,
-      totalPoints,
+      // Remove totalPoints
+      // totalPoints,
       problemSubmissions: []
     });
 
@@ -146,7 +148,9 @@ export async function POST(request, { params }) {
             programmingLanguage: language,
             submissionOrder: i + 1
           },
-          status: 'pending' // Will be updated by execution engine
+          status: 'pending', // Will be updated by execution engine
+          // Add pass/fail status from frontend
+          passFailStatus: problemSubmission.status || 'not_attempted'
         });
 
         await submission.save();
@@ -165,8 +169,8 @@ export async function POST(request, { params }) {
           order: i + 1
         });
 
-        // TODO: Here you would typically queue the submission for execution
-        // For now, we'll just mark it as pending
+        // Remove automatic code execution - just track submission status
+        console.log(`Problem ${problemId} submitted successfully`);
 
       } catch (error) {
         console.error(`Error creating submission for problem ${problemId}:`, error);
@@ -181,12 +185,39 @@ export async function POST(request, { params }) {
 
     // Update level submission with problem submissions
     await levelSubmission.save();
+    
+    console.log('🔍 Debug: Level submission saved with problemSubmissions:', {
+      levelSubmissionId: levelSubmission._id,
+      problemSubmissionsCount: levelSubmission.problemSubmissions.length,
+      problemSubmissions: levelSubmission.problemSubmissions
+    });
+
+    // Remove waiting and scoring logic
+    // await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Update status if all submissions are created
     if (submissionResults.every(result => result.status === 'submitted')) {
       levelSubmission.status = 'submitted';
+      
+      // Re-enable submission summary update for pass/fail calculation
+      await levelSubmission.updateSubmissionSummary();
+      
       await levelSubmission.save();
+      
+      console.log('🔍 Debug: Final level submission saved:', {
+        levelSubmissionId: levelSubmission._id,
+        finalProblemSubmissionsCount: levelSubmission.problemSubmissions.length,
+        finalProblemSubmissions: levelSubmission.problemSubmissions
+      });
     }
+
+    // Remove final scoring data fetch
+    // const finalLevelSubmission = await LevelSubmission.findById(levelSubmission._id)
+    //   .populate('problemSubmissions.submission')
+    //   .populate('problemSubmissions.problem');
+
+    // const finalTotalScore = finalLevelSubmission?.totalScore || 0;
+    // const finalCompletedProblems = finalLevelSubmission?.completedProblems || 0;
 
     return NextResponse.json({
       success: true,
@@ -197,7 +228,11 @@ export async function POST(request, { params }) {
       totalProblems: problems.length,
       submittedProblems: submissionResults.filter(r => r.status === 'submitted').length,
       timeAllowed: timeAllowedSeconds,
-      totalPoints,
+      // Remove totalPoints reference
+      // totalPoints: levelSubmission.totalPoints,
+      // Remove scoring fields
+      // totalScore: finalTotalScore,
+      // completedProblems: finalCompletedProblems,
       submissions: submissionResults,
       message: `Successfully submitted ${submissionResults.filter(r => r.status === 'submitted').length} out of ${problemSubmissions.length} problems for ${level}`
     });
@@ -253,7 +288,7 @@ export async function GET(request, { params }) {
     })
     .populate({
       path: 'problemSubmissions.submission',
-      select: 'status score executionTime testCasesPassed totalTestCases errorMessage submittedAt'
+      select: 'status passFailStatus executionTime testCasesPassed totalTestCases errorMessage submittedAt language code'
     })
     .sort({ createdAt: -1 })
     .limit(1);
@@ -285,8 +320,8 @@ export async function GET(request, { params }) {
         timeUsed: levelSubmission.timeUsed,
         totalProblems: levelSubmission.totalProblems,
         completedProblems: levelSubmission.completedProblems,
-        totalScore: levelSubmission.totalScore,
-        totalPoints: levelSubmission.totalPoints,
+        // Remove pass/fail summary counting
+        // passFailSummary: levelSubmission.passFailSummary,
         isCompleted: levelSubmission.isCompleted,
         submissionSummary: levelSubmission.submissionSummary,
         problemSubmissions: levelSubmission.problemSubmissions,

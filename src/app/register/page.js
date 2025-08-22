@@ -119,7 +119,7 @@ export default function Register() {
                   value={formData.firstName}
                   onChange={handleChange}
                   className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="First name"
+                  placeholder="First Name"
                 />
               </div>
               <div>
@@ -135,7 +135,7 @@ export default function Register() {
                   value={formData.lastName}
                   onChange={handleChange}
                   className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Last name"
+                  placeholder="Last Name"
                 />
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function Register() {
                 value={formData.username}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Choose a username"
+                placeholder="Username"
               />
             </div>
 
@@ -170,7 +170,7 @@ export default function Register() {
                 value={formData.email}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your email"
+                placeholder="Email"
               />
             </div>
             
@@ -188,7 +188,7 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pr-10"
-                  placeholder="Create a password"
+                  placeholder="Password"
                 />
                 <button
                   type="button"
@@ -218,7 +218,7 @@ export default function Register() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pr-10"
-                  placeholder="Confirm your password"
+                  placeholder="Confirm Password"
                 />
                 <button
                   type="button"

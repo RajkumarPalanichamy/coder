@@ -99,7 +99,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
       <div>
         <label className="block font-medium mb-1">Level</label>
         <input
-          className="w-full border px-3 py-2 rounded text-black"
+          className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
@@ -108,7 +108,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
       <div>
         <label className="block font-medium mb-1">Description</label>
         <textarea
-          className="w-full border px-3 py-2 rounded text-black"
+          className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
           value={description}
           onChange={e => setDescription(e.target.value)}
         />
@@ -117,7 +117,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
         <label className="block font-medium mb-1">Collection</label>
         <div className="space-y-2">
           <input
-            className="w-full border px-3 py-2 rounded text-black"
+            className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
             value={collection}
             onChange={e => setCollection(e.target.value)}
             placeholder="Enter collection or select from below"
@@ -144,7 +144,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
       <div>
         <label className="block font-medium mb-1">Language</label>
         <input
-          className="w-full border px-3 py-2 rounded text-black"
+          className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
           value={language}
           onChange={e => setLanguage(e.target.value)}
         />
@@ -153,7 +153,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
         <label className="block font-medium mb-1">Category</label>
         <div className="space-y-2">
           <input
-            className="w-full border px-3 py-2 rounded text-black"
+            className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
             value={category}
             onChange={e => setCategory(e.target.value)}
             placeholder="Enter category or select from below"
@@ -184,7 +184,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
             type="number"
             min="1"
             max="300"
-            className="w-full border px-3 py-2 rounded text-black"
+            className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
             value={duration}
             onChange={e => setDuration(e.target.value)}
             placeholder="Enter duration in minutes"
@@ -232,7 +232,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
           <div className="font-semibold mb-2">{editingIdx !== null ? 'Edit MCQ' : 'Add New MCQ'}</div>
           <div className="mb-2">
             <input
-              className="w-full border px-3 py-2 rounded text-black"
+              className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
               placeholder="Question"
               value={mcqDraft.question}
               onChange={e => setMcqDraft({ ...mcqDraft, question: e.target.value })}
@@ -243,7 +243,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
             {mcqDraft.options.map((opt, idx) => (
               <div key={idx} className="flex items-center mb-1">
                 <input
-                  className="flex-1 border px-3 py-2 rounded text-black mr-2"
+                  className="flex-1 border px-3 py-2 rounded text-gray-900 border-gray-300 mr-2"
                   placeholder={`Option ${idx + 1}`}
                   value={opt}
                   onChange={e => handleOptionChange(idx, e.target.value)}

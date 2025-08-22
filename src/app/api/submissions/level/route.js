@@ -47,7 +47,7 @@ export async function GET(request) {
       .skip(skip)
       .limit(limit)
       .populate('problemSubmissions.problem', 'title difficulty')
-      .populate('problemSubmissions.submission', 'status score')
+      .populate('problemSubmissions.submission', 'status passFailStatus score')
       .lean();
 
     // Get total count for pagination

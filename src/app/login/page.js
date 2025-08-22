@@ -156,7 +156,7 @@ export default function Login() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 px-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200"
+                    className="appearance-none block w-full pl-10 px-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-50 text-gray-900"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -178,7 +178,7 @@ export default function Login() {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="appearance-none block w-full pl-10 pr-10 px-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200"
+                    className="appearance-none block w-full pl-10 pr-10 px-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-50 text-gray-900"
                     placeholder="Enter your password"
                   />
                   <button

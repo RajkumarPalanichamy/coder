@@ -1,6 +1,6 @@
 'use client';
 
-import TestFlow from '../../components/TestFlow';
+import TestFlow from '../components/TestFlow';
 
 export default function DemoTestFlowPage() {
   return (

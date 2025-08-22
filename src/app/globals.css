@@ -22,3 +22,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Ensure all input fields have black text by default */
+input, textarea, select {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Override any white text that might be applied */
+input[class*="text-white"], 
+textarea[class*="text-white"], 
+select[class*="text-white"] {
+  color: #111827 !important;
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import ProblemFlow from '../../components/ProblemFlow';
+import ProblemFlow from '../components/ProblemFlow';
 
 export default function DemoProblemFlowPage() {
   return (

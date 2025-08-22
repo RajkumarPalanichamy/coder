@@ -57,7 +57,8 @@ function SubmissionsContent() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('Fetched level submissions:', data.levelSubmissions);
+        console.log('🔍 Debug: Fetched level submissions:', data.levelSubmissions);
+        console.log('🔍 Debug: First level submission details:', data.levelSubmissions[0]);
         setLevelSubmissions(data.levelSubmissions || []);
       } else {
         console.error('Error fetching level submissions:', data);
@@ -282,21 +283,15 @@ function SubmissionsContent() {
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-4 gap-4 text-sm text-gray-600">
+                <div className="grid grid-cols-3 gap-4 text-sm text-gray-600">
                   <div>
                     <span className="font-medium">Problems:</span>
                     <p>{levelSubmission.completedProblems}/{levelSubmission.totalProblems}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Score:</span>
-                    <p className={`font-bold ${
-                      levelSubmission.totalScore === 100 
-                        ? 'text-green-600' 
-                        : levelSubmission.totalScore > 50 
-                        ? 'text-yellow-600' 
-                        : 'text-red-600'
-                    }`}>
-                      {levelSubmission.totalScore || 0}%
+                    <span className="font-medium">Status:</span>
+                    <p className="font-bold text-indigo-600">
+                      {levelSubmission.status === 'submitted' ? 'Submitted' : 'In Progress'}
                     </p>
                   </div>
                   <div>
@@ -309,26 +304,12 @@ function SubmissionsContent() {
                   </div>
                 </div>
 
-                {/* Summary */}
-                {levelSubmission.submissionSummary && (
-                  <div className="mt-3 flex space-x-4 text-xs">
-                    {levelSubmission.submissionSummary.accepted > 0 && (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
-                        ✓ {levelSubmission.submissionSummary.accepted} Accepted
-                      </span>
-                    )}
-                    {levelSubmission.submissionSummary.wrongAnswer > 0 && (
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded">
-                        ✗ {levelSubmission.submissionSummary.wrongAnswer} Wrong
-                      </span>
-                    )}
-                    {levelSubmission.submissionSummary.pending > 0 && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                        ⏳ {levelSubmission.submissionSummary.pending} Pending
-                      </span>
-                    )}
-                  </div>
-                )}
+                {/* Simple Status - No Numbers */}
+                <div className="mt-3 text-xs text-gray-600">
+                  <span className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded">
+                    Click to view individual problem results
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -382,15 +363,15 @@ function SubmissionsContent() {
                     <p className="capitalize">{submission.type === 'problem' ? submission.language : 'Multiple Choice'}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Score:</span>
+                    <span className="font-medium">Status:</span>
                     <p className={`font-bold ${
-                      submission.score === 100 
+                      submission.passFailStatus === 'passed' 
                         ? 'text-green-600' 
-                        : submission.score > 50 
-                        ? 'text-yellow-600' 
-                        : 'text-red-600'
+                        : submission.passFailStatus === 'failed'
+                        ? 'text-red-600'
+                        : 'text-gray-600'
                     }`}>
-                      {submission.score}%
+                      {submission.passFailStatus ? submission.passFailStatus.charAt(0).toUpperCase() + submission.passFailStatus.slice(1) : 'Pending'}
                     </p>
                   </div>
                   <div>

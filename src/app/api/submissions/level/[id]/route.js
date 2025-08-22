@@ -36,7 +36,7 @@ export async function GET(request, { params }) {
     })
     .populate({
       path: 'problemSubmissions.submission',
-      select: 'status score executionTime testCasesPassed totalTestCases errorMessage submittedAt code language executionInfo'
+      select: 'status passFailStatus score executionTime testCasesPassed totalTestCases errorMessage submittedAt code language executionInfo'
     });
 
     if (!levelSubmission) {
@@ -66,8 +66,9 @@ export async function GET(request, { params }) {
         timeRemaining: Math.max(0, timeRemaining),
         totalProblems: levelSubmission.totalProblems,
         completedProblems: levelSubmission.completedProblems,
-        totalScore: levelSubmission.totalScore,
-        totalPoints: levelSubmission.totalPoints,
+        // Remove scoring fields
+        // totalScore: levelSubmission.totalScore,
+        // totalPoints: levelSubmission.totalPoints,
         submissionSummary: levelSubmission.submissionSummary,
         problemSubmissions: levelSubmission.problemSubmissions,
         createdAt: levelSubmission.createdAt,

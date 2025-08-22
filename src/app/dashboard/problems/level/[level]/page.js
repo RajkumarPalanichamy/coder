@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Play, Save, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target, BookOpen, Code, AlertTriangle } from 'lucide-react';
+import { Play, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target, BookOpen, Code, AlertTriangle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import ProblemStatusCard from '../../../../components/ProblemStatusCard';
 
@@ -26,10 +26,11 @@ export default function LevelProblemsPage() {
   const [runningCode, setRunningCode] = useState(false);
    
   // Store code for each problem
-  const [problemCodes, setProblemCodes] = useState({});
   const [problemLanguages, setProblemLanguages] = useState({});
   const [runResults, setRunResults] = useState({});
   const [markedProblems, setMarkedProblems] = useState(new Set()); // Add marked problems state
+  const [problemStatuses, setProblemStatuses] = useState({}); // Track pass/fail status for each problem
+  const [currentCode, setCurrentCode] = useState(''); // Simple current code state
    
   // Timer state for entire level
   const [timeLeft, setTimeLeft] = useState(null);
@@ -40,7 +41,6 @@ export default function LevelProblemsPage() {
 
   // Current problem
   const currentProblem = problems[currentProblemIndex];
-  const currentCode = currentProblem ? (problemCodes[currentProblem._id] || '') : '';
   const currentLanguage = currentProblem ? (problemLanguages[currentProblem._id] || 'javascript') : 'javascript';
    
   useEffect(() => {
@@ -72,6 +72,8 @@ export default function LevelProblemsPage() {
     }
   }, [currentProblemIndex, problemLanguages]);
 
+  // Remove auto-save functionality
+
   const fetchLevelProblems = async () => {
     try {
       const response = await fetch(`/api/problems/levels/${level}?language=${encodeURIComponent(language)}&category=${encodeURIComponent(category)}`, {
@@ -84,15 +86,12 @@ export default function LevelProblemsPage() {
         setProblems(data.problems || []);
          
         // Initialize code and language for each problem
-        const codes = {};
         const langs = {};
         data.problems.forEach(problem => {
           // Default to JavaScript console.log if no starter code
           const defaultStarterCode = problem.starterCode || 'console.log("Hello, World!");';
-          codes[problem._id] = defaultStarterCode;
           langs[problem._id] = 'javascript'; // Always default to JavaScript
         });
-        setProblemCodes(codes);
         setProblemLanguages(langs);
          
       } else {
@@ -135,7 +134,7 @@ export default function LevelProblemsPage() {
 
   const handleRunCode = async () => {
     if (!currentProblem) return;
-     
+    
     setRunningCode(true);
     setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
 
@@ -150,19 +149,31 @@ export default function LevelProblemsPage() {
           testCases: currentProblem.examples || []
         })
       });
-       
+      
       const data = await response.json();
-       
+      
       if (response.ok) {
+        // Track pass/fail status instead of saving code
+        const allPassed = data.results && data.results.every(r => r.passed);
+        setProblemStatuses(prev => ({
+          ...prev,
+          [currentProblem._id]: allPassed ? 'passed' : 'failed'
+        }));
+        
         setRunResults(prev => ({
           ...prev,
           [currentProblem._id]: {
             success: true,
             results: data.results,
-            allPassed: data.results.every(r => r.passed)
+            allPassed: allPassed
           }
         }));
       } else {
+        setProblemStatuses(prev => ({
+          ...prev,
+          [currentProblem._id]: 'failed'
+        }));
+        
         setRunResults(prev => ({
           ...prev,
           [currentProblem._id]: {
@@ -172,6 +183,11 @@ export default function LevelProblemsPage() {
         }));
       }
     } catch (error) {
+      setProblemStatuses(prev => ({
+        ...prev,
+        [currentProblem._id]: 'failed'
+      }));
+      
       setRunResults(prev => ({
         ...prev,
         [currentProblem._id]: {
@@ -190,14 +206,38 @@ export default function LevelProblemsPage() {
       return;
     }
 
+    // Check if any problems have been tested
+    const testedProblems = Object.keys(problemStatuses).length;
+    if (testedProblems === 0) {
+      alert('⚠️ No problems have been tested!\n\nPlease run code for at least one problem before submitting.');
+      return;
+    }
+
+    if (testedProblems < problems.length) {
+      const confirmSubmit = confirm(`⚠️ Only ${testedProblems} out of ${problems.length} problems have been tested.\n\nAre you sure you want to submit? Untested problems will be marked as "not attempted".`);
+      if (!confirmSubmit) return;
+    }
+
     setSubmitting(true);
 
     try {
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
-        code: problemCodes[problem._id] || '',
-        submissionLanguage: problemLanguages[problem._id] || 'javascript'
+        code: currentCode, // Just submit current code
+        submissionLanguage: currentLanguage,
+        status: problemStatuses[problem._id] || 'not_attempted'
       }));
+
+      // Debug: Log what's being submitted
+      console.log('🔍 Debug: Submitting problems with status:');
+      problemSubmissions.forEach((sub, index) => {
+        console.log(`Problem ${index + 1}:`, {
+          problemId: sub.problemId,
+          status: sub.status,
+          hasCode: !!sub.code,
+          codeLength: sub.code?.length || 0
+        });
+      });
 
       console.log('Submitting data:', { language, category, problemSubmissions });
 
@@ -212,14 +252,24 @@ export default function LevelProblemsPage() {
         })
       });
 
-      const data = await response.json();
-       
       if (response.ok) {
-        alert(data.message || 'All problems submitted successfully!');
+        const data = await response.json();
+        
+        // Show simple success message without scores
+        alert(`✅ Successfully submitted ${problems.length} problems for ${level}!\n\nRedirecting to submissions page to view your results.`);
+        
         // Redirect to submissions page
         router.push('/dashboard/submissions?type=level');
       } else {
-        alert(data.error || 'Failed to submit problems');
+        const errorData = await response.json();
+        
+        // Check if it's an "already submitted" error
+        if (errorData.error && errorData.error.includes('already have a submission')) {
+          alert('⚠️ ' + errorData.error + '\n\nRedirecting to submissions page...');
+          router.push('/dashboard/submissions?type=level');
+        } else {
+          alert(errorData.error || 'Failed to submit problems');
+        }
       }
     } catch (error) {
       console.error('Error submitting all problems:', error);
@@ -229,12 +279,13 @@ export default function LevelProblemsPage() {
     }
   };
 
-  const updateCurrentCode = (newCode) => {
+  // updateCurrentCode function is removed
+
+  // Auto-save code as user types
+  const handleCodeChange = (value) => {
     if (!currentProblem) return;
-    setProblemCodes(prev => ({
-      ...prev,
-      [currentProblem._id]: newCode
-    }));
+    const codeValue = value || '';
+    setCurrentCode(codeValue);
   };
 
   const updateCurrentLanguage = (newLanguage) => {
@@ -280,12 +331,19 @@ export default function LevelProblemsPage() {
   };
 
   const getProgress = () => {
-    const completed = Object.values(problemCodes).filter(code => code && code.trim() !== '').length;
-    return `${completed}/${problems.length}`;
+    const passed = Object.values(problemStatuses).filter(status => status === 'passed').length;
+    return `${passed}/${problems.length}`;
   };
 
-  const getAnsweredCount = () => {
-    return Object.values(problemCodes).filter(code => code && code.trim() !== '').length;
+  const getTestedProblemsCount = () => {
+    return Object.keys(problemStatuses).length;
+  };
+
+  const getCurrentProblemStatus = () => {
+    if (!currentProblem) return 'No problem selected';
+    const status = problemStatuses[currentProblem._id];
+    if (!status) return 'Not tested';
+    return status === 'passed' ? '✅ Passed' : '❌ Failed';
   };
 
   const handleMarkProblem = () => {
@@ -304,7 +362,7 @@ export default function LevelProblemsPage() {
     if (!currentProblem) return;
     
     if (confirm('Are you sure you want to clear all code for this problem?')) {
-      updateCurrentCode('');
+      setCurrentCode('');
       setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
     }
   };
@@ -430,6 +488,9 @@ export default function LevelProblemsPage() {
           <div>
             <h1 className="text-lg font-semibold text-gray-900">Programming Challenge... ({problems.length})</h1>
             <p className="text-sm text-gray-500">{level.toUpperCase()} - {language} - {category}</p>
+            <p className="text-xs text-blue-600 mt-1">
+               🧪 Tested: {getTestedProblemsCount()}/{problems.length} | Current: {getCurrentProblemStatus()}
+              </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -450,9 +511,9 @@ export default function LevelProblemsPage() {
         <div className="px-6">
           <ProblemStatusCard
             totalProblems={problems.length}
-            answeredCount={getAnsweredCount()}
+            answeredCount={getTestedProblemsCount()}
             currentProblemIndex={currentProblemIndex}
-            problemCodes={problemCodes}
+            problemCodes={problemLanguages}
             markedProblems={markedProblems}
           />
         </div>
@@ -472,12 +533,6 @@ export default function LevelProblemsPage() {
 
               {/* Scoring */}
               <div className="flex gap-6 mb-6">
-                <div className="bg-green-100 border border-green-200 px-3 py-2 rounded-lg">
-                  <span className="text-sm font-medium text-green-800">Marks: {currentProblem.points || 25}</span>
-                </div>
-                <div className="bg-red-100 border border-red-200 px-3 py-2 rounded-lg">
-                  <span className="text-sm font-medium text-red-800">Negative Marks: 0</span>
-                </div>
                 <div className="bg-blue-100 border border-blue-200 px-3 py-2 rounded-lg">
                   <span className="text-sm font-medium text-blue-800">Time: {currentProblem.problemTimeAllowed || 10} min</span>
                 </div>
@@ -582,7 +637,7 @@ export default function LevelProblemsPage() {
                   suggestSelection: 'first',
                   suggest: false,
                 }}
-                onChange={(value) => updateCurrentCode(value || '')}
+                onChange={handleCodeChange}
               />
             </div>
 
@@ -714,7 +769,7 @@ export default function LevelProblemsPage() {
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Submit All ({getProgress()})
+                  Submit All ({getTestedProblemsCount()}/{problems.length})
                 </>
               )}
             </button>

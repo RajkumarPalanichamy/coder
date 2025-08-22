@@ -169,7 +169,7 @@ export default function AdminProblemCreatePage() {
                       required
                       value={formData.title}
                       onChange={handleChange}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                       placeholder="e.g., Two Sum"
                     />
                   </div>
@@ -185,7 +185,7 @@ export default function AdminProblemCreatePage() {
                       value={formData.description}
                       onChange={handleChange}
                       rows={4}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                       placeholder="Describe the problem and its requirements..."
                     />
                   </div>
@@ -202,7 +202,7 @@ export default function AdminProblemCreatePage() {
                       max="60"
                       value={formData.timeLimit}
                       onChange={handleChange}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                       placeholder="1"
                       required
                     />
@@ -218,7 +218,7 @@ export default function AdminProblemCreatePage() {
                         name="difficulty"
                         value={formData.difficulty}
                         onChange={handleChange}
-                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                       >
                         <option value="level1">Level 1</option>
                         <option value="level2">Level 2</option>
@@ -237,7 +237,7 @@ export default function AdminProblemCreatePage() {
                           required
                           value={formData.category}
                           onChange={handleChange}
-                          className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                          className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                           placeholder="Enter category or select from below"
                         />
                         <div className="flex flex-wrap gap-2">
@@ -274,7 +274,7 @@ export default function AdminProblemCreatePage() {
                         value={formData.language}
                         onChange={handleChange}
                         required
-                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                        className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                         placeholder="Enter programming language or select from below"
                       />
                       <div className="flex flex-wrap gap-2">
@@ -310,7 +310,7 @@ export default function AdminProblemCreatePage() {
                       value={formData.constraints}
                       onChange={handleChange}
                       rows={2}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900 font-mono"
                       placeholder="List the constraints and limitations..."
                     />
                   </div>
@@ -326,7 +326,7 @@ export default function AdminProblemCreatePage() {
                       value={formData.starterCode}
                       onChange={handleChange}
                       rows={3}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono text-gray-900"
                       placeholder="function solution() {\n  // Write your code here\n}"
                     />
                   </div>
@@ -342,7 +342,7 @@ export default function AdminProblemCreatePage() {
                       value={formData.solution}
                       onChange={handleChange}
                       rows={3}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors font-mono text-gray-900"
                       placeholder="// Provide the solution implementation"
                     />
                   </div>
@@ -357,7 +357,7 @@ export default function AdminProblemCreatePage() {
                       type="text"
                       value={formData.tags}
                       onChange={handleChange}
-                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                      className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
                       placeholder="arrays, strings, algorithms (comma separated)"
                     />
                   </div>
@@ -403,7 +403,7 @@ export default function AdminProblemCreatePage() {
                               name="input"
                               value={tc.input}
                               onChange={(e) => handleTestCaseChange(index, e)}
-                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono text-gray-900"
                               rows={2}
                             />
                           </div>
@@ -416,7 +416,7 @@ export default function AdminProblemCreatePage() {
                               name="output"
                               value={tc.output}
                               onChange={(e) => handleTestCaseChange(index, e)}
-                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono text-gray-900"
                               rows={2}
                             />
                           </div>
@@ -480,7 +480,7 @@ export default function AdminProblemCreatePage() {
                               name="input"
                               value={ex.input}
                               onChange={(e) => handleExampleChange(index, e)}
-                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono text-gray-900"
                               rows={2}
                             />
                           </div>
@@ -493,7 +493,7 @@ export default function AdminProblemCreatePage() {
                               name="output"
                               value={ex.output}
                               onChange={(e) => handleExampleChange(index, e)}
-                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono text-gray-900"
                               rows={2}
                             />
                           </div>
@@ -506,7 +506,7 @@ export default function AdminProblemCreatePage() {
                               name="explanation"
                               value={ex.explanation}
                               onChange={(e) => handleExampleChange(index, e)}
-                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono text-gray-900"
                               rows={2}
                             />
                           </div>

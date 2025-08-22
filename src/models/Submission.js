@@ -28,8 +28,14 @@ const submissionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['accepted', 'wrong_answer', 'time_limit_exceeded', 'runtime_error', 'compilation_error', 'pending'],
+    enum: ['accepted', 'wrong_answer', 'time_limit_exceeded', 'runtime_error', 'compilation_error', 'pending', 'passed', 'failed', 'not_attempted'],
     default: 'pending'
+  },
+  // Add pass/fail status for level submissions
+  passFailStatus: {
+    type: String,
+    enum: ['passed', 'failed', 'not_attempted'],
+    default: 'not_attempted'
   },
   score: {
     type: Number,
@@ -195,14 +201,12 @@ const levelSubmissionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  totalScore: {
-    type: Number,
-    default: 0
-  },
-  totalPoints: {
-    type: Number,
-    default: 0
-  },
+  // Remove pass/fail summary counting - just track individual status
+  // passFailSummary: {
+  //   passed: { type: Number, default: 0 },
+  //   failed: { type: Number, default: 0 },
+  //   notAttempted: { type: Number, default: 0 }
+  // },
   // Submission metadata
   isCompleted: {
     type: Boolean,
@@ -262,32 +266,31 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
       pending: 0
     };
 
-    let totalScore = 0;
     let completedProblems = 0;
 
     this.problemSubmissions.forEach(ps => {
       if (ps.submission) {
+        // Count completed problems (any status other than not_attempted)
+        if (ps.submission.passFailStatus && ps.submission.passFailStatus !== 'not_attempted') {
+          completedProblems++;
+        }
+
+        // Keep existing status summary for backward compatibility
         switch (ps.submission.status) {
           case 'accepted':
             summary.accepted++;
-            totalScore += ps.submission.score || 0;
-            completedProblems++;
             break;
           case 'wrong_answer':
             summary.wrongAnswer++;
-            completedProblems++;
             break;
           case 'time_limit_exceeded':
             summary.timeLimit++;
-            completedProblems++;
             break;
           case 'runtime_error':
             summary.runtimeError++;
-            completedProblems++;
             break;
           case 'compilation_error':
             summary.compilationError++;
-            completedProblems++;
             break;
           default:
             summary.pending++;
@@ -296,7 +299,8 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
     });
 
     this.submissionSummary = summary;
-    this.totalScore = totalScore;
+    // Remove passFailSummary counting
+    // this.passFailSummary = passFailSummary;
     this.completedProblems = completedProblems;
     this.version = (this.version || 0) + 1;
     

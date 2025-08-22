@@ -269,7 +269,7 @@ export default function MonacoEditor({
             <select
               value={currentTheme}
               onChange={(e) => setCurrentTheme(e.target.value)}
-              className="text-sm border border-gray-300 rounded px-2 py-1"
+              className="text-sm border border-gray-300 rounded px-2 py-1 text-gray-900"
             >
               <option value="light">Light Theme</option>
               <option value="dark">Dark Theme</option>
@@ -279,7 +279,7 @@ export default function MonacoEditor({
             <select
               value={fontSize}
               onChange={(e) => setFontSize(parseInt(e.target.value))}
-              className="text-sm border border-gray-300 rounded px-2 py-1"
+              className="text-sm border border-gray-300 rounded px-2 py-1 text-gray-900"
             >
               <option value="12">12px</option>
               <option value="14">14px</option>

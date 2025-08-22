@@ -29,22 +29,28 @@ export default function MCQForm({ initialData = {}, onSubmit, testList = [] }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <div className="text-red-500">{error}</div>}
       <div>
-        <label className="block font-medium mb-1">Question</label>
+        <label className="block font-medium mb-1 text-gray-700">Question</label>
         <input
-          className="w-full border px-3 py-2 rounded text-black"
+          type="text"
+          name="question"
           value={question}
           onChange={e => setQuestion(e.target.value)}
+          placeholder="Enter the question"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
           required
         />
       </div>
       <div>
-        <label className="block font-medium mb-1">Options</label>
+        <label className="block font-medium mb-1 text-gray-700">Options</label>
         {options.map((opt, idx) => (
           <div key={idx} className="flex items-center mb-1">
             <input
-              className="flex-1 border px-3 py-2 rounded text-black mr-2"
+              type="text"
+              name={`option${idx}`}
               value={opt}
               onChange={e => handleOptionChange(idx, e.target.value)}
+              placeholder={`Option ${String.fromCharCode(65 + idx)}`}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 mr-2"
               required
             />
             <input
@@ -54,24 +60,27 @@ export default function MCQForm({ initialData = {}, onSubmit, testList = [] }) {
               onChange={() => setCorrectOption(idx)}
               className="mr-1"
             />
-            <span className="text-sm">Correct</span>
+            <span className="text-sm text-gray-700">Correct</span>
           </div>
         ))}
       </div>
       <div>
-        <label className="block font-medium mb-1">Language</label>
+        <label className="block font-medium mb-1 text-gray-700">Language</label>
         <input
-          className="w-full border px-3 py-2 rounded text-black"
+          type="text"
+          name="language"
           value={language}
           onChange={e => setLanguage(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
         />
       </div>
       <div>
-        <label className="block font-medium mb-1">Test Set</label>
+        <label className="block font-medium mb-1 text-gray-700">Test Set</label>
         <select
-          className="w-full border px-3 py-2 rounded text-black"
+          name="test"
           value={test}
           onChange={e => setTest(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
           required
         >
           <option value="">Select a test set</option>

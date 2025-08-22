@@ -45,11 +45,15 @@ export default function LevelSubmissionDetailsPage() {
       }
 
       const data = await response.json();
+      console.log('🔍 Debug: Received submission data:', data);
       setSubmission(data.levelSubmission);
       
       // Select first problem by default
       if (data.levelSubmission?.problemSubmissions?.length > 0) {
+        console.log('🔍 Debug: Setting first problem:', data.levelSubmission.problemSubmissions[0]);
         setSelectedProblem(data.levelSubmission.problemSubmissions[0]);
+      } else {
+        console.log('🔍 Debug: No problem submissions found in data');
       }
     } catch (err) {
       console.error('Error fetching submission details:', err);
@@ -63,16 +67,18 @@ export default function LevelSubmissionDetailsPage() {
     switch (status) {
       case 'accepted':
       case 'completed':
+      case 'passed':
         return {
           color: 'text-green-600 bg-green-50',
           icon: CheckCircle,
-          text: status === 'accepted' ? 'Accepted' : 'Completed'
+          text: status === 'accepted' ? 'Accepted' : status === 'passed' ? 'Passed' : 'Completed'
         };
       case 'wrong_answer':
+      case 'failed':
         return {
           color: 'text-red-600 bg-red-50',
           icon: XCircle,
-          text: 'Wrong Answer'
+          text: status === 'failed' ? 'Failed' : 'Wrong Answer'
         };
       case 'runtime_error':
         return {
@@ -93,10 +99,11 @@ export default function LevelSubmissionDetailsPage() {
           text: 'Time Limit Exceeded'
         };
       case 'pending':
+      case 'not_attempted':
         return {
           color: 'text-blue-600 bg-blue-50',
           icon: Clock,
-          text: 'Pending'
+          text: status === 'not_attempted' ? 'Not Attempted' : 'Pending'
         };
       case 'in_progress':
         return {
@@ -231,7 +238,7 @@ export default function LevelSubmissionDetailsPage() {
             <BarChart className="h-5 w-5 mr-2" />
             Progress Summary
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-indigo-600">
                 {submission.completedProblems}/{submission.totalProblems}
@@ -240,56 +247,19 @@ export default function LevelSubmissionDetailsPage() {
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">
-                {submission.totalScore}%
+                {submission.status === 'submitted' ? 'Completed' : 'In Progress'}
               </p>
-              <p className="text-sm text-gray-600">Total Score</p>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-blue-600">
-                {submission.totalPoints || 0}
-              </p>
-              <p className="text-sm text-gray-600">Total Points</p>
+              <p className="text-sm text-gray-600">Overall Status</p>
             </div>
           </div>
           
-          {/* Submission Summary */}
-          {submission.submissionSummary && (
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm font-medium text-gray-700 mb-2">Results Summary</p>
-              <div className="flex flex-wrap gap-2">
-                {submission.submissionSummary.accepted > 0 && (
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    Accepted: {submission.submissionSummary.accepted}
-                  </span>
-                )}
-                {submission.submissionSummary.wrongAnswer > 0 && (
-                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                    Wrong Answer: {submission.submissionSummary.wrongAnswer}
-                  </span>
-                )}
-                {submission.submissionSummary.timeLimit > 0 && (
-                  <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">
-                    Time Limit: {submission.submissionSummary.timeLimit}
-                  </span>
-                )}
-                {submission.submissionSummary.runtimeError > 0 && (
-                  <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">
-                    Runtime Error: {submission.submissionSummary.runtimeError}
-                  </span>
-                )}
-                {submission.submissionSummary.compilationError > 0 && (
-                  <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                    Compilation Error: {submission.submissionSummary.compilationError}
-                  </span>
-                )}
-                {submission.submissionSummary.pending > 0 && (
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    Pending: {submission.submissionSummary.pending}
-                  </span>
-                )}
-              </div>
+          {/* Simple Status - No Numbers */}
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-sm font-medium text-gray-700 mb-2">Individual Problem Results</p>
+            <div className="text-sm text-gray-600">
+              <p>Click on each problem below to see if it was passed or failed</p>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Problems and Code */}
@@ -305,7 +275,9 @@ export default function LevelSubmissionDetailsPage() {
               </div>
               <div className="divide-y divide-gray-200">
                 {submission.problemSubmissions?.map((ps, index) => {
-                  const subStatus = ps.submission ? getStatusStyle(ps.submission.status) : getStatusStyle('pending');
+                  // Use passFailStatus if available, otherwise fall back to status
+                  const statusToShow = ps.submission?.passFailStatus || ps.submission?.status || 'pending';
+                  const subStatus = getStatusStyle(statusToShow);
                   const SubStatusIcon = subStatus.icon;
                   const isSelected = selectedProblem?._id === ps._id;
                   
@@ -331,8 +303,8 @@ export default function LevelSubmissionDetailsPage() {
                       </p>
                       {ps.submission && (
                         <div className="mt-2 flex justify-between text-xs text-gray-500">
-                          <span>Score: {ps.submission.score}%</span>
-                          <span>{ps.submission.testCasesPassed}/{ps.submission.totalTestCases} tests</span>
+                          <span>Status: {ps.submission.passFailStatus ? ps.submission.passFailStatus.charAt(0).toUpperCase() + ps.submission.passFailStatus.slice(1) : 'Pending'}</span>
+                          <span>Language: {ps.submission.language}</span>
                         </div>
                       )}
                     </button>
@@ -351,9 +323,9 @@ export default function LevelSubmissionDetailsPage() {
                 </h3>
                 {selectedProblem?.submission && (
                   <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
-                    <span>Score: {selectedProblem.submission.score}%</span>
-                    <span>Test Cases: {selectedProblem.submission.testCasesPassed}/{selectedProblem.submission.totalTestCases}</span>
-                    <span>Execution Time: {selectedProblem.submission.executionTime}ms</span>
+                    <span>Status: {selectedProblem.submission.passFailStatus ? selectedProblem.submission.passFailStatus.charAt(0).toUpperCase() + selectedProblem.submission.passFailStatus.slice(1) : 'Pending'}</span>
+                    <span>Language: {selectedProblem.submission.language}</span>
+                    <span>Execution Time: {selectedProblem.submission.executionTime || 0}ms</span>
                   </div>
                 )}
               </div>

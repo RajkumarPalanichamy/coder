@@ -44,12 +44,7 @@ const navItems = [
     icon: ListChecks,
     description: 'Tests and assessments'
   },
-  { 
-    label: 'MCQs', 
-    href: '/admin/mcqs', 
-    icon: FileText,
-    description: 'Multiple choice questions'
-  },
+
   { 
     label: 'Submissions', 
     href: '/admin/submissions', 

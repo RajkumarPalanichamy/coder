@@ -166,16 +166,16 @@ export default function AdminProblemEditPage() {
                   {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded">{success}</div>}
                   <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
-                    <input id="title" name="title" type="text" required value={formData.title} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                    <input id="title" name="title" type="text" required value={formData.title} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900" />
                   </div>
                   <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea id="description" name="description" required value={formData.description} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" rows={4} />
+                    <textarea id="description" name="description" required value={formData.description} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900" rows={4} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">Difficulty</label>
-                      <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                      <select id="difficulty" name="difficulty" value={formData.difficulty} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900">
                         <option value="level1">Level 1</option>
                         <option value="level2">Level 2</option>
                         <option value="level3">Level 3</option>
@@ -191,7 +191,7 @@ export default function AdminProblemEditPage() {
                           required 
                           value={formData.category} 
                           onChange={handleChange} 
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                           placeholder="Enter category or select from below"
                         />
                         <div className="flex flex-wrap gap-2">
@@ -223,7 +223,7 @@ export default function AdminProblemEditPage() {
                         value={formData.language} 
                         onChange={handleChange} 
                         required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
                         placeholder="Enter programming language or select from below"
                       />
                       <div className="flex flex-wrap gap-2">
@@ -249,19 +249,19 @@ export default function AdminProblemEditPage() {
                   </div>
                   <div>
                     <label htmlFor="constraints" className="block text-sm font-medium text-gray-700">Constraints</label>
-                    <textarea id="constraints" name="constraints" required value={formData.constraints} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" rows={2} />
+                    <textarea id="constraints" name="constraints" required value={formData.constraints} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900" rows={2} />
                   </div>
                   <div>
                     <label htmlFor="starterCode" className="block text-sm font-medium text-gray-700">Starter Code</label>
-                    <textarea id="starterCode" name="starterCode" required value={formData.starterCode} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={3} />
+                    <textarea id="starterCode" name="starterCode" required value={formData.starterCode} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={3} />
                   </div>
                   <div>
                     <label htmlFor="solution" className="block text-sm font-medium text-gray-700">Solution</label>
-                    <textarea id="solution" name="solution" required value={formData.solution} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={3} />
+                    <textarea id="solution" name="solution" required value={formData.solution} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={3} />
                   </div>
                   <div>
                     <label htmlFor="tags" className="block text-sm font-medium text-gray-700">Tags (comma separated)</label>
-                    <input id="tags" name="tags" type="text" value={formData.tags} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+                    <input id="tags" name="tags" type="text" value={formData.tags} onChange={handleChange} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900" />
                   </div>
                   <div className="flex items-center">
                     <input id="isActive" name="isActive" type="checkbox" checked={formData.isActive} onChange={handleChange} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
@@ -281,15 +281,15 @@ export default function AdminProblemEditPage() {
                         </button>
                         <div>
                           <label htmlFor={`example-input-${index}`} className="block text-sm font-medium text-gray-700">Input</label>
-                          <textarea id={`example-input-${index}`} name="input" value={ex.input} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                          <textarea id={`example-input-${index}`} name="input" value={ex.input} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={2}></textarea>
                         </div>
                         <div>
                           <label htmlFor={`example-output-${index}`} className="block text-sm font-medium text-gray-700">Expected Output</label>
-                          <textarea id={`example-output-${index}`} name="output" value={ex.output} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                          <textarea id={`example-output-${index}`} name="output" value={ex.output} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={2}></textarea>
                         </div>
                         <div>
                           <label htmlFor={`example-explanation-${index}`} className="block text-sm font-medium text-gray-700">Explanation</label>
-                          <textarea id={`example-explanation-${index}`} name="explanation" value={ex.explanation} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                          <textarea id={`example-explanation-${index}`} name="explanation" value={ex.explanation} onChange={(e) => handleExampleChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={2}></textarea>
                         </div>
                       </div>
                     ))}
@@ -311,11 +311,11 @@ export default function AdminProblemEditPage() {
                         </button>
                         <div>
                           <label htmlFor={`testCase-input-${index}`} className="block text-sm font-medium text-gray-700">Input</label>
-                          <textarea id={`testCase-input-${index}`} name="input" value={tc.input} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                          <textarea id={`testCase-input-${index}`} name="input" value={tc.input} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={2}></textarea>
                         </div>
                         <div>
                           <label htmlFor={`testCase-output-${index}`} className="block text-sm font-medium text-gray-700">Expected Output</label>
-                          <textarea id={`testCase-output-${index}`} name="output" value={tc.output} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono" rows={2}></textarea>
+                          <textarea id={`testCase-output-${index}`} name="output" value={tc.output} onChange={(e) => handleTestCaseChange(index, e)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-gray-900" rows={2}></textarea>
                         </div>
                         <div className="flex items-center">
                           <input id={`testCase-hidden-${index}`} name="isHidden" type="checkbox" checked={tc.isHidden} onChange={(e) => handleTestCaseChange(index, e)} className="h-4 w-4 text-indigo-600 border-gray-300 rounded" />
