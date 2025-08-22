@@ -30,6 +30,20 @@ export async function POST(request) {
         { $set: { passFailStatus: 'not_attempted' } }
       );
       
+      // Update existing submissions to have proper passFailStatus based on their current status
+      const statusUpdateResult = await Submission.updateMany(
+        { status: 'accepted' },
+        { $set: { passFailStatus: 'passed' } }
+      );
+      
+      const failedUpdateResult = await Submission.updateMany(
+        { 
+          status: { $in: ['wrong_answer', 'time_limit_exceeded', 'runtime_error', 'compilation_error'] },
+          passFailStatus: { $ne: 'failed' }
+        },
+        { $set: { passFailStatus: 'failed' } }
+      );
+      
       // Update all existing level submissions
       const levelUpdateResult = await LevelSubmission.updateMany(
         {},
@@ -38,8 +52,10 @@ export async function POST(request) {
       
       return NextResponse.json({ 
         success: true, 
-        message: `Database migration completed successfully. Updated ${updateResult.modifiedCount} submissions.`,
+        message: `Database migration completed successfully. Updated ${updateResult.modifiedCount} submissions with passFailStatus field. Set ${statusUpdateResult.modifiedCount} as passed and ${failedUpdateResult.modifiedCount} as failed.`,
         migratedSubmissions: updateResult.modifiedCount,
+        passedSubmissions: statusUpdateResult.modifiedCount,
+        failedSubmissions: failedUpdateResult.modifiedCount,
         updatedLevelSubmissions: levelUpdateResult.modifiedCount
       });
       

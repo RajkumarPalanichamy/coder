@@ -58,6 +58,7 @@ export async function POST(request) {
       code,
       language,
       status: 'pending',
+      passFailStatus: 'not_attempted',
       score: 0,
       testCasesPassed: 0,
       totalTestCases: problem.testCases?.length || 0,

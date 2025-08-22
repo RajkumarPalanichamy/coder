@@ -15,6 +15,7 @@ export async function GET() {
       code: 'console.log("test");',
       language: 'javascript',
       status: 'pending',
+      passFailStatus: 'not_attempted',
       score: 0,
       testCasesPassed: 0,
       totalTestCases: 1,

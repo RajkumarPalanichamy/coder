@@ -105,7 +105,8 @@ export async function POST(request, { params }) {
         programmingLanguage: levelSubmission.programmingLanguage,
         submissionOrder: levelSubmission.problemSubmissions.length + 1
       },
-      status: 'pending' // Will be updated by execution engine
+      status: 'pending', // Will be updated by execution engine
+      passFailStatus: 'not_attempted' // Set initial pass/fail status
     });
 
     await submission.save();

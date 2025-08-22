@@ -25,6 +25,7 @@ export async function GET(request) {
       isLevelSubmission: { $ne: true } // Exclude level submissions
     })
       .populate('problem', 'title difficulty category')
+      .select('status passFailStatus score executionTime testCasesPassed totalTestCases errorMessage submittedAt code language executionInfo problem')
       .sort({ submittedAt: -1 });
     console.log('Found problem submissions:', problemSubmissions.length);
 
@@ -218,6 +219,7 @@ async function executeWithJudge0(userId, problemId, code, language, problem, req
       code,
       language,
       status: allPassed ? 'accepted' : 'wrong_answer',
+      passFailStatus: allPassed ? 'passed' : 'failed',
       score: allPassed ? 100 : Math.round((passedCount / totalCount) * 100),
       testCasesPassed: passedCount,
       totalTestCases: totalCount,
@@ -285,6 +287,7 @@ async function executeWithJudge0(userId, problemId, code, language, problem, req
       code,
       language,
       status: 'runtime_error',
+      passFailStatus: 'failed',
       score: 0,
       testCasesPassed: 0,
       totalTestCases: problem.testCases?.length || 0,
@@ -351,6 +354,7 @@ async function createSubmissionWithoutExecution(userId, problemId, code, languag
     code,
     language,
     status: 'pending',
+    passFailStatus: 'not_attempted',
     score: 0,
     testCasesPassed: 0,
     totalTestCases: problem.testCases?.length || 0,
