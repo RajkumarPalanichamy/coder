@@ -39,6 +39,9 @@ export default function LevelProblemsPage() {
   const [levelSubmissionId, setLevelSubmissionId] = useState(null);
   const timerRef = useRef();
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
+  
+  // Problem Status popup state
+  const [showProblemStatusPopup, setShowProblemStatusPopup] = useState(false);
 
   // Current problem
   const currentProblem = problems[currentProblemIndex];
@@ -517,21 +520,17 @@ export default function LevelProblemsPage() {
               <span className="font-mono font-semibold text-white">Time Left: {formatTime(timeLeft)}</span>
             </div>
           )}
+          <button
+            onClick={() => setShowProblemStatusPopup(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Target className="w-4 h-4" />
+            Problem Status
+          </button>
         </div>
       </div>
 
-      {/* Problem Status Card */}
-      <div className="bg-gray-50 border-b border-gray-200 py-3 flex-shrink-0">
-        <div className="px-6">
-          <ProblemStatusCard
-            totalProblems={problems.length}
-            answeredCount={getTestedProblemsCount()}
-            currentProblemIndex={currentProblemIndex}
-            problemCodes={problemLanguages}
-            markedProblems={markedProblems}
-          />
-        </div>
-      </div>
+
 
       {/* Main Content - Split Layout */}
       {currentProblem && (
@@ -790,6 +789,35 @@ export default function LevelProblemsPage() {
           )}
         </div>
       </div>
+
+      {/* Problem Status Overlay */}
+      {showProblemStatusPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-[60] pointer-events-none">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden pointer-events-auto">
+            {/* Header */}
+            <div className="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Problem Status Overview</h2>
+              <button
+                onClick={() => setShowProblemStatusPopup(false)}
+                className="text-white hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-blue-700"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+              <ProblemStatusCard
+                totalProblems={problems.length}
+                answeredCount={getTestedProblemsCount()}
+                currentProblemIndex={currentProblemIndex}
+                problemCodes={problemLanguages}
+                markedProblems={markedProblems}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -67,42 +67,12 @@ const navItems = [
     icon: FileText,
     description: 'Code submissions',
     badge: null
-  },
-  // { 
-  //   label: 'Progress Tracking', 
-  //   href: '/dashboard/progress', 
-  //   icon: TrendingUp,
-  //   description: 'Learning analytics',
-  //   badge: 'Pro'
-  // },
-  // { 
-  //   label: 'Study Groups', 
-  //   href: '/dashboard/groups', 
-  //   icon: Users,
-  //   description: 'Collaborate with peers',
-  //   badge: null
-  // },
-  // { 
-  //   label: 'Resources', 
-  //   href: '/dashboard/resources', 
-  //   icon: BookOpen,
-  //   description: 'Study materials',
-  //   badge: null
-  // },
-  // { 
-  //   label: 'Achievements', 
-  //   href: '/dashboard/achievements', 
-  //   icon: Award,
-  //   description: 'Badges & rewards',
-  //   badge: null
-  // }
+  }
 ];
 
 const quickActions = [
   { label: 'Start Practice', icon: Zap, action: 'practice', color: 'bg-green-500' },
-  { label: 'Take Test', icon: Target, action: 'test', color: 'bg-blue-500' },
-  // { label: 'View Progress', icon: BarChart3, action: 'progress', color: 'bg-purple-500' },
-  // { label: 'Get Help', icon: HelpCircle, action: 'help', color: 'bg-orange-500' }
+  { label: 'Take Test', icon: Target, action: 'test', color: 'bg-blue-500' }
 ];
 
 export default function StudentSidebar({ onLogout }) {
@@ -418,49 +388,37 @@ export default function StudentSidebar({ onLogout }) {
           )}
         </div>
 
-        {/* Profile Section */}
-        <div className="p-4 border-b border-gray-100">
+        {/* Profile Section - Made Smaller */}
+        <div className="p-3 border-b border-gray-100">
           {user && (
-            <StudentProfileCard 
-              user={user} 
-              isCollapsed={isCollapsed}
-              notifications={notifications}
-              onNotificationClick={() => setNotifications(0)}
-            />
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                {initials}
+              </div>
+              {!isCollapsed && (
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-800 truncate">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                </div>
+              )}
+            </div>
           )}
           {!user && (
-            <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-              <div className="animate-pulse">
-                <div className="w-20 h-20 rounded-full bg-gray-200 mb-4"></div>
-                <div className="h-6 bg-gray-200 rounded w-32 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-20"></div>
-              </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+              {!isCollapsed && (
+                <div className="flex-1">
+                  <div className="h-3 bg-gray-200 rounded w-20 mb-1 animate-pulse"></div>
+                  <div className="h-2 bg-gray-200 rounded w-24 animate-pulse"></div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="p-4 border-b border-gray-100">
-          <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
-            {!isCollapsed && 'Quick Actions'}
-          </h3>
-          <div className={`grid gap-2 ${isCollapsed ? 'grid-cols-1' : 'grid-cols-2'}`}>
-            {quickActions.map(({ label, icon: Icon, action, color }) => (
-              <button
-                key={action}
-                onClick={() => handleQuickAction(action)}
-                className={`${color} text-white p-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity ${
-                  isCollapsed ? 'p-2' : ''
-                }`}
-                title={isCollapsed ? label : undefined}
-              >
-                <Icon className={`${isCollapsed ? 'w-5 h-5 mx-auto' : 'w-4 h-4 mr-2'} inline`} />
-                {!isCollapsed && label}
-              </button>
-            ))}
-          </div>
-        </div>
+      
 
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto">
@@ -496,6 +454,27 @@ export default function StudentSidebar({ onLogout }) {
               </Link>
             ))}
           </nav>
+            {/* Quick Actions */}
+        <div className="p-4 border-b border-gray-100">
+          <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
+            {!isCollapsed && 'Quick Actions'}
+          </h3>
+          <div className={`grid gap-2 ${isCollapsed ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            {quickActions.map(({ label, icon: Icon, action, color }) => (
+              <button
+                key={action}
+                onClick={() => handleQuickAction(action)}
+                className={`${color} text-white p-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity ${
+                  isCollapsed ? 'p-2' : ''
+                }`}
+                title={isCollapsed ? label : undefined}
+              >
+                <Icon className={`${isCollapsed ? 'w-5 h-5 mx-auto' : 'w-4 h-4 mr-2'} inline`} />
+                {!isCollapsed && label}
+              </button>
+            ))}
+          </div>
+        </div>
 
           {/* Stats Summary */}
           <div className={`${!isCollapsed ? 'hidden md:block' : 'hidden'} px-4 py-4 border-b border-gray-100`}>
@@ -576,6 +555,7 @@ export default function StudentSidebar({ onLogout }) {
             </div>
           </div>
         </div>
+       
 
         {/* Footer Actions */}
         <div className="mt-auto border-t border-gray-100 sticky bottom-0 bg-white">
