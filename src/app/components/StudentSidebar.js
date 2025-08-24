@@ -38,35 +38,40 @@ const navItems = [
     href: '/dashboard', 
     icon: LayoutDashboard,
     description: 'Overview & progress',
-    badge: null
+    badge: null,
+    color: 'bg-blue-500 hover:bg-blue-600 text-white'
   },
   { 
     label: 'Profile', 
     href: '/dashboard/profile', 
     icon: UserCircle,
     description: 'Personal information',
-    badge: null
+    badge: null,
+    color: 'bg-green-500 hover:bg-green-600 text-white'
   },
   { 
     label: 'Technical Courses', 
     href: '/dashboard/problems', 
     icon: Code2,
     description: 'Coding challenges',
-    badge: 'New'
+    badge: 'New',
+    color: 'bg-purple-500 hover:bg-purple-600 text-white'
   },
   { 
     label: 'Aptitude Tests', 
     href: '/dashboard/tests', 
     icon: Trophy,
     description: 'Assessments & MCQs',
-    badge: null
+    badge: null,
+    color: 'bg-orange-500 hover:bg-orange-600 text-white'
   },
   { 
     label: 'My Submissions', 
     href: '/dashboard/submissions', 
     icon: FileText,
     description: 'Code submissions',
-    badge: null
+    badge: null,
+    color: 'bg-pink-500 hover:bg-pink-600 text-white'
   }
 ];
 
@@ -427,14 +432,14 @@ export default function StudentSidebar({ onLogout }) {
             <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
               {!isCollapsed && 'Navigation'}
             </h3>
-            {navItems.map(({ label, href, icon: Icon, description, badge }) => (
+            {navItems.map(({ label, href, icon: Icon, description, badge, color }) => (
               <Link
                 key={label}
                 href={href}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors group ${
+                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors group ${color} ${
                   pathname === href
-                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
+                    : ''
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
@@ -448,7 +453,7 @@ export default function StudentSidebar({ onLogout }) {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 truncate">{description}</p>
+                    <p className="text-sm text-white truncate">{description}</p>
                   </div>
                 )}
               </Link>

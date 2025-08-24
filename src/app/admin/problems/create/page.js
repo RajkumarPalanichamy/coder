@@ -199,7 +199,6 @@ export default function AdminProblemCreatePage() {
                       name="timeLimit"
                       type="number"
                       min="1"
-                      max="60"
                       value={formData.timeLimit}
                       onChange={handleChange}
                       className="block w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors text-gray-900"
