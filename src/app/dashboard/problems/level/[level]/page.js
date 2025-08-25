@@ -511,10 +511,14 @@ export default function LevelProblemsPage() {
           )}
           <button
             onClick={() => setShowProblemStatusPopup(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Problem Status"
           >
-            <Target className="w-4 h-4" />
-            Problem Status
+            <div className="flex flex-col gap-1">
+              <div className="w-5 h-0.5 bg-gray-600"></div>
+              <div className="w-5 h-0.5 bg-gray-600"></div>
+              <div className="w-5 h-0.5 bg-gray-600"></div>
+            </div>
           </button>
         </div>
       </div>
