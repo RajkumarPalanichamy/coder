@@ -238,7 +238,8 @@ export default function ProblemFlow() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <Code2 className="w-8 h-8 text-blue-500" />
-                <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span>
+                {/* <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span> */}
+                <span className="text-2xl font-bold text-gray-700">∞</span>
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 Available in {langData.categories || 0} categories
@@ -271,7 +272,8 @@ export default function ProblemFlow() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <FolderOpen className="w-8 h-8 text-green-500" />
-                <span className="text-2xl font-bold text-gray-700">{catData.count || 0}</span>
+                {/* <span className="text-2xl font-bold text-gray-700">{catData.count || 0}</span> */}
+                <span className="text-2xl font-bold text-gray-700">∞</span>
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 Problems available in {catData.category}
@@ -312,7 +314,8 @@ export default function ProblemFlow() {
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <Target className="w-8 h-8 text-purple-500" />
-                <span className="text-2xl font-bold text-gray-700">{levelData.count || 0}</span>
+                {/* <span className="text-2xl font-bold text-gray-700">{levelData.count || 0}</span> */}
+                <span className="text-2xl font-bold text-gray-700">∞</span>
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 Problems available at this level

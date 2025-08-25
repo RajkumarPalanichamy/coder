@@ -491,17 +491,6 @@ export default function LevelProblemsPage() {
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
         <div className="flex items-center gap-4">
-          <button
-            onClick={() => {
-              if (confirm('Are you sure you want to end this session? All progress will be lost.')) {
-                router.push('/dashboard/problems');
-              }
-            }}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
-          >
-            <XCircle className="h-4 w-4" />
-            End & Exit
-          </button>
           <div>
             <h1 className="text-lg font-semibold text-gray-900">Programming Challenge... ({problems.length})</h1>
             <p className="text-sm text-gray-500">{level.toUpperCase()} - {language} - {category}</p>
@@ -545,11 +534,11 @@ export default function LevelProblemsPage() {
               </div>
 
               {/* Scoring */}
-              <div className="flex gap-6 mb-6">
+              {/* <div className="flex gap-6 mb-6">
                 <div className="bg-blue-100 border border-blue-200 px-3 py-2 rounded-lg">
                   <span className="text-sm font-medium text-blue-800">Time: {currentProblem.problemTimeAllowed || 10} min</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Problem Statement */}
               <div className="mb-6">
@@ -785,6 +774,19 @@ export default function LevelProblemsPage() {
                   Submit All ({getTestedProblemsCount()}/{problems.length})
                 </>
               )}
+            </button>
+          )}
+          {sessionStarted && (
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to end this test? All progress will be lost.')) {
+                  router.push('/dashboard/problems');
+                }
+              }}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+            >
+              <XCircle className="w-4 h-4" />
+              End Test
             </button>
           )}
         </div>
