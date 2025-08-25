@@ -39,7 +39,9 @@ const navItems = [
     icon: LayoutDashboard,
     description: 'Overview & progress',
     badge: null,
-    color: 'bg-blue-500 hover:bg-blue-600 text-white'
+    bgColor: 'bg-purple-100',
+    textColor: 'text-purple-700',
+    iconColor: 'text-purple-600'
   },
   { 
     label: 'Profile', 
@@ -47,7 +49,9 @@ const navItems = [
     icon: UserCircle,
     description: 'Personal information',
     badge: null,
-    color: 'bg-green-500 hover:bg-green-600 text-white'
+    bgColor: 'bg-green-100',
+    textColor: 'text-green-700',
+    iconColor: 'text-green-600'
   },
   { 
     label: 'Technical Courses', 
@@ -55,7 +59,9 @@ const navItems = [
     icon: Code2,
     description: 'Coding challenges',
     badge: 'New',
-    color: 'bg-purple-500 hover:bg-purple-600 text-white'
+    bgColor: 'bg-purple-100',
+    textColor: 'text-purple-700',
+    iconColor: 'text-purple-600'
   },
   { 
     label: 'Aptitude Tests', 
@@ -63,7 +69,9 @@ const navItems = [
     icon: Trophy,
     description: 'Assessments & MCQs',
     badge: null,
-    color: 'bg-orange-500 hover:bg-orange-600 text-white'
+    bgColor: 'bg-yellow-100',
+    textColor: 'text-orange-700',
+    iconColor: 'text-orange-600'
   },
   { 
     label: 'My Submissions', 
@@ -71,7 +79,9 @@ const navItems = [
     icon: FileText,
     description: 'Code submissions',
     badge: null,
-    color: 'bg-pink-500 hover:bg-pink-600 text-white'
+    bgColor: 'bg-blue-100',
+    textColor: 'text-blue-700',
+    iconColor: 'text-blue-600'
   }
 ];
 
@@ -221,28 +231,28 @@ export default function StudentSidebar({ onLogout }) {
 
         {/* Mobile Navigation */}
         <nav className="p-4">
-          {navItems.map(({ label, href, icon: Icon, description, badge }) => (
+          {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor }) => (
             <Link
               key={label}
               href={href}
-              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors ${
+              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 ${bgColor} ${textColor} hover:shadow-md hover:scale-[1.02] ${
                 pathname === href
-                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
+                  : ''
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className={`w-5 h-5 ${iconColor}`} />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{label}</span>
                   {badge && (
-                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-white bg-opacity-80 text-purple-700 px-2 py-1 rounded-full font-medium">
                       {badge}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">{description}</p>
+                <p className="text-sm opacity-90">{description}</p>
               </div>
             </Link>
           ))}
@@ -330,28 +340,28 @@ export default function StudentSidebar({ onLogout }) {
             <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
               {!isCollapsed && 'Navigation'}
             </h3>
-            {navItems.map(({ label, href, icon: Icon, description, badge, color }) => (
+            {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor }) => (
               <Link
                 key={label}
                 href={href}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-colors group ${color} ${
+                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group ${bgColor} ${textColor} hover:shadow-md hover:scale-[1.02] ${
                   pathname === href
                     ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
                     : ''
                 }`}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <Icon className={`w-5 h-5 flex-shrink-0 ${iconColor}`} />
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="font-medium truncate">{label}</span>
-                      {badge && (
-                        <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full flex-shrink-0">
-                          {badge}
-                        </span>
-                      )}
+                                        {badge && (
+                    <span className="text-xs bg-white bg-opacity-80 text-purple-700 px-2 py-1 rounded-full flex-shrink-0 font-medium">
+                      {badge}
+                    </span>
+                  )}
                     </div>
-                    <p className="text-sm text-white truncate">{description}</p>
+                    <p className="text-sm truncate opacity-80">{description}</p>
                   </div>
                 )}
               </Link>
