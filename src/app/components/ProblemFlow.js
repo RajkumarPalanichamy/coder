@@ -335,7 +335,7 @@ export default function ProblemFlow() {
           {/* Title */}
           <div className="flex items-center gap-2 mb-6">
             <BarChart3 className="w-6 h-6 text-gray-600" />
-            <h1 className="text-2xl font-bold text-gray-900">This Week</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Total Progress</h1>
           </div>
           
           {/* Metric Cards */}

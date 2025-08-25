@@ -77,7 +77,7 @@ export default function Home() {
                 href="/login"
                 className="btn-primary"
               >
-                Get Started
+                Start Learning
               </Link>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function Home() {
             <h1 className="heading-xl text-dark">
               <span className="block">Master Coding with</span>
               <span className="block gradient-text-primary">
-                Expert Mentorship
+                Zenith Mentor
               </span>
             </h1>
 
@@ -126,7 +126,7 @@ export default function Home() {
                 Start Learning
               </Link>
 
-              <div className="flex items-center space-x-6 text-gray-light">
+              {/* <div className="flex items-center space-x-6 text-gray-light">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-accent rounded-full mr-2"></div>
                   <span className="text-sm">Expert-Led</span>
@@ -139,7 +139,7 @@ export default function Home() {
                   <div className="w-2 h-2 bg-secondary rounded-full mr-2"></div>
                   <span className="text-sm">Results-Driven</span>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Stats */}

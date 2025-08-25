@@ -75,10 +75,7 @@ const navItems = [
   }
 ];
 
-const quickActions = [
-  { label: 'Start Practice', icon: Zap, action: 'practice', color: 'bg-green-500' },
-  { label: 'Take Test', icon: Target, action: 'test', color: 'bg-blue-500' }
-];
+
 
 export default function StudentSidebar({ onLogout }) {
   const [user, setUser] = useState(null);
@@ -250,106 +247,7 @@ export default function StudentSidebar({ onLogout }) {
             </Link>
           ))}
         </nav>
-
-        {/* Mobile Quick Actions */}
-        <div className="p-4 border-t border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {quickActions.map(({ label, icon: Icon, action, color }) => (
-              <button
-                key={action}
-                onClick={() => {
-                  handleQuickAction(action);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`${color} text-white p-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity`}
-              >
-                <Icon className="w-4 h-4 mx-auto mb-1" />
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile Stats Summary */}
-        <div className="p-4 border-t border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-            <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
-            This Week
-          </h3>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-indigo-50 rounded-lg p-2">
-              {progressLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-indigo-200 rounded mb-1"></div>
-                  <div className="h-3 bg-indigo-200 rounded"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="text-lg font-bold text-indigo-700">{weeklyProgress.dayStreak}</div>
-                  <div className="text-xs text-indigo-600">Day Streak</div>
-                </>
-              )}
-            </div>
-            <div className="bg-green-50 rounded-lg p-2">
-              {progressLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-green-200 rounded mb-1"></div>
-                  <div className="h-3 bg-green-200 rounded"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="text-lg font-bold text-green-700">{weeklyProgress.completed}</div>
-                  <div className="text-xs text-green-600">Completed</div>
-                </>
-              )}
-            </div>
-            <div className="bg-purple-50 rounded-lg p-2">
-              {progressLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-purple-200 rounded mb-1"></div>
-                  <div className="h-3 bg-purple-200 rounded"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="text-lg font-bold text-purple-700">{progressPercentage}%</div>
-                  <div className="text-xs text-purple-600">Progress</div>
-                </>
-              )}
-            </div>
-          </div>
-          
-          {/* Additional Stats */}
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="bg-yellow-50 rounded-lg p-2 text-center">
-              {progressLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-yellow-200 rounded mb-1"></div>
-                  <div className="h-3 bg-yellow-200 rounded"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="text-sm font-bold text-yellow-700">{weeklyProgress.rank}</div>
-                  <div className="text-xs text-yellow-600">Rank</div>
-                </>
-              )}
-            </div>
-            <div className="bg-blue-50 rounded-lg p-2 text-center">
-              {progressLoading ? (
-                <div className="animate-pulse">
-                  <div className="h-4 bg-blue-200 rounded mb-1"></div>
-                  <div className="h-3 bg-blue-200 rounded"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="text-sm font-bold text-blue-700">{weeklyProgress.points}</div>
-                  <div className="text-xs text-blue-600">Points</div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
+        
         {/* Mobile Logout */}
         <div className="p-4 border-t border-gray-200">
           <button
@@ -386,7 +284,7 @@ export default function StudentSidebar({ onLogout }) {
         isCollapsed ? 'w-20' : 'w-20 md:w-72'
       }`}>
         {/* Logo / App Name */}
-        <div className="sticky top-0 z-10 flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-gradient-to-r from-indigo-600 to-indigo-700">
+        <div className="sticky top-0 z-10 flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-blue-500">
           <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="h-10 w-10 rounded-lg shadow-lg" />
           {!isCollapsed && (
             <span className="hidden md:inline ml-3 text-xl font-bold text-white tracking-tight">Zenith Mentor</span>
@@ -397,7 +295,7 @@ export default function StudentSidebar({ onLogout }) {
         <div className="p-3 border-b border-gray-100">
           {user && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                 {initials}
               </div>
               {!isCollapsed && (
@@ -459,106 +357,8 @@ export default function StudentSidebar({ onLogout }) {
               </Link>
             ))}
           </nav>
-            {/* Quick Actions */}
-        <div className="p-4 border-b border-gray-100">
-          <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
-            {!isCollapsed && 'Quick Actions'}
-          </h3>
-          <div className={`grid gap-2 ${isCollapsed ? 'grid-cols-1' : 'grid-cols-2'}`}>
-            {quickActions.map(({ label, icon: Icon, action, color }) => (
-              <button
-                key={action}
-                onClick={() => handleQuickAction(action)}
-                className={`${color} text-white p-3 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity ${
-                  isCollapsed ? 'p-2' : ''
-                }`}
-                title={isCollapsed ? label : undefined}
-              >
-                <Icon className={`${isCollapsed ? 'w-5 h-5 mx-auto' : 'w-4 h-4 mr-2'} inline`} />
-                {!isCollapsed && label}
-              </button>
-            ))}
-          </div>
-        </div>
 
-          {/* Stats Summary */}
-          <div className={`${!isCollapsed ? 'hidden md:block' : 'hidden'} px-4 py-4 border-b border-gray-100`}>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-              <BarChart3 className="w-4 h-4 mr-2 text-indigo-600" />
-              This Week
-            </h3>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="bg-indigo-50 rounded-lg p-2">
-                {progressLoading ? (
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-indigo-200 rounded mb-1"></div>
-                    <div className="h-3 bg-indigo-200 rounded"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-lg font-bold text-indigo-700">{weeklyProgress.dayStreak}</div>
-                    <div className="text-xs text-indigo-600">Day Streak</div>
-                  </>
-                )}
-              </div>
-              <div className="bg-green-50 rounded-lg p-2">
-                {progressLoading ? (
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-green-200 rounded mb-1"></div>
-                    <div className="h-3 bg-green-200 rounded"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-lg font-bold text-green-700">{weeklyProgress.completed}</div>
-                    <div className="text-xs text-green-600">Completed</div>
-                  </>
-                )}
-              </div>
-              <div className="bg-purple-50 rounded-lg p-2">
-                {progressLoading ? (
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-purple-200 rounded mb-1"></div>
-                    <div className="h-3 bg-purple-200 rounded"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-lg font-bold text-purple-700">{progressPercentage}%</div>
-                    <div className="text-xs text-purple-600">Progress</div>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            {/* Additional Stats */}
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="bg-yellow-50 rounded-lg p-2 text-center">
-                {progressLoading ? (
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-yellow-200 rounded mb-1"></div>
-                    <div className="h-3 bg-yellow-200 rounded"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-sm font-bold text-yellow-700">{weeklyProgress.rank}</div>
-                    <div className="text-xs text-yellow-600">Rank</div>
-                  </>
-                )}
-              </div>
-              <div className="bg-blue-50 rounded-lg p-2 text-center">
-                {progressLoading ? (
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-blue-200 rounded mb-1"></div>
-                    <div className="h-3 bg-blue-200 rounded"></div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-sm font-bold text-blue-700">{weeklyProgress.points}</div>
-                    <div className="text-xs text-blue-600">Points</div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+
         </div>
        
 
