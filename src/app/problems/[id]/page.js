@@ -79,9 +79,16 @@ export default function ProblemPage() {
 
   const handleStartProblem = () => {
     setProblemStarted(true);
+    const element = document.documentElement;
+    if (element.requestFullscreen) {
+      element.requestFullscreen().catch(console.error);
+    }
   };
 
   const handleExitProblem = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
     router.push('/dashboard');
   };
 
@@ -176,7 +183,6 @@ export default function ProblemPage() {
           passedCount: data.passedCount,
           totalCount: data.totalCount
         });
-        
         // Show all test case results
         if (data.testCaseResults) {
           setSubmissionTestResults(data.testCaseResults);
@@ -185,7 +191,6 @@ export default function ProblemPage() {
         // Failed submission - show detailed results
         const passedCount = data.passedCount || 0;
         const totalCount = data.totalCount || 0;
-        
         setResult({
           status: 'error',
           message: data.error || 'Submission failed',
@@ -193,8 +198,6 @@ export default function ProblemPage() {
           passedCount,
           totalCount
         });
-        
-        // Show detailed test case results for failed submission
         if (data.testCaseResults) {
           setSubmissionTestResults(data.testCaseResults);
         }
@@ -205,6 +208,9 @@ export default function ProblemPage() {
         message: 'Network error occurred. Please try again.'
       });
     } finally {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      }
       setSubmitting(false);
     }
   };
