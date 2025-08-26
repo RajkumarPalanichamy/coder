@@ -132,11 +132,15 @@ export default function LevelProblemsPage() {
       });
 
       const data = await response.json();
-       
+      
       if (response.ok) {
         setLevelSubmissionId(data.levelSubmission._id);
         setTimeLeft(data.levelSubmission.timeAllowed);
         setSessionStarted(true);
+        const element = document.documentElement;
+        if (element.requestFullscreen) {
+          element.requestFullscreen().catch(console.error);
+        }
       } else {
         alert(data.error || 'Failed to start level session');
       }
@@ -267,6 +271,10 @@ export default function LevelProblemsPage() {
         // Show simple success message without scores
         alert(`✅ Successfully submitted ${problems.length} problems for ${level}!\n\nRedirecting to submissions page to view your results.`);
         
+        // Exit fullscreen if active before navigating
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
         // Redirect to submissions page
         router.push('/dashboard/submissions?type=level');
       } else {
@@ -275,6 +283,9 @@ export default function LevelProblemsPage() {
         // Check if it's an "already submitted" error
         if (errorData.error && errorData.error.includes('already have a submission')) {
           alert('⚠️ ' + errorData.error + '\n\nRedirecting to submissions page...');
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          }
           router.push('/dashboard/submissions?type=level');
         } else {
           alert(errorData.error || 'Failed to submit problems');

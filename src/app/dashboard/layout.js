@@ -21,7 +21,8 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   const isTestTakingRoute = pathname?.startsWith('/dashboard/tests/') && pathname !== '/dashboard/tests';
-  const shouldHideSidebar = isTestTakingRoute && isFullscreen;
+  const isProblemSolvingRoute = pathname?.startsWith('/dashboard/problems/level/');
+  const shouldHideSidebar = (isTestTakingRoute || isProblemSolvingRoute) && isFullscreen;
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
