@@ -544,6 +544,46 @@ export default function ProblemPage() {
           <div className="mt-8 bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Results</h3>
             
+            {/* Results Summary */}
+            {(runResult || result) && (
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  {runResult && (
+                    <>
+                      <div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {runResult.summary ? `${runResult.summary.passed}/${runResult.summary.total}` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-gray-600">Run Tests Passed</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">
+                          {runResult.summary ? Math.round((runResult.summary.passed / runResult.summary.total) * 100) : 0}%
+                        </div>
+                        <div className="text-sm text-gray-600">Run Success Rate</div>
+                      </div>
+                    </>
+                  )}
+                  {result && (
+                    <>
+                      <div>
+                        <div className="text-2xl font-bold text-purple-600">
+                          {result.passedCount}/{result.totalCount}
+                        </div>
+                        <div className="text-sm text-gray-600">Submission Tests Passed</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">
+                          {result.submission.score || 0}%
+                        </div>
+                        <div className="text-sm text-gray-600">Final Score</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            
             {runError && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded">
                 <div className="flex items-center">
@@ -602,75 +642,121 @@ export default function ProblemPage() {
               </div>
             )}
 
+            {/* Run Test Results */}
             {runTestResults && runTestResults.length > 0 && (
-              <div className="space-y-4">
-                {sampleResults.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Sample Test Cases</h4>
-                    <div className="space-y-2">
-                      {sampleResults.map((testResult, index) => (
-                        <div key={index} className={`p-3 rounded border ${
-                          testResult.status === 'passed' 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
-                        }`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              {testResult.status === 'passed' ? (
-                                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-red-600 mr-2" />
-                              )}
-                              <span className={`font-medium ${
-                                testResult.status === 'passed' ? 'text-green-800' : 'text-red-800'
-                              }`}>
-                                Test Case {index + 1}: {testResult.status === 'passed' ? 'Passed' : 'Failed'}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {result.executionTime && (
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                  {result.executionTime}
-                                </span>
-                              )}
-                            </div>
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-900 mb-3">Run Test Results</h4>
+                <div className="space-y-3">
+                  {runTestResults.map((testResult, index) => (
+                    <div key={index} className={`p-4 rounded-lg border ${
+                      testResult.passed 
+                        ? 'bg-green-50 border-green-200' 
+                        : 'bg-red-50 border-red-200'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center">
+                          {testResult.passed ? (
+                            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                          )}
+                          <span className={`font-medium ${
+                            testResult.passed ? 'text-green-800' : 'text-red-800'
+                          }`}>
+                            Test Case {index + 1}: {testResult.passed ? 'Passed' : 'Failed'}
+                          </span>
+                        </div>
+                        {testResult.executionTime && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            {testResult.executionTime}ms
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Input/Output Display */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">Input:</span>
+                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.input || 'N/A'}</pre>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Expected Output:</span>
+                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.expectedOutput || 'N/A'}</pre>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Your Output:</span>
+                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.output || 'N/A'}</pre>
+                        </div>
+                        {testResult.error && (
+                          <div className="md:col-span-2">
+                            <span className="font-medium text-red-700">Error:</span>
+                            <pre className="mt-1 text-xs text-red-600 bg-red-50 p-2 rounded border overflow-x-auto">{testResult.error}</pre>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Submission Test Results */}
+            {submissionTestResults && submissionTestResults.length > 0 && (
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-900 mb-3">Submission Test Results</h4>
+                <div className="space-y-3">
+                  {submissionTestResults.map((testResult, index) => (
+                    <div key={index} className={`p-4 rounded-lg border ${
+                      testResult.passed 
+                        ? 'bg-green-50 border-green-200' 
+                        : 'bg-red-50 border-red-200'
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center">
+                          {testResult.passed ? (
+                            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                          )}
+                          <span className={`font-medium ${
+                            testResult.passed ? 'text-green-800' : 'text-red-800'
+                          }`}>
+                            {testResult.isHidden ? 'Hidden Test' : 'Test Case'} {index + 1}: {testResult.passed ? 'Passed' : 'Failed'}
+                          </span>
+                        </div>
+                        {testResult.executionTime && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            {testResult.executionTime}ms
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Show input/output for non-hidden test cases or failed hidden tests */}
+                      {(!testResult.isHidden || !testResult.passed) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-gray-700">Input:</span>
+                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.input || 'N/A'}</pre>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Expected Output:</span>
+                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.expectedOutput || 'N/A'}</pre>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-700">Your Output:</span>
+                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.output || 'N/A'}</pre>
                           </div>
                           {testResult.error && (
-                            <p className="mt-2 text-sm text-red-700">{testResult.error}</p>
+                            <div className="md:col-span-2">
+                              <span className="font-medium text-red-700">Error:</span>
+                              <pre className="mt-1 text-xs text-red-600 bg-red-50 p-2 rounded border overflow-x-auto">{testResult.error}</pre>
+                            </div>
                           )}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
-                )}
-
-                {hiddenResults.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Hidden Test Cases</h4>
-                    <div className="space-y-2">
-                      {hiddenResults.map((testResult, index) => (
-                        <div key={index} className={`p-3 rounded border ${
-                          testResult.status === 'passed' 
-                            ? 'bg-green-50 border-green-200' 
-                            : 'bg-red-50 border-red-200'
-                        }`}>
-                          <div className="flex items-center">
-                            {testResult.status === 'passed' ? (
-                              <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
-                            ) : (
-                              <XCircle className="h-4 w-4 text-red-600 mr-2" />
-                            )}
-                            <span className={`font-medium ${
-                              testResult.status === 'passed' ? 'text-green-800' : 'text-red-800'
-                            }`}>
-                              Hidden Test {index + 1}: {testResult.status === 'passed' ? 'Passed' : 'Failed'}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             )}
           </div>

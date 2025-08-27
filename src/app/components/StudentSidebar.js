@@ -41,7 +41,8 @@ const navItems = [
     badge: null,
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-700',
-    iconColor: 'text-purple-600'
+    iconColor: 'text-purple-600',
+    borderColor: 'border-purple-300'
   },
   { 
     label: 'Profile', 
@@ -51,7 +52,8 @@ const navItems = [
     badge: null,
     bgColor: 'bg-green-100',
     textColor: 'text-green-700',
-    iconColor: 'text-green-600'
+    iconColor: 'text-green-600',
+    borderColor: 'border-green-300'
   },
   { 
     label: 'Technical Courses', 
@@ -61,7 +63,8 @@ const navItems = [
     badge: 'New',
     bgColor: 'bg-purple-100',
     textColor: 'text-purple-700',
-    iconColor: 'text-purple-600'
+    iconColor: 'text-purple-600',
+    borderColor: 'border-purple-300'
   },
   { 
     label: 'Aptitude Tests', 
@@ -71,7 +74,8 @@ const navItems = [
     badge: null,
     bgColor: 'bg-yellow-100',
     textColor: 'text-orange-700',
-    iconColor: 'text-orange-600'
+    iconColor: 'text-orange-600',
+    borderColor: 'border-orange-300'
   },
   { 
     label: 'My Submissions', 
@@ -81,7 +85,8 @@ const navItems = [
     badge: null,
     bgColor: 'bg-blue-100',
     textColor: 'text-blue-700',
-    iconColor: 'text-blue-600'
+    iconColor: 'text-blue-600',
+    borderColor: 'border-blue-300'
   }
 ];
 
@@ -231,11 +236,11 @@ export default function StudentSidebar({ onLogout }) {
 
         {/* Mobile Navigation */}
         <nav className="p-4">
-          {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor }) => (
+          {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor, borderColor }) => (
             <Link
               key={label}
               href={href}
-              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 ${bgColor} ${textColor} hover:shadow-md hover:scale-[1.02] ${
+              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 bg-white hover:bg-gray-50 ${textColor} hover:shadow-md hover:scale-[1.02] border-2 ${borderColor} ${
                 pathname === href
                   ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
                   : ''
@@ -340,11 +345,11 @@ export default function StudentSidebar({ onLogout }) {
             <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
               {!isCollapsed && 'Navigation'}
             </h3>
-            {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor }) => (
+            {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor, borderColor }) => (
               <Link
                 key={label}
                 href={href}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group ${bgColor} ${textColor} hover:shadow-md hover:scale-[1.02] ${
+                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group bg-white hover:bg-gray-50 ${textColor} hover:shadow-md hover:scale-[1.02] border-2 ${borderColor} ${
                   pathname === href
                     ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
                     : ''
