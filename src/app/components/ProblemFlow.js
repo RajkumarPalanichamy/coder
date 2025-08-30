@@ -145,42 +145,42 @@ export default function ProblemFlow() {
     });
   };
 
-  const getLanguageImage = (language) => {
-    if (!language) return <Code2 className="w-10 h-10 text-blue-500" />;
-    
-    switch (language.toLowerCase()) {
-      case 'javascript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-10 h-10" />;
-      case 'python':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="w-10 h-10" />;
-      case 'java':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-10 h-10" />;
-      case 'cpp':
-      case 'c++':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="w-10 h-10" />;
-      case 'csharp':
-      case 'c#':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="w-10 h-10" />;
-      case 'c':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="w-10 h-10" />;
-      case 'go':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-10 h-10" />;
-      case 'rust':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="w-10 h-10" />;
-      case 'kotlin':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-10 h-10" />;
-      case 'typescript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="w-10 h-10" />;
-      case 'php':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="w-10 h-10" />;
-      case 'ruby':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="w-10 h-10" />;
-      case 'swift':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="w-10 h-10" />;
-      default:
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="w-10 h-10" />;
-    }
-  };
+          const getLanguageImage = (language) => {
+          if (!language) return <Code2 className="w-16 h-16 text-blue-500" />;
+          
+          switch (language.toLowerCase()) {
+            case 'javascript':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-40 h-40" />;
+            case 'python':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="w-40 h-40" />;
+            case 'java':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-40 h-40" />;
+            case 'cpp':
+            case 'c++':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="w-40 h-40" />;
+            case 'csharp':
+            case 'c#':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="w-40 h-40" />;
+            case 'c':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="w-40 h-40" />;
+            case 'go':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-40 h-40" />;
+            case 'rust':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="w-40 h-40" />;
+            case 'kotlin':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-40 h-40" />;
+            case 'typescript':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="w-40 h-40" />;
+            case 'php':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="w-40 h-40" />;
+            case 'ruby':
+              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="w-40 h-40" />;
+            case 'swift':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="w-40 h-40" />;
+            default:
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="w-40 h-40" />;
+          }
+        };
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -273,10 +273,10 @@ export default function ProblemFlow() {
               <p className="text-sm opacity-90">Programming Language</p>
             </div>
             <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex flex-col items-center gap-3 mb-3">
                 {getLanguageImage(langData.language)}
                 {/* <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span> */}
-                <span className="text-2xl font-bold text-gray-700">∞</span>
+                {/* <span className="text-2xl font-bold text-gray-700">∞</span> */}
               </div>
               <p className="text-gray-600 text-sm mb-4">
                 Available in {langData.categories || 0} categories

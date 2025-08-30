@@ -228,42 +228,42 @@ export default function ProblemPage() {
     }
   };
 
-  const getLanguageImage = (language) => {
-    if (!language) return null;
-    
-    switch (language.toLowerCase()) {
-      case 'javascript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="h-5 w-5" />;
-      case 'python':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="h-5 w-5" />;
-      case 'java':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="h-5 w-5" />;
-      case 'cpp':
-      case 'c++':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="h-5 w-5" />;
-      case 'csharp':
-      case 'c#':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="h-5 w-5" />;
-      case 'c':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="h-5 w-5" />;
-      case 'go':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="h-5 w-5" />;
-      case 'rust':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="h-5 w-5" />;
-      case 'kotlin':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="h-5 w-5" />;
-      case 'typescript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="h-5 w-5" />;
-      case 'php':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="h-5 w-5" />;
-      case 'ruby':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="h-5 w-5" />;
-      case 'swift':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="h-5 w-5" />;
-      default:
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="h-5 w-5" />;
-    }
-  };
+          const getLanguageImage = (language) => {
+          if (!language) return null;
+          
+          switch (language.toLowerCase()) {
+            case 'javascript':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="h-12 w-12" />;
+            case 'python':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="h-12 w-12" />;
+            case 'java':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="h-12 w-12" />;
+            case 'cpp':
+            case 'c++':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="h-12 w-12" />;
+            case 'csharp':
+            case 'c#':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="h-12 w-12" />;
+            case 'c':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="h-12 w-12" />;
+            case 'go':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="h-12 w-12" />;
+            case 'rust':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="h-12 w-12" />;
+            case 'kotlin':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="h-12 w-12" />;
+            case 'typescript':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="h-12 w-12" />;
+            case 'php':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="h-12 w-12" />;
+            case 'ruby':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="h-12 w-12" />;
+            case 'swift':
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="h-12 w-12" />;
+            default:
+              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="h-12 w-12" />;
+          }
+        };
 
   const handleCopy = useCallback(() => {
     if (codeRef.current) {
@@ -408,16 +408,15 @@ export default function ProblemPage() {
               <h1 className="text-xl font-bold text-gray-900">{problem.title}</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(problem.difficulty)}`}>
-                {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
-              </span>
-              <span className="text-sm text-gray-500">{problem.category}</span>
-              {problem.programmingLanguage && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex flex-col items-center gap-1 px-3 py-2 bg-blue-100 text-blue-700 rounded text-sm font-semibold capitalize">
                   {getLanguageImage(problem.programmingLanguage)}
-                  <span className="capitalize">{problem.programmingLanguage}</span>
+                  <span>{problem.programmingLanguage}</span>
                 </div>
-              )}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(problem.difficulty)}`}>
+                  {problem.difficulty === 'level1' ? 'Level 1' : problem.difficulty === 'level2' ? 'Level 2' : problem.difficulty === 'level3' ? 'Level 3' : problem.difficulty}
+                </span>
+              </div>
             </div>
           </div>
         </div>
