@@ -264,6 +264,43 @@ export default function AdminSubmissionsPage() {
     );
   }
 
+  const getLanguageImage = (language) => {
+    if (!language) return null;
+    
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="h-5 w-5" />;
+      case 'python':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="h-5 w-5" />;
+      case 'java':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="h-5 w-5" />;
+      case 'cpp':
+      case 'c++':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="h-5 w-5" />;
+      case 'csharp':
+      case 'c#':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="h-5 w-5" />;
+      case 'c':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="h-5 w-5" />;
+      case 'go':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="h-5 w-5" />;
+      case 'rust':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="h-5 w-5" />;
+      case 'kotlin':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="h-5 w-5" />;
+      case 'typescript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="h-5 w-5" />;
+      case 'php':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="h-5 w-5" />;
+      case 'ruby':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="h-5 w-5" />;
+      case 'swift':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="h-5 w-5" />;
+      default:
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="h-5 w-5" />;
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar onLogout={handleLogout} />
@@ -610,11 +647,12 @@ export default function AdminSubmissionsPage() {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             {submission.category}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap">
-                            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 capitalize">
-                              {submission.programmingLanguage}
-                            </span>
-                          </td>
+                                                      <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 capitalize">
+                                {getLanguageImage(submission.programmingLanguage)}
+                                <span>{submission.programmingLanguage}</span>
+                              </div>
+                            </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${statusStyle.color}`}>
                               {StatusIcon && <StatusIcon className="h-4 w-4 inline-block mr-1" />}

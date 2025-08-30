@@ -45,7 +45,8 @@ export default function AdminRecentActivity() {
           timestamp: sub.submittedAt || sub.createdAt,
           user: sub.user,
           problem: sub.problem,
-          isCorrect: sub.isCorrect
+          isCorrect: sub.isCorrect,
+          language: sub.problem?.programmingLanguage
         });
       });
 
@@ -115,6 +116,43 @@ export default function AdminRecentActivity() {
       router.push(`/admin/submissions/level/${activity.id}`);
     } else if (activity.type === 'student') {
       router.push(`/admin/students/${activity.id}/edit`);
+    }
+  };
+
+  const getLanguageImage = (language) => {
+    if (!language) return null;
+    
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="h-4 w-4" />;
+      case 'python':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="h-4 w-4" />;
+      case 'java':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="h-4 w-4" />;
+      case 'cpp':
+      case 'c++':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="h-4 w-4" />;
+      case 'csharp':
+      case 'c#':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="h-4 w-4" />;
+      case 'c':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="h-4 w-4" />;
+      case 'go':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="h-4 w-4" />;
+      case 'rust':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="h-4 w-4" />;
+      case 'kotlin':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="h-4 w-4" />;
+      case 'typescript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="h-4 w-4" />;
+      case 'php':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="h-4 w-4" />;
+      case 'ruby':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="h-4 w-4" />;
+      case 'swift':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="h-4 w-4" />;
+      default:
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="h-4 w-4" />;
     }
   };
 
@@ -197,10 +235,16 @@ export default function AdminRecentActivity() {
                         'bg-red-100 text-red-700'
                       }`}>
                         {activity.problem.difficulty}
-                      </span>
-                    )}
-                  </div>
-                )}
+                                              </span>
+                      )}
+                      {activity.language && (
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          {getLanguageImage(activity.language)}
+                          <span className="capitalize">{activity.language}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
 
               <div className="flex items-center space-x-2 text-xs text-gray-400">

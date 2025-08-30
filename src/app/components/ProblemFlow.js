@@ -145,6 +145,43 @@ export default function ProblemFlow() {
     });
   };
 
+  const getLanguageImage = (language) => {
+    if (!language) return <Code2 className="w-10 h-10 text-blue-500" />;
+    
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-10 h-10" />;
+      case 'python':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="w-10 h-10" />;
+      case 'java':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-10 h-10" />;
+      case 'cpp':
+      case 'c++':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="w-10 h-10" />;
+      case 'csharp':
+      case 'c#':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="w-10 h-10" />;
+      case 'c':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="w-10 h-10" />;
+      case 'go':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-10 h-10" />;
+      case 'rust':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="w-10 h-10" />;
+      case 'kotlin':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-10 h-10" />;
+      case 'typescript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="w-10 h-10" />;
+      case 'php':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="w-10 h-10" />;
+      case 'ruby':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="w-10 h-10" />;
+      case 'swift':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="w-10 h-10" />;
+      default:
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="w-10 h-10" />;
+    }
+  };
+
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
       <div className="flex items-center space-x-4">
@@ -237,7 +274,7 @@ export default function ProblemFlow() {
             </div>
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <Code2 className="w-8 h-8 text-blue-500" />
+                {getLanguageImage(langData.language)}
                 {/* <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span> */}
                 <span className="text-2xl font-bold text-gray-700">∞</span>
               </div>
