@@ -583,16 +583,28 @@ export default function LevelProblemsPage() {
                       <div className="space-y-2">
                         <div>
                           <span className="text-blue-600 font-medium">Input:</span>
-                          <span className="text-gray-700 ml-2">{example.input}</span>
+                          <pre className="text-gray-700 ml-2 mt-1 text-sm bg-white p-2 rounded border">
+                            {example.input.split('\n').map((line, i) => (
+                              <div key={i}>{line}</div>
+                            ))}
+                          </pre>
                         </div>
                         <div>
                           <span className="text-blue-600 font-medium">Output:</span>
-                          <span className="text-gray-700 ml-2">{example.output}</span>
+                          <pre className="text-gray-700 ml-2 mt-1 text-sm bg-white p-2 rounded border">
+                            {example.output.split('\n').map((line, i) => (
+                              <div key={i}>{line}</div>
+                            ))}
+                          </pre>
                         </div>
                         {example.explanation && (
                           <div>
                             <span className="text-blue-600 font-medium">Explanation:</span>
-                            <span className="text-gray-700 ml-2">{example.explanation}</span>
+                            <pre className="text-gray-700 ml-2 mt-1 text-sm bg-white p-2 rounded border">
+                              {example.explanation.split('\n').map((line, i) => (
+                                <div key={i}>{line}</div>
+                              ))}
+                            </pre>
                           </div>
                         )}
                       </div>

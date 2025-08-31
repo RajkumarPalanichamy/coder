@@ -317,7 +317,7 @@ export default function ProblemPage() {
                 </svg>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{problem.title}</h1>
-              <p className="text-gray-600">{problem.description}</p>
+              <p className="text-gray-600 whitespace-pre-wrap">{problem.description}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -476,16 +476,28 @@ export default function ProblemPage() {
                       <h4 className="font-medium text-gray-900 mb-2">Example {index + 1}</h4>
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">Input:</span>
-                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">{example.input}</pre>
+                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">
+                          {example.input.split('\n').map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))}
+                        </pre>
                       </div>
                       <div className="mb-2">
                         <span className="font-medium text-gray-700">Output:</span>
-                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">{example.output}</pre>
+                        <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">
+                          {example.output.split('\n').map((line, i) => (
+                            <div key={i}>{line}</div>
+                          ))}
+                        </pre>
                       </div>
                       {example.explanation && (
                         <div>
                           <span className="font-medium text-gray-700">Explanation:</span>
-                          <p className="mt-1 text-sm text-gray-600">{example.explanation}</p>
+                          <pre className="mt-1 text-sm text-gray-600 bg-white p-2 rounded border">
+                            {example.explanation.split('\n').map((line, i) => (
+                              <div key={i}>{line}</div>
+                            ))}
+                          </pre>
                         </div>
                       )}
                     </div>
@@ -715,15 +727,15 @@ export default function ProblemPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="font-medium text-gray-700">Input:</span>
-                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.input || 'N/A'}</pre>
+                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>{testResult.input || 'N/A'}</pre>
                         </div>
                         <div>
                           <span className="font-medium text-gray-700">Expected Output:</span>
-                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.expectedOutput || 'N/A'}</pre>
+                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>{testResult.expectedOutput || 'N/A'}</pre>
                         </div>
                         <div>
                           <span className="font-medium text-gray-700">Your Output:</span>
-                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.output || 'N/A'}</pre>
+                          <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>{testResult.output || 'N/A'}</pre>
                         </div>
                         {testResult.error && (
                           <div className="md:col-span-2">
@@ -774,15 +786,15 @@ export default function ProblemPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="font-medium text-gray-700">Input:</span>
-                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.input || 'N/A'}</pre>
+                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>{testResult.input || 'N/A'}</pre>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Expected Output:</span>
-                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.expectedOutput || 'N/A'}</pre>
+                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>{testResult.expectedOutput || 'N/A'}</pre>
                           </div>
                           <div>
                             <span className="font-medium text-gray-700">Your Output:</span>
-                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto">{testResult.output || 'N/A'}</pre>
+                            <pre className="mt-1 text-xs text-gray-600 bg-white p-2 rounded border overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>{testResult.output || 'N/A'}</pre>
                           </div>
                           {testResult.error && (
                             <div className="md:col-span-2">

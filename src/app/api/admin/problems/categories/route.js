@@ -47,12 +47,7 @@ export async function GET(request) {
       })
     );
 
-    // Sort categories alphabetically
-    const sortedCategories = categoriesWithCounts.sort((a, b) => 
-      a.category.localeCompare(b.category)
-    );
-
-    return NextResponse.json({ categories: sortedCategories });
+    return NextResponse.json({ categories: categoriesWithCounts });
   } catch (error) {
     console.error('Error fetching problem categories:', error);
     return NextResponse.json(

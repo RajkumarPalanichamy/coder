@@ -265,13 +265,13 @@ export default function CodeExecutor({
                     <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <strong>Expected:</strong>
-                        <pre className="mt-1 p-2 bg-white rounded border text-xs overflow-x-auto">
+                        <pre className="mt-1 p-2 bg-white rounded border text-xs overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>
                           {result.expected}
                         </pre>
                       </div>
                       <div>
                         <strong>Got:</strong>
-                        <pre className="mt-1 p-2 bg-white rounded border text-xs overflow-x-auto">
+                        <pre className="mt-1 p-2 bg-white rounded border text-xs overflow-x-auto whitespace-pre-wrap" style={{ whiteSpace: 'pre-wrap' }}>
                           {result.actual}
                         </pre>
                       </div>
