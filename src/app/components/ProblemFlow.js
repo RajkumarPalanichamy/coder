@@ -147,7 +147,7 @@ export default function ProblemFlow() {
 
           const getLanguageImage = (language) => {
           if (!language) return <Code2 className="w-16 h-16 text-blue-500" />;
-          
+          console.log(language);
           switch (language.toLowerCase()) {
             case 'javascript':
               return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-40 h-40" />;
@@ -157,12 +157,15 @@ export default function ProblemFlow() {
               return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-40 h-40" />;
             case 'cpp':
             case 'c++':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="w-40 h-40" />;
+              case 'c++ programming':
+            case 'C++':
+            case 'Cpp':
+              return <img  src="/c.svg" alt="C++" className="w-40 h-40" />;
             case 'csharp':
             case 'c#':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="w-40 h-40" />;
+              return <img  src="/c--4.svg" alt="C#" className="w-40 h-40" />;
             case 'c':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="w-40 h-40" />;
+              return <img  src="/c-1.svg" alt="C" className="w-40 h-40" />;
             case 'go':
               return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-40 h-40" />;
             case 'rust':
