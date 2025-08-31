@@ -349,7 +349,7 @@ export default function StudentSidebar({ onLogout }) {
               <Link
                 key={label}
                 href={href}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group bg-white hover:bg-gray-50 ${textColor} hover:shadow-md hover:scale-[1.02] border-2 ${borderColor} ${
+                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group bg-white hover:bg-gray-50 ${textColor} hover:shadow-md hover:scale-[1.02] border-2 border-gray-300 ${
                   pathname === href
                     ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
                     : ''
@@ -360,11 +360,11 @@ export default function StudentSidebar({ onLogout }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="font-medium truncate">{label}</span>
-                                        {badge && (
-                    <span className="text-xs bg-white bg-opacity-80 text-purple-700 px-2 py-1 rounded-full flex-shrink-0 font-medium">
-                      {badge}
-                    </span>
-                  )}
+                                        {/* {badge && (
+                    // <span className="text-xs bg-white bg-opacity-80 text-purple-700 px-2 py-1 rounded-full flex-shrink-0 font-medium">
+                    //   {badge}
+                    // </span>
+                  // )} */}
                     </div>
                     <p className="text-sm truncate opacity-80">{description}</p>
                   </div>

@@ -891,13 +891,13 @@ export default function LevelProblemsPage() {
           >
             Previous
           </button>
-          <button
+          {/* <button
             onClick={handleClearProblem}
             className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
           >
             Clear
-          </button>
-          <button
+          </button> */}
+          {/* <button
             onClick={handleMarkProblem}
             className={`px-4 py-2 rounded-lg transition-colors ${
               isProblemMarked(currentProblem._id)
@@ -906,7 +906,7 @@ export default function LevelProblemsPage() {
             }`}
           >
             {isProblemMarked(currentProblem._id) ? 'Unmark' : 'Mark'}
-          </button>
+          </button> */}
           <button
             onClick={goToNext}
             disabled={currentProblemIndex === problems.length - 1}
