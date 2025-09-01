@@ -23,7 +23,8 @@ export async function GET(request, { params }) {
         $group: {
           _id: "$category",
           count: { $sum: 1 },
-          tests: { $push: { _id: "$_id", title: "$title", description: "$description" } }
+          tests: { $push: { _id: "$_id", title: "$title", description: "$description" } },
+          firstCreated: { $min: "$createdAt" }
         }
       },
       {
@@ -31,11 +32,12 @@ export async function GET(request, { params }) {
           category: "$_id",
           count: 1,
           tests: 1,
+          firstCreated: 1,
           _id: 0
         }
       },
       {
-        $sort: { category: 1 }
+        $sort: { firstCreated: 1 }
       }
     ]);
 

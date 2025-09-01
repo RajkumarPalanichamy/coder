@@ -26,7 +26,7 @@ export async function GET(req, context) {
       programmingLanguage: problem.programmingLanguage
     })
     .select('_id title')
-    .sort({ createdAt: 1 }); // Sort by creation date ascending (oldest first, DB insertion order)
+    .sort({ _id: 1 }); // Sort by insertion order to maintain consistent sequence
 
     // Find current problem index
     const currentIndex = problemsInLevel.findIndex(p => p._id.toString() === id);

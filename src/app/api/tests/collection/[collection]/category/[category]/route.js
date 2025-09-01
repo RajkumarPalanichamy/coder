@@ -14,7 +14,7 @@ export async function GET(request, { params }) {
     const tests = await Test.find({
       collection: decodeURIComponent(collection),
       category: decodeURIComponent(category)
-    }).sort({ createdAt: -1 });
+    }).sort({ _id: 1 });
 
     return NextResponse.json(tests);
   } catch (error) {

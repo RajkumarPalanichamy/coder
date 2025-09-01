@@ -29,9 +29,7 @@ export async function GET(req) {
           _id: 0
         }
       },
-      {
-        $sort: { collection: 1 }
-      }
+
     ]);
 
     // Additional filtering on the result to ensure collection is valid
