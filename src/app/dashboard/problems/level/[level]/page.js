@@ -701,7 +701,7 @@ export default function LevelProblemsPage() {
                 <button
                   onClick={handleRunCode}
                   disabled={runningCode || !sessionStarted}
-                  className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {runningCode ? (
                     <>
@@ -716,7 +716,7 @@ export default function LevelProblemsPage() {
                   )}
                 </button>
                 
-                {sessionStarted && (
+                {/* {sessionStarted && (
                   <button
                     onClick={handleSubmitAll}
                     disabled={submitting}
@@ -734,7 +734,7 @@ export default function LevelProblemsPage() {
                       </>
                     )}
                   </button>
-                )}
+                )} */}
               </div>
             </div>
           </div>
@@ -903,13 +903,13 @@ export default function LevelProblemsPage() {
           >
             Previous
           </button>
-          {/* <button
+          <button
             onClick={handleClearProblem}
             className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
           >
             Clear
-          </button> */}
-          {/* <button
+          </button>
+          <button
             onClick={handleMarkProblem}
             className={`px-4 py-2 rounded-lg transition-colors ${
               isProblemMarked(currentProblem._id)
@@ -918,7 +918,7 @@ export default function LevelProblemsPage() {
             }`}
           >
             {isProblemMarked(currentProblem._id) ? 'Unmark' : 'Mark'}
-          </button> */}
+          </button>
           <button
             onClick={goToNext}
             disabled={currentProblemIndex === problems.length - 1}
@@ -926,6 +926,26 @@ export default function LevelProblemsPage() {
           >
             Next
           </button>
+
+          {sessionStarted && (
+                  <button
+                    onClick={handleSubmitAll}
+                    disabled={submitting}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit All ({getTestedProblemsCount()}/{problems.length})
+                      </>
+                    )}
+                  </button>
+                )}
 
           {sessionStarted && (
             <button
