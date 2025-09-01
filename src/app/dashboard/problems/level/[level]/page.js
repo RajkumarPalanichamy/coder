@@ -701,7 +701,7 @@ export default function LevelProblemsPage() {
                 <button
                   onClick={handleRunCode}
                   disabled={runningCode || !sessionStarted}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {runningCode ? (
                     <>
@@ -888,13 +888,7 @@ export default function LevelProblemsPage() {
       )}
 
       {/* Bottom Bar */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
-        <div className="flex items-center gap-3">
-          {/* <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors border border-gray-300">
-            <AlertTriangle className="w-4 h-4 inline mr-2" />
-            Report Error
-          </button> */}
-        </div>
+      <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-center flex-shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
           <button
             onClick={goToPrevious}
