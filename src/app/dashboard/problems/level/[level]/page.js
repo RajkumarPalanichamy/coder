@@ -941,7 +941,7 @@ export default function LevelProblemsPage() {
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Submit All ({getTestedProblemsCount()}/{problems.length})
+                        Submit  {/* {All ({getTestedProblemsCount()}/{problems.length})} */}
                       </>
                     )}
                   </button>
