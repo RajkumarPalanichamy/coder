@@ -1,3 +1,4 @@
+require('./load-env');
 const mongoose = require('mongoose');
 
 // MongoDB connection

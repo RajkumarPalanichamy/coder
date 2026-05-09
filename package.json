@@ -8,7 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "create-admin": "node scripts/create-admin.js",
-    "create-sample-problems": "node scripts/create-sample-problems.js"
+    "create-sample-problems": "node scripts/create-sample-problems.js",
+    "create-sample-mcqs": "node scripts/create-sample-mcqs.js",
+    "create-sample-tests": "node scripts/create-sample-tests.js",
+    "seed": "node scripts/create-admin.js && node scripts/create-sample-problems.js && node scripts/create-sample-mcqs.js && node scripts/create-sample-tests.js",
+    "migrate-tests": "node scripts/migrate-existing-tests.js",
+    "migrate-language-field": "node --require ./scripts/load-env.js scripts/migrate-language-field.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",

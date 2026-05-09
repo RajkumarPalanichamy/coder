@@ -1,3 +1,4 @@
+require('./load-env');
 const mongoose = require('mongoose');
 
 // User Schema (simplified for the script)

@@ -1,6 +1,13 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 
-// Connection URI - update this with your MongoDB connection string
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+// Connection URI — prefer MONGODB_URI from .env.local
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/zenith-portal';
 
 // Test schema (same as in your model)
