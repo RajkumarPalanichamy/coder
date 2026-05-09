@@ -1,9 +1,35 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+/** Vercel / dashboards often paste values with wrapping quotes or stray newlines. */
+function normalizeMongoUri(raw) {
+  if (raw == null) return '';
+  let u = String(raw).trim().replace(/\r\n|\r|\n/g, '');
+  if (
+    (u.startsWith('"') && u.endsWith('"')) ||
+    (u.startsWith("'") && u.endsWith("'"))
+  ) {
+    u = u.slice(1, -1).trim();
+  }
+  return u;
+}
+
+const MONGODB_URI = normalizeMongoUri(
+  process.env.MONGODB_URI || process.env.MONGO_URI
+);
 
 if (!MONGODB_URI) {
-  throw new Error('MONGODB_URI environment variable is not defined. Please create a .env.local file with MONGODB_URI=mongodb://localhost:27017/competitive_programming');
+  throw new Error(
+    'MONGODB_URI is not set. Add it in Vercel → Settings → Environment Variables (name: MONGODB_URI), or use .env.local for local dev.'
+  );
+}
+
+if (
+  !MONGODB_URI.startsWith('mongodb://') &&
+  !MONGODB_URI.startsWith('mongodb+srv://')
+) {
+  throw new Error(
+    'MONGODB_URI must start with mongodb:// or mongodb+srv://. Remove extra quotes/spaces in Vercel env, or fix the value.'
+  );
 }
 
 let cached = global.mongoose;
