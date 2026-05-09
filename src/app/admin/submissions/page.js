@@ -139,12 +139,7 @@ export default function AdminSubmissionsPage() {
       } else if (filter === 'test') {
         exportSubmissionsToExcel(testSubmissions, fileName, 'test');
       } else {
-        // Export combined submissions with proper type handling
-        const allSubmissions = sortedSubmissions.map(sub => ({
-          ...sub,
-          submissionType: sub.type
-        }));
-        exportSubmissionsToExcel(allSubmissions, fileName, 'problem');
+        exportSubmissionsToExcel(sortedSubmissions, fileName, 'mixed');
       }
     } else {
       const fileName = `level_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -162,7 +157,14 @@ export default function AdminSubmissionsPage() {
     const fileName = `selected_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
     
     if (activeTab === 'individual') {
-      exportSelectedSubmissionsToExcel(sortedSubmissions, selectedSubmissions, fileName, filter === 'test' ? 'test' : 'problem');
+      const exportType =
+        filter === 'test' ? 'test' : filter === 'problem' ? 'problem' : 'mixed';
+      exportSelectedSubmissionsToExcel(
+        sortedSubmissions,
+        selectedSubmissions,
+        fileName,
+        exportType
+      );
     } else {
       exportSelectedSubmissionsToExcel(levelSubmissions, selectedSubmissions, fileName, 'level');
     }
