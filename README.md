@@ -39,16 +39,26 @@ cp .env.example .env.local
 
 ### 3. Configure Judge0 API
 
-1. **Register for Judge0 CE API**:
-   - Go to [Judge0 CE on RapidAPI](https://rapidapi.com/judge0-official/api/judge0-ce)
-   - Subscribe to a plan
-   - Get your API key
+**Option A — Self-hosted (recommended for production)**
 
-2. **Update Environment Variables**:
+Deploy Judge0 CE on your own VPS. See [docs/JUDGE0_SELF_HOSTED_SETUP.md](docs/JUDGE0_SELF_HOSTED_SETUP.md) for full Hostinger VPS instructions.
+
+```bash
+# In .env.local or Vercel env vars
+JUDGE0_URL=https://judge0.yourdomain.com
+JUDGE0_API_KEY=your_authn_token_from_vps
+JUDGE0_AUTH_MODE=selfhosted
+```
+
+**Option B — RapidAPI (paid)**
+
+1. Register at [Judge0 CE on RapidAPI](https://rapidapi.com/judge0-official/api/judge0-ce)
+2. Set environment variables:
+
    ```bash
-   # In .env.local
    JUDGE0_API_KEY=your_rapidapi_key_here
    JUDGE0_URL=https://judge0-ce.p.rapidapi.com
+   JUDGE0_AUTH_MODE=rapidapi
    ```
 
 ### 4. Database Setup

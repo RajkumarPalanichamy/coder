@@ -117,7 +117,9 @@ export async function POST(request) {
     console.log('✅ Problem found:', { title: problem.title, testCasesCount: problem.testCases?.length || 0 });
 
     // Check if Judge0 API is available for real execution
-    const hasJudge0 = !!(process.env.JUDGE0_API_KEY && process.env.JUDGE0_URL);
+    const judge0Url = process.env.JUDGE0_URL;
+    const isSelfHosted = judge0Url && !judge0Url.includes('rapidapi.com');
+    const hasJudge0 = !!judge0Url && (!!process.env.JUDGE0_API_KEY || isSelfHosted);
     console.log('🔧 Judge0 config:', { 
       hasApiKey: !!process.env.JUDGE0_API_KEY, 
       hasUrl: !!process.env.JUDGE0_URL,

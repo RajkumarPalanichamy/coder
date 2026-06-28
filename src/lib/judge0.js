@@ -4,6 +4,9 @@
 
 const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY;
 const JUDGE0_URL = process.env.JUDGE0_URL || 'https://judge0-ce.p.rapidapi.com';
+const JUDGE0_AUTH_MODE = process.env.JUDGE0_AUTH_MODE ||
+  (JUDGE0_URL.includes('rapidapi.com') ? 'rapidapi' : 'selfhosted');
+const JUDGE0_RAPIDAPI_HOST = process.env.JUDGE0_RAPIDAPI_HOST || 'judge0-ce.p.rapidapi.com';
 
 // Comprehensive language support with Judge0 language IDs
 export const SUPPORTED_LANGUAGES = {
@@ -137,10 +140,38 @@ export const STATUS_CODES = {
 export class Judge0Service {
   constructor() {
     this.apiKey = JUDGE0_API_KEY;
-    this.baseUrl = JUDGE0_URL;
+    this.baseUrl = JUDGE0_URL.replace(/\/$/, '');
+    this.authMode = JUDGE0_AUTH_MODE;
     this.pollInterval = 1000; // Start with faster polling
     this.maxAttempts = 60; // Allow more attempts
     this.backoffFactor = 1.2; // Exponential backoff
+  }
+
+  /**
+   * Build request headers for RapidAPI or self-hosted Judge0.
+   */
+  getAuthHeaders(contentType = false) {
+    const headers = {};
+
+    if (contentType) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    if (this.authMode === 'rapidapi') {
+      if (!this.apiKey) {
+        throw new Error('Judge0 API key not configured. Please set JUDGE0_API_KEY environment variable.');
+      }
+      headers['X-RapidAPI-Key'] = this.apiKey;
+      headers['X-RapidAPI-Host'] = JUDGE0_RAPIDAPI_HOST;
+      return headers;
+    }
+
+    // Self-hosted Judge0 uses X-Auth-Token when AUTHN_TOKEN is set on the server.
+    if (this.apiKey) {
+      headers['X-Auth-Token'] = this.apiKey;
+    }
+
+    return headers;
   }
 
   /**
@@ -148,15 +179,16 @@ export class Judge0Service {
    */
   async testConnection() {
     try {
-      if (!this.apiKey) {
+      if (this.authMode === 'rapidapi' && !this.apiKey) {
         throw new Error('Judge0 API key not configured. Please set JUDGE0_API_KEY environment variable.');
       }
 
+      if (!this.baseUrl) {
+        throw new Error('Judge0 URL not configured. Please set JUDGE0_URL environment variable.');
+      }
+
       const response = await fetch(`${this.baseUrl}/languages`, {
-        headers: {
-          'X-RapidAPI-Key': this.apiKey,
-          'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-        }
+        headers: this.getAuthHeaders()
       });
 
       if (!response.ok) {
@@ -167,6 +199,7 @@ export class Judge0Service {
       return {
         success: true,
         message: 'Judge0 API connection successful',
+        authMode: this.authMode,
         availableLanguages: languages.length,
         supportedLanguages: Object.keys(SUPPORTED_LANGUAGES)
       };
@@ -183,7 +216,7 @@ export class Judge0Service {
    * Execute code with multiple test cases
    */
   async execute(code, language, testCases = []) {
-    if (!this.apiKey) {
+    if (this.authMode === 'rapidapi' && !this.apiKey) {
       throw new Error('Judge0 API key not configured. Please set JUDGE0_API_KEY environment variable.');
     }
 
@@ -268,11 +301,7 @@ export class Judge0Service {
 
     const response = await fetch(`${this.baseUrl}/submissions?base64_encoded=true&wait=false`, {
       method: 'POST',
-      headers: {
-        'X-RapidAPI-Key': this.apiKey,
-        'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
-        'Content-Type': 'application/json'
-      },
+      headers: this.getAuthHeaders(true),
       body: JSON.stringify(submissionData)
     });
 
@@ -311,10 +340,7 @@ export class Judge0Service {
     while (attempts < this.maxAttempts) {
       try {
         const response = await fetch(`${this.baseUrl}/submissions/${token}?base64_encoded=true`, {
-          headers: {
-            'X-RapidAPI-Key': this.apiKey,
-            'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-          }
+          headers: this.getAuthHeaders()
         });
 
         if (!response.ok) {
