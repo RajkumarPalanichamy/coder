@@ -1,31 +1,8 @@
 import * as XLSX from 'xlsx';
+import { formatDateTime } from './formatDateTime';
+import { formatStudentName } from './formatStudentName';
 
-const formatDate = (date) => {
-  if (!date) return '';
-  const d = new Date(date);
-  return d.toLocaleString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
-};
-
-/** Problem API populates `user`; test API populates `student`. */
-function formatStudentName(submission) {
-  const p = submission.student || submission.user;
-  if (!p) return 'Unknown';
-  const first = p.firstName?.trim?.() || '';
-  const last = p.lastName?.trim?.() || '';
-  const combined = `${first} ${last}`.trim();
-  if (combined) return combined;
-  if (p.name) return String(p.name);
-  if (p.email) return String(p.email);
-  return 'Unknown';
-}
+const formatDate = formatDateTime;
 
 function formatTitle(submission) {
   return submission.problem?.title || submission.test?.title || 'Unknown';

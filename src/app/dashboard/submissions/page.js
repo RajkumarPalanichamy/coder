@@ -14,6 +14,7 @@ import {
   Timer,
   Award
 } from 'lucide-react';
+import { formatDateTime } from '@/lib/formatDateTime';
 
 function SubmissionsContent() {
   const router = useRouter();
@@ -332,7 +333,7 @@ function SubmissionsContent() {
                   </div>
                   <div>
                     <span className="font-medium">Submitted:</span>
-                    <p>{new Date(levelSubmission.createdAt).toLocaleString()}</p>
+                    <p>{formatDateTime(levelSubmission.createdAt)}</p>
                   </div>
                 </div>
 
@@ -417,7 +418,7 @@ function SubmissionsContent() {
                   </div>
                   <div>
                     <span className="font-medium">Submitted:</span>
-                    <p>{new Date(submission.submittedAt).toLocaleString()}</p>
+                    <p>{formatDateTime(submission.submittedAt)}</p>
                   </div>
                   {submission.type === 'test' && (
                     <>

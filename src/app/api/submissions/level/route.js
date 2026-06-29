@@ -54,8 +54,21 @@ export async function GET(request) {
     const totalCount = await LevelSubmission.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
 
+    const currentTime = new Date();
+    const enrichedLevelSubmissions = levelSubmissions.map((ls) => {
+      const startTime = ls.startTime ? new Date(ls.startTime) : null;
+      let timeUsed = ls.timeUsed || 0;
+
+      if (startTime) {
+        const endTime = ls.submitTime ? new Date(ls.submitTime) : currentTime;
+        timeUsed = Math.floor((endTime - startTime) / 1000);
+      }
+
+      return { ...ls, timeUsed };
+    });
+
     return NextResponse.json({
-      levelSubmissions,
+      levelSubmissions: enrichedLevelSubmissions,
       pagination: {
         currentPage: page,
         totalPages,

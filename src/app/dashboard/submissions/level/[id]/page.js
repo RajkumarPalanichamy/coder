@@ -16,6 +16,7 @@ import {
   BarChart
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { formatDateTime } from '@/lib/formatDateTime';
 
 // Monaco Editor for code display
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
@@ -257,7 +258,7 @@ export default function LevelSubmissionDetailsPage() {
                 <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                 <div>
                   <p className="text-sm font-medium">
-                    {new Date(submission.createdAt).toLocaleString()}
+                    {formatDateTime(submission.createdAt)}
                   </p>
                   <p className="text-sm text-gray-500">
                     Time Used: {Math.floor(submission.timeUsed / 60)}m {submission.timeUsed % 60}s

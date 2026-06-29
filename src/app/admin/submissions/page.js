@@ -19,6 +19,8 @@ import {
 import AdminSidebar from '../../components/AdminSidebar';
 import { useRouter } from 'next/navigation';
 import { exportSubmissionsToExcel, exportSelectedSubmissionsToExcel } from '../../../lib/excelExport';
+import { formatStudentName } from '@/lib/formatStudentName';
+import { formatDateTime } from '@/lib/formatDateTime';
 
 export default function AdminSubmissionsPage() {
   const router = useRouter();
@@ -485,11 +487,7 @@ export default function AdminSubmissionsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2">
-                      {(sub.user?.firstName && sub.user?.lastName) 
-                        ? `${sub.user.firstName} ${sub.user.lastName}` 
-                        : (sub.student?.firstName && sub.student?.lastName)
-                        ? `${sub.student.firstName} ${sub.student.lastName}`
-                        : 'N/A'}
+                      {formatStudentName(sub)}
                     </td>
                     <td className="px-4 py-2">
                       {sub.problem?.title || sub.test?.title || 'N/A'}
@@ -512,7 +510,7 @@ export default function AdminSubmissionsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2">
-                      {new Date(sub.submittedAt || sub.createdAt).toLocaleString()}
+                      {formatDateTime(sub.submittedAt || sub.createdAt)}
                     </td>
                     <td className="px-4 py-2">
                       <button 
