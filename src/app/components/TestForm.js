@@ -215,7 +215,7 @@ export default function TestForm({ initialData = {}, onSubmit }) {
           {mcqs.length === 0 && <div className="text-gray-500">No MCQs added yet.</div>}
           {mcqs.map((mcq, idx) => (
             <div key={idx} className="border rounded p-3 bg-white flex flex-col gap-2">
-              <div className="font-semibold">Q{idx + 1}: {mcq.question}</div>
+              <div className="font-semibold whitespace-pre-wrap">Q{idx + 1}: {mcq.question}</div>
               <ol className="list-decimal ml-6">
                 {mcq.options.map((opt, oidx) => (
                   <li key={oidx} className={oidx === mcq.correctOption ? 'font-semibold text-green-700' : ''}>{opt}</li>
@@ -231,9 +231,10 @@ export default function TestForm({ initialData = {}, onSubmit }) {
         <div className="border rounded p-4 bg-gray-50">
           <div className="font-semibold mb-2">{editingIdx !== null ? 'Edit MCQ' : 'Add New MCQ'}</div>
           <div className="mb-2">
-            <input
-              className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300"
-              placeholder="Question"
+            <textarea
+              className="w-full border px-3 py-2 rounded text-gray-900 border-gray-300 font-mono text-sm"
+              placeholder="Question (supports multi-line code)"
+              rows={8}
               value={mcqDraft.question}
               onChange={e => setMcqDraft({ ...mcqDraft, question: e.target.value })}
             />
@@ -242,9 +243,10 @@ export default function TestForm({ initialData = {}, onSubmit }) {
             <label className="block font-medium mb-1">Options</label>
             {mcqDraft.options.map((opt, idx) => (
               <div key={idx} className="flex items-center mb-1">
-                <input
-                  className="flex-1 border px-3 py-2 rounded text-gray-900 border-gray-300 mr-2"
+                <textarea
+                  className="flex-1 border px-3 py-2 rounded text-gray-900 border-gray-300 mr-2 font-mono text-sm"
                   placeholder={`Option ${idx + 1}`}
+                  rows={2}
                   value={opt}
                   onChange={e => handleOptionChange(idx, e.target.value)}
                 />

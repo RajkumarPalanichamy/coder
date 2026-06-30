@@ -30,13 +30,13 @@ export default function MCQForm({ initialData = {}, onSubmit, testList = [] }) {
       {error && <div className="text-red-500">{error}</div>}
       <div>
         <label className="block font-medium mb-1 text-gray-700">Question</label>
-        <input
-          type="text"
+        <textarea
           name="question"
           value={question}
           onChange={e => setQuestion(e.target.value)}
-          placeholder="Enter the question"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
+          placeholder="Enter the question (supports multi-line code)"
+          rows={8}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 font-mono text-sm"
           required
         />
       </div>
@@ -44,13 +44,13 @@ export default function MCQForm({ initialData = {}, onSubmit, testList = [] }) {
         <label className="block font-medium mb-1 text-gray-700">Options</label>
         {options.map((opt, idx) => (
           <div key={idx} className="flex items-center mb-1">
-            <input
-              type="text"
+            <textarea
               name={`option${idx}`}
               value={opt}
               onChange={e => handleOptionChange(idx, e.target.value)}
               placeholder={`Option ${String.fromCharCode(65 + idx)}`}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 mr-2"
+              rows={2}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 mr-2 font-mono text-sm"
               required
             />
             <input

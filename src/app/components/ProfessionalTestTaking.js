@@ -204,7 +204,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                   <p className="text-sm text-gray-600">
                     <span className="font-medium">Your answer: </span>
                     {answers[index] !== null ? (
-                      <span className="text-green-700">{mcq.options[answers[index]]}</span>
+                      <span className="text-green-700 whitespace-pre-wrap font-mono text-sm">{mcq.options[answers[index]]}</span>
                     ) : (
                       <span className="text-red-600 italic">Not answered</span>
                     )}
@@ -269,9 +269,9 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                   <span className="text-sm font-medium text-red-800">Negative Marks: 0</span>
                 </div>
               </div>
-              <p className="text-lg text-gray-800 leading-relaxed mb-6">
+              <pre className="text-lg text-gray-800 leading-relaxed mb-6 whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded-lg border border-gray-200 overflow-x-auto">
                 {test.mcqs[currentQuestion].question}
-              </p>
+              </pre>
             </div>
 
             <div className="space-y-3 mb-8">
@@ -294,7 +294,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                     onChange={() => handleAnswerSelect(currentQuestion, index)}
                     className="mr-3 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span className="text-gray-800">{option}</span>
+                  <span className="text-gray-800 whitespace-pre-wrap font-mono text-sm">{option}</span>
                 </label>
               ))}
             </div>

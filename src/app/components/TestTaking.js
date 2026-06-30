@@ -66,7 +66,9 @@ export default function TestTaking({ test, onSubmit }) {
       {/* Question or Review */}
       {!isReview ? (
         <div className="border rounded p-4 bg-white">
-          <div className="font-medium mb-2 text-black">Q{step + 1}. {test.mcqs[step].question}</div>
+          <div className="font-medium mb-2 text-black whitespace-pre-wrap font-mono text-sm bg-gray-50 p-3 rounded border">
+            Q{step + 1}. {test.mcqs[step].question}
+          </div>
           <div className="space-y-2">
             {test.mcqs[step].options.map((opt, oidx) => (
               <label key={oidx} className={`flex items-center px-3 py-2 rounded cursor-pointer transition-colors border ${answers[step] === oidx ? 'bg-indigo-100 border-indigo-400' : 'border-gray-200 hover:bg-indigo-50'}`}>
@@ -77,7 +79,7 @@ export default function TestTaking({ test, onSubmit }) {
                   onChange={() => handleOptionChange(step, oidx)}
                   className="mr-2 accent-indigo-600"
                 />
-                <span className="text-black">{opt}</span>
+                <span className="text-black whitespace-pre-wrap font-mono text-sm">{opt}</span>
               </label>
             ))}
           </div>
@@ -89,7 +91,7 @@ export default function TestTaking({ test, onSubmit }) {
             {test.mcqs.map((mcq, idx) => (
               <div key={mcq._id} className={`border rounded p-4 flex items-center justify-between ${answers[idx] === null ? 'bg-red-50 border-red-200' : 'bg-white'}`}>
                 <div>
-                  <div className="font-medium text-black">Q{idx + 1}. {mcq.question}</div>
+                  <div className="font-medium text-black whitespace-pre-wrap font-mono text-sm">Q{idx + 1}. {mcq.question}</div>
                   <div className="text-gray-700 text-sm">
                     <span className="font-semibold">Your Answer: </span>
                     {answers[idx] !== null ? (

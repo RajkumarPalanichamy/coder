@@ -6,7 +6,7 @@ export default function TestResult({ test, answers, correctAnswers, score }) {
         const isCorrect = answers[idx] === correctAnswers[idx];
         return (
           <div key={mcq._id} className={`border rounded p-4 ${isCorrect ? 'bg-green-50' : 'bg-red-50'}`}> 
-            <div className="font-medium mb-2 text-black">Q{idx + 1}. {mcq.question}</div>
+            <div className="font-medium mb-2 text-black whitespace-pre-wrap font-mono text-sm">Q{idx + 1}. {mcq.question}</div>
             <div className="mb-1">
               <span className="font-semibold">Your Answer: </span>
               <span className={isCorrect ? 'text-green-700' : 'text-red-700'}>
