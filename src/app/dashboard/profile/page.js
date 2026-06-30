@@ -46,7 +46,7 @@ export default function StudentProfilePage() {
           {user.firstName[0]}{user.lastName[0]}
         </div>
         <div className="text-3xl font-extrabold text-gray-900 mb-1 text-center">{user.firstName} {user.lastName}</div>
-        <div className="flex items-center gap-2 text-indigo-500 mb-1"><AtSign className="h-4 w-4" />@{user.username}</div>
+        <div className="flex items-center gap-2 text-indigo-500 mb-1"><AtSign className="h-4 w-4" />{user.username}</div>
         <div className="flex items-center gap-2 text-gray-500 mb-1"><Mail className="h-4 w-4" />{user.email}</div>
         <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full mb-2">Student</span>
         <div className="flex items-center gap-2 text-gray-500 mb-2"><MapPin className="h-4 w-4" />India</div>
