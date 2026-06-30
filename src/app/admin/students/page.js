@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import CreateStudentModal from '../../components/CreateStudentModal';
 import EditStudentModal from '../../components/EditStudentModal';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function AdminStudentsPage() {
+function AdminStudentsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const handleLogout = async () => {
@@ -150,4 +150,16 @@ export default function AdminStudentsPage() {
       )}
     </div>
   );
-} 
+}
+
+export default function AdminStudentsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    }>
+      <AdminStudentsContent />
+    </Suspense>
+  );
+}
