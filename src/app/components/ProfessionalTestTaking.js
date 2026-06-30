@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   const [answers, setAnswers] = useState(Array(test.mcqs.length).fill(null));
@@ -9,25 +9,44 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [markedQuestions, setMarkedQuestions] = useState(new Set());
+  const warningDismissedRef = useRef(false);
 
   const totalQuestions = test.mcqs.length;
 
-  // Timer logic
+  const handleAutoSubmit = useCallback(async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
+    const filledAnswers = answers.map(answer => answer !== null ? answer : 0);
+    await onSubmit(filledAnswers);
+  }, [answers, onSubmit, isSubmitting]);
+
+  const dismissWarning = () => {
+    warningDismissedRef.current = true;
+    setShowWarning(false);
+  };
+
+  // Countdown timer
   useEffect(() => {
-    if (timeLeft <= 0) {
-      handleAutoSubmit();
-      return;
-    }
-
-    if (timeLeft <= 300) { // 5 minutes warning
-      setShowWarning(true);
-    }
-
     const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  // Auto-submit when time runs out
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      handleAutoSubmit();
+    }
+  }, [timeLeft, handleAutoSubmit]);
+
+  // Show 5-minute warning once (until user dismisses it)
+  useEffect(() => {
+    if (timeLeft <= 300 && timeLeft > 0 && !warningDismissedRef.current) {
+      setShowWarning(true);
+    }
   }, [timeLeft]);
 
   const formatTime = (seconds) => {
@@ -35,15 +54,6 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  const handleAutoSubmit = useCallback(async () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    
-    // Auto-submit when time runs out
-    const filledAnswers = answers.map(answer => answer !== null ? answer : 0);
-    await onSubmit(filledAnswers);
-  }, [answers, onSubmit, isSubmitting]);
 
   const handleAnswerSelect = (questionIndex, optionIndex) => {
     const newAnswers = [...answers];
@@ -429,7 +439,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
               You have less than 5 minutes remaining! Please review and submit your answers.
             </p>
             <button
-              onClick={() => setShowWarning(false)}
+              onClick={dismissWarning}
               className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               Continue
