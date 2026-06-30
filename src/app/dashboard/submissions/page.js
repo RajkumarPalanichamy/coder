@@ -15,6 +15,7 @@ import {
   Award
 } from 'lucide-react';
 import { formatDateTime } from '@/lib/formatDateTime';
+import { formatDuration } from '@/lib/levelSubmissionTime';
 
 function SubmissionsContent() {
   const router = useRouter();
@@ -150,12 +151,6 @@ function SubmissionsContent() {
   };
 
   const { filteredSubmissions, filteredLevelSubmissions } = getFilteredData();
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
           const getLanguageImage = (language) => {
           if (!language) return null;
@@ -324,15 +319,15 @@ function SubmissionsContent() {
                   <div>
                     <span className="font-medium">Status:</span>
                     <p className="font-bold text-indigo-600">
-                      {levelSubmission.status === 'submitted' ? 'Submitted' : 'In Progress'}
+                      {levelSubmission.status === 'submitted' ? 'Submitted' : levelSubmission.status === 'time_expired' ? 'Time Expired' : 'In Progress'}
                     </p>
                   </div>
                   <div>
                     <span className="font-medium">Time Used:</span>
-                    <p>{formatTime(levelSubmission.timeUsed || 0)} / {formatTime(levelSubmission.timeAllowed)}</p>
+                    <p>{formatDuration(levelSubmission.timeUsed || 0)} / {formatDuration(levelSubmission.timeAllowed)}</p>
                   </div>
                   <div>
-                    <span className="font-medium">Submitted:</span>
+                    <span className="font-medium">{levelSubmission.status === 'in_progress' ? 'Started' : 'Submitted'}:</span>
                     <p>{formatDateTime(levelSubmission.createdAt)}</p>
                   </div>
                 </div>

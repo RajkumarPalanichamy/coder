@@ -3,6 +3,7 @@ import connectDB from '../../../../../../lib/mongodb';
 import { getUserFromRequest } from '../../../../../../lib/auth';
 import Problem from '../../../../../../models/Problem';
 import Submission, { LevelSubmission } from '../../../../../../models/Submission';
+import { getLevelTimeUsed } from '../../../../../../lib/levelSubmissionTime';
 
 // POST - Submit a single problem within a level session
 export async function POST(request, { params }) {
@@ -52,8 +53,8 @@ export async function POST(request, { params }) {
 
     // Check if time has expired
     const currentTime = new Date();
-    const timeElapsed = Math.floor((currentTime - levelSubmission.startTime) / 1000);
-    if (timeElapsed > levelSubmission.timeAllowed) {
+    const timeElapsed = getLevelTimeUsed(levelSubmission, currentTime);
+    if (timeElapsed >= levelSubmission.timeAllowed) {
       levelSubmission.status = 'time_expired';
       await levelSubmission.save();
       
@@ -188,8 +189,9 @@ export async function GET(request, { params }) {
 
     // Calculate current time status
     const currentTime = new Date();
-    const timeElapsed = Math.floor((currentTime - levelSubmission.startTime) / 1000);
-    const timeRemaining = levelSubmission.timeAllowed - timeElapsed;
+    const lsObject = levelSubmission.toObject();
+    const timeUsed = getLevelTimeUsed(lsObject, currentTime);
+    const timeRemaining = levelSubmission.timeAllowed - timeUsed;
 
     // Update submission summary
     await levelSubmission.updateSubmissionSummary();
@@ -204,7 +206,7 @@ export async function GET(request, { params }) {
         startTime: levelSubmission.startTime,
         submitTime: levelSubmission.submitTime,
         timeAllowed: levelSubmission.timeAllowed,
-        timeUsed: timeElapsed,
+        timeUsed,
         timeRemaining: Math.max(0, timeRemaining),
         totalProblems: levelSubmission.totalProblems,
         submittedProblems: levelSubmission.problemSubmissions.length,

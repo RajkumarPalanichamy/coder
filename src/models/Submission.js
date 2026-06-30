@@ -308,11 +308,13 @@ levelSubmissionSchema.methods.updateSubmissionSummary = function() {
 };
 
 levelSubmissionSchema.methods.calculateTimeUsed = function() {
+  const timeAllowed = this.timeAllowed || 0;
   if (this.submitTime) {
     this.timeUsed = Math.floor((this.submitTime - this.startTime) / 1000);
   } else {
     this.timeUsed = Math.floor((new Date() - this.startTime) / 1000);
   }
+  this.timeUsed = Math.min(Math.max(0, this.timeUsed), timeAllowed);
   return this.timeUsed;
 };
 

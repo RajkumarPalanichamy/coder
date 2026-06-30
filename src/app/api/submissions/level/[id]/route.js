@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../../../../lib/mongodb';
 import { LevelSubmission } from '../../../../../models/Submission';
 import { verifyAuth } from '../../../../../lib/auth';
+import { getLevelTimeUsed, getLevelEffectiveStatus } from '../../../../../lib/levelSubmissionTime';
 
 // GET - Get a specific level submission details
 export async function GET(request, { params }) {
@@ -46,10 +47,11 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Calculate current time status
     const currentTime = new Date();
-    const timeElapsed = Math.floor((currentTime - levelSubmission.startTime) / 1000);
-    const timeRemaining = levelSubmission.timeAllowed - timeElapsed;
+    const lsObject = levelSubmission.toObject();
+    const timeUsed = getLevelTimeUsed(lsObject, currentTime);
+    const status = getLevelEffectiveStatus(lsObject, currentTime);
+    const timeRemaining = levelSubmission.timeAllowed - timeUsed;
 
     return NextResponse.json({
       levelSubmission: {
@@ -58,11 +60,11 @@ export async function GET(request, { params }) {
         level: levelSubmission.level,
         category: levelSubmission.category,
         programmingLanguage: levelSubmission.programmingLanguage,
-        status: levelSubmission.status,
+        status,
         startTime: levelSubmission.startTime,
         submitTime: levelSubmission.submitTime,
         timeAllowed: levelSubmission.timeAllowed,
-        timeUsed: levelSubmission.timeUsed || timeElapsed,
+        timeUsed,
         timeRemaining: Math.max(0, timeRemaining),
         totalProblems: levelSubmission.totalProblems,
         completedProblems: levelSubmission.completedProblems,

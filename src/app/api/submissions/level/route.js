@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { getUserFromRequest } from '@/lib/auth';
 import Submission, { LevelSubmission } from '@/models/Submission';
+import { getLevelTimeUsed, getLevelEffectiveStatus } from '@/lib/levelSubmissionTime';
 
 // GET - Fetch level submissions for a user
 export async function GET(request) {
@@ -55,17 +56,11 @@ export async function GET(request) {
     const totalPages = Math.ceil(totalCount / limit);
 
     const currentTime = new Date();
-    const enrichedLevelSubmissions = levelSubmissions.map((ls) => {
-      const startTime = ls.startTime ? new Date(ls.startTime) : null;
-      let timeUsed = ls.timeUsed || 0;
-
-      if (startTime) {
-        const endTime = ls.submitTime ? new Date(ls.submitTime) : currentTime;
-        timeUsed = Math.floor((endTime - startTime) / 1000);
-      }
-
-      return { ...ls, timeUsed };
-    });
+    const enrichedLevelSubmissions = levelSubmissions.map((ls) => ({
+      ...ls,
+      timeUsed: getLevelTimeUsed(ls, currentTime),
+      status: getLevelEffectiveStatus(ls, currentTime),
+    }));
 
     return NextResponse.json({
       levelSubmissions: enrichedLevelSubmissions,
