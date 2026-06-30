@@ -178,12 +178,11 @@ export async function POST(request, { params }) {
     // Update status if all submissions are created
     if (submissionResults.every(result => result.status === 'submitted')) {
       levelSubmission.status = 'submitted';
-      
+      levelSubmission.submitTime = new Date();
+      levelSubmission.calculateTimeUsed();
+
       // Re-enable submission summary update for pass/fail calculation
       await levelSubmission.updateSubmissionSummary();
-      
-      await levelSubmission.save();
-      
     }
 
     // Remove final scoring data fetch

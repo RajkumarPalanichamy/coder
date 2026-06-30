@@ -1,3 +1,5 @@
+const TERMINAL_STATUSES = ['submitted', 'completed', 'time_expired'];
+
 export function getLevelTimeUsed(levelSubmission, now = new Date()) {
   const timeAllowed = levelSubmission.timeAllowed || 0;
 
@@ -6,9 +8,14 @@ export function getLevelTimeUsed(levelSubmission, now = new Date()) {
   }
 
   const startTime = new Date(levelSubmission.startTime);
-  const endTime = levelSubmission.submitTime
-    ? new Date(levelSubmission.submitTime)
-    : now;
+  let endTime = now;
+
+  if (levelSubmission.submitTime) {
+    endTime = new Date(levelSubmission.submitTime);
+  } else if (TERMINAL_STATUSES.includes(levelSubmission.status) && levelSubmission.updatedAt) {
+    endTime = new Date(levelSubmission.updatedAt);
+  }
+
   const elapsed = Math.floor((endTime - startTime) / 1000);
 
   return Math.min(Math.max(0, elapsed), timeAllowed);

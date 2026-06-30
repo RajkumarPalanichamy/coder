@@ -28,7 +28,7 @@ export default function AdminQuickActions() {
       color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-100',
       iconColor: 'text-blue-600',
-      action: () => router.push('/admin/students/create')
+      action: () => router.push('/admin/students?create=true')
     },
     {
       title: 'Create Problem',

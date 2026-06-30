@@ -114,8 +114,8 @@ export default function AdminProblemCreatePage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 min-h-screen overflow-auto">
+        <div className="w-full py-10 px-4 sm:px-8">
           <div className="flex items-center justify-between mb-8">
             <Link 
               href="/admin/problems" 

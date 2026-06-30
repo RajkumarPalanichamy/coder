@@ -115,7 +115,7 @@ export default function AdminRecentActivity() {
     if (activity.type === 'submission') {
       router.push(`/admin/submissions/level/${activity.id}`);
     } else if (activity.type === 'student') {
-      router.push(`/admin/students/${activity.id}/edit`);
+      router.push(`/admin/students?edit=${activity.id}`);
     }
   };
 

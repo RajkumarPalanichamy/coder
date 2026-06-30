@@ -141,7 +141,7 @@ export default function AdminSidebar({ onLogout }) {
             </h3>
             <div className="space-y-1">
               <Link
-                href="/admin/students/create"
+                href="/admin/students?create=true"
                 className="group flex items-center gap-3 px-4 py-3.5 rounded-lg font-medium text-base text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-150"
               >
                 <Users className="h-5 w-5 text-gray-400 group-hover:text-green-600" />

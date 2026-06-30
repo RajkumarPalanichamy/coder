@@ -145,23 +145,25 @@ export default function AdminProblemEditPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
-      <main className="flex-1 bg-gray-50">
-        <div className="max-w-lg mx-auto py-8">
-          <Link href="/admin/problems" className="inline-flex items-center text-indigo-600 hover:underline mb-4">
-            &#8592; Back to Problems
-          </Link>
-          <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-lg w-full space-y-8 bg-white p-8 rounded shadow">
-              <div className="flex items-center justify-center">
-                <Edit className="h-8 w-8 text-indigo-600" />
-              </div>
-              <h2 className="mt-2 text-center text-2xl font-extrabold text-gray-900">Edit Problem</h2>
+      <main className="flex-1 min-h-screen overflow-auto">
+        <div className="w-full py-10 px-4 sm:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/admin/problems" className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors">
+              &#8592; Back to Problems
+            </Link>
+            <div className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-indigo-600" />
+              <h1 className="text-xl font-bold text-gray-900">Edit Problem</h1>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
               {loading ? (
                 <div className="text-center py-8 text-gray-500">Loading...</div>
               ) : (
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded">{error}</div>}
                   {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded">{success}</div>}
                   <div>
@@ -333,7 +335,6 @@ export default function AdminProblemEditPage() {
                   </button>
                 </form>
               )}
-            </div>
           </div>
         </div>
       </main>

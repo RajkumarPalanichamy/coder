@@ -3,6 +3,7 @@ import connectDB from '../../../../../lib/mongodb';
 import User from '../../../../../models/User';
 import { LevelSubmission } from '../../../../../models/Submission';
 import { verifyAuth } from '../../../../../lib/auth';
+import { getLevelTimeUsed } from '../../../../../lib/levelSubmissionTime';
 
 export async function GET(request) {
   try {
@@ -56,6 +57,12 @@ export async function GET(request) {
       .limit(limit)
       .lean();
 
+    const currentTime = new Date();
+    const enrichedLevelSubmissions = levelSubmissions.map((ls) => ({
+      ...ls,
+      timeUsed: getLevelTimeUsed(ls, currentTime),
+    }));
+
     // Calculate statistics
     const stats = {
       total,
@@ -66,7 +73,7 @@ export async function GET(request) {
     };
 
     return NextResponse.json({
-      levelSubmissions,
+      levelSubmissions: enrichedLevelSubmissions,
       stats,
       pagination: {
         page,

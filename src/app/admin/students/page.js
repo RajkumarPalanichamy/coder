@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
-import { useRouter } from 'next/navigation';
+import CreateStudentModal from '../../components/CreateStudentModal';
+import EditStudentModal from '../../components/EditStudentModal';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function AdminStudentsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
@@ -15,10 +17,24 @@ export default function AdminStudentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState(null);
 
   useEffect(() => {
     fetchStudents();
   }, []);
+
+  useEffect(() => {
+    const create = searchParams.get('create');
+    const edit = searchParams.get('edit');
+    if (create === 'true') {
+      setShowCreateModal(true);
+      router.replace('/admin/students', { scroll: false });
+    } else if (edit) {
+      setEditingStudentId(edit);
+      router.replace('/admin/students', { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -55,9 +71,12 @@ export default function AdminStudentsPage() {
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
             <h1 className="text-3xl font-bold text-black">Students Management</h1>
-            <Link href="/admin/students/create" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
+            >
               <UserPlus className="h-4 w-4" /> Add Student
-            </Link>
+            </button>
           </div>
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading...</div>
@@ -87,9 +106,12 @@ export default function AdminStudentsPage() {
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${student.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{student.isActive ? 'Active' : 'Inactive'}</span>
                       </td>
                       <td className="px-6 py-4 flex gap-2">
-                        <Link href={`/admin/students/${student._id}/edit`} className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
+                        <button
+                          onClick={() => setEditingStudentId(student._id)}
+                          className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1"
+                        >
                           <Edit className="h-4 w-4" /> Edit
-                        </Link>
+                        </button>
                         <button
                           onClick={() => handleDelete(student._id)}
                           className="text-red-600 hover:text-red-900 flex items-center gap-1"
@@ -107,6 +129,25 @@ export default function AdminStudentsPage() {
           )}
         </div>
       </main>
+
+      {showCreateModal && (
+        <CreateStudentModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={(student) => setStudents((prev) => [student, ...prev])}
+        />
+      )}
+
+      {editingStudentId && (
+        <EditStudentModal
+          studentId={editingStudentId}
+          onClose={() => setEditingStudentId(null)}
+          onSuccess={(updated) =>
+            setStudents((prev) =>
+              prev.map((s) => (s._id === updated._id ? { ...s, ...updated } : s))
+            )
+          }
+        />
+      )}
     </div>
   );
 } 
