@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { formatQuestionText } from '@/lib/formatQuestionText';
 
 export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   const [answers, setAnswers] = useState(Array(test.mcqs.length).fill(null));
@@ -269,8 +270,8 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                   <span className="text-sm font-medium text-red-800">Negative Marks: 0</span>
                 </div>
               </div>
-              <pre className="text-lg text-gray-800 leading-relaxed mb-6 whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded-lg border border-gray-200 overflow-x-auto">
-                {test.mcqs[currentQuestion].question}
+              <pre className="text-sm text-gray-800 leading-relaxed mb-6 whitespace-pre-wrap font-mono bg-gray-50 p-4 rounded-lg border border-gray-200 overflow-x-auto">
+                {formatQuestionText(test.mcqs[currentQuestion].question)}
               </pre>
             </div>
 
@@ -294,7 +295,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                     onChange={() => handleAnswerSelect(currentQuestion, index)}
                     className="mr-3 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span className="text-gray-800 whitespace-pre-wrap font-mono text-sm">{option}</span>
+                  <span className="text-gray-800 whitespace-pre-wrap font-mono text-sm">{formatQuestionText(option)}</span>
                 </label>
               ))}
             </div>
