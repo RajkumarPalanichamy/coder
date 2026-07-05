@@ -27,10 +27,10 @@ const getLanguageTypeLabel = (language) => {
 const getLanguageIcon = (language) => {
   const label = getLanguageTypeLabel(language);
   if (label === 'College') {
-    return <GraduationCap className="h-12 w-12 text-white" />;
+    return <GraduationCap className="h-12 w-12 text-indigo-500" />;
   }
   if (label === 'Assessment') {
-    return <ClipboardList className="h-12 w-12 text-white" />;
+    return <ClipboardList className="h-12 w-12 text-orange-500" />;
   }
   switch (language.toLowerCase()) {
     case 'javascript':
