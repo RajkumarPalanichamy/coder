@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Code2, FolderOpen, Target, ChevronRight, ArrowLeft, Search, Filter, BarChart3 } from 'lucide-react';
+import { Code2, FolderOpen, Target, ChevronRight, ArrowLeft, Search, Filter, BarChart3, GraduationCap, ClipboardList, BookOpen } from 'lucide-react';
 
 const formatLanguageName = (language) => {
   if (!language) return '';
@@ -20,6 +20,40 @@ const formatLanguageName = (language) => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
   }
+};
+
+const isProgrammingLanguage = (language) => {
+  if (!language) return false;
+  const langLower = language.toLowerCase().trim();
+  const knownLanguages = [
+    'javascript', 'python', 'java', 'cpp', 'c++', 'c++ programming', 'cpp programming',
+    'csharp', 'c#', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift',
+    'sql', 'html', 'css', 'bash', 'shell'
+  ];
+  return knownLanguages.includes(langLower);
+};
+
+const getLanguageTypeLabel = (language) => {
+  if (!language) return '';
+  if (isProgrammingLanguage(language)) {
+    return 'Programming Language';
+  }
+  const langLower = language.toLowerCase();
+  if (langLower.includes('college') || langLower.includes('university') || langLower.includes('institute') || langLower.includes('school')) {
+    return 'College';
+  }
+  return 'Assessment';
+};
+
+const getCardHeaderGradient = (language) => {
+  const label = getLanguageTypeLabel(language);
+  if (label === 'College') {
+    return 'from-indigo-500 to-indigo-600';
+  }
+  if (label === 'Assessment') {
+    return 'from-orange-500 to-amber-600';
+  }
+  return 'from-blue-400 to-blue-600';
 };
 
 export default function ProblemFlow() {
@@ -165,45 +199,57 @@ export default function ProblemFlow() {
     });
   };
 
-          const getLanguageImage = (language) => {
-          if (!language) return <Code2 className="w-16 h-16 text-blue-500" />;
-          console.log(language);
-          switch (language.toLowerCase()) {
-            case 'javascript':
-              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-40 h-40" />;
-            case 'python':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="w-40 h-40" />;
-            case 'java':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-40 h-40" />;
-            case 'cpp':
-            case 'c++':
-              case 'c++ programming':
-            case 'C++':
-            case 'Cpp':
-              return <img  src="/c.svg" alt="C++" className="w-40 h-40" />;
-            case 'csharp':
-            case 'c#':
-              return <img  src="/c--4.svg" alt="C#" className="w-40 h-40" />;
-            case 'c':
-              return <img  src="/c-1.svg" alt="C" className="w-40 h-40" />;
-            case 'go':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-40 h-40" />;
-            case 'rust':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="w-40 h-40" />;
-            case 'kotlin':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-40 h-40" />;
-            case 'typescript':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="w-40 h-40" />;
-            case 'php':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="w-40 h-40" />;
-            case 'ruby':
-              return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="w-40 h-40" />;
-            case 'swift':
-              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="w-40 h-40" />;
-            default:
-              return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/code/code-plain.svg" alt="Code" className="w-40 h-40" />;
-          }
-        };
+  const getLanguageImage = (language) => {
+    if (!language) return <Code2 className="w-16 h-16 text-blue-500" />;
+    console.log(language);
+    switch (language.toLowerCase()) {
+      case 'javascript':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-40 h-40" />;
+      case 'python':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="w-40 h-40" />;
+      case 'java':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-40 h-40" />;
+      case 'cpp':
+      case 'c++':
+      case 'c++ programming':
+      case 'C++':
+      case 'Cpp':
+        return <img  src="/c.svg" alt="C++" className="w-40 h-40" />;
+      case 'csharp':
+      case 'c#':
+        return <img  src="/c--4.svg" alt="C#" className="w-40 h-40" />;
+      case 'c':
+        return <img  src="/c-1.svg" alt="C" className="w-40 h-40" />;
+      case 'go':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-40 h-40" />;
+      case 'rust':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="w-40 h-40" />;
+      case 'kotlin':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-40 h-40" />;
+      case 'typescript':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="w-40 h-40" />;
+      case 'php':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="w-40 h-40" />;
+      case 'ruby':
+        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="w-40 h-40" />;
+      case 'swift':
+        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="w-40 h-40" />;
+      default:
+        const typeLabel = getLanguageTypeLabel(language);
+        if (typeLabel === 'College') {
+          return (
+            <div className="w-40 h-40 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl border border-indigo-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
+              <GraduationCap className="w-20 h-20 text-indigo-600" />
+            </div>
+          );
+        }
+        return (
+          <div className="w-40 h-40 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-100 rounded-2xl border border-orange-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
+            <ClipboardList className="w-20 h-20 text-orange-600" />
+          </div>
+        );
+    }
+  };
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -214,7 +260,9 @@ export default function ProblemFlow() {
           }`}>
             1
           </div>
-          <span className="ml-2 font-medium">Language</span>
+          <span className="ml-2 font-medium">
+            {languages.some(langData => !isProgrammingLanguage(langData.language)) ? "Language / College" : "Language"}
+          </span>
         </div>
         
         <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -291,9 +339,9 @@ export default function ProblemFlow() {
             onClick={() => handleLanguageSelect(langData.language)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className="bg-gradient-to-r from-blue-400 to-blue-600 p-4 text-white">
+            <div className={`p-4 text-white bg-gradient-to-r ${getCardHeaderGradient(langData.language)}`}>
               <h3 className="text-lg font-semibold">{formatLanguageName(langData.language)}</h3>
-              <p className="text-sm opacity-90">Programming Language</p>
+              <p className="text-sm opacity-90">{getLanguageTypeLabel(langData.language)}</p>
             </div>
             <div className="p-4">
               <div className="flex flex-col items-center gap-3 mb-3">
@@ -302,7 +350,7 @@ export default function ProblemFlow() {
                 {/* <span className="text-2xl font-bold text-gray-700">∞</span> */}
               </div>
               <p className="text-gray-600 text-sm mb-4">
-                Available in {langData.categories || 0} categories
+                Available in {langData.categories || 0} {langData.categories === 1 ? 'category' : 'categories'}
               </p>
               <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
                 Continue
@@ -496,7 +544,7 @@ export default function ProblemFlow() {
             className="flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to {currentStep === 2 ? 'Languages' : 'Categories'}
+            Back to {currentStep === 2 ? (languages.some(langData => !isProgrammingLanguage(langData.language)) ? 'Languages / Colleges' : 'Languages') : 'Categories'}
           </button>
         )}
 
@@ -507,7 +555,11 @@ export default function ProblemFlow() {
         <div>
           {currentStep === 1 && (
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Choose Programming Language</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                {languages.some(langData => !isProgrammingLanguage(langData.language))
+                  ? "Choose Language, College or Assessment"
+                  : "Choose Programming Language"}
+              </h2>
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>

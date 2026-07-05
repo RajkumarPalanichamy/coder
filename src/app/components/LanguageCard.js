@@ -1,7 +1,37 @@
 import Link from 'next/link';
-import { Code, FileCode, Coffee, Laptop, Hash, Terminal } from 'lucide-react';
+import { Code, FileCode, Coffee, Laptop, Hash, Terminal, GraduationCap, ClipboardList } from 'lucide-react';
+
+const isProgrammingLanguage = (language) => {
+  if (!language) return false;
+  const langLower = language.toLowerCase().trim();
+  const knownLanguages = [
+    'javascript', 'python', 'java', 'cpp', 'c++', 'c++ programming', 'cpp programming',
+    'csharp', 'c#', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift',
+    'sql', 'html', 'css', 'bash', 'shell'
+  ];
+  return knownLanguages.includes(langLower);
+};
+
+const getLanguageTypeLabel = (language) => {
+  if (!language) return '';
+  if (isProgrammingLanguage(language)) {
+    return 'Programming Language';
+  }
+  const langLower = language.toLowerCase();
+  if (langLower.includes('college') || langLower.includes('university') || langLower.includes('institute') || langLower.includes('school')) {
+    return 'College';
+  }
+  return 'Assessment';
+};
 
 const getLanguageIcon = (language) => {
+  const label = getLanguageTypeLabel(language);
+  if (label === 'College') {
+    return <GraduationCap className="h-12 w-12 text-white" />;
+  }
+  if (label === 'Assessment') {
+    return <ClipboardList className="h-12 w-12 text-white" />;
+  }
   switch (language.toLowerCase()) {
     case 'javascript':
       return <FileCode className="h-12 w-12 text-yellow-500" />;
@@ -29,6 +59,13 @@ const getLanguageIcon = (language) => {
 };
 
 const getLanguageColor = (language) => {
+  const label = getLanguageTypeLabel(language);
+  if (label === 'College') {
+    return 'from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800';
+  }
+  if (label === 'Assessment') {
+    return 'from-orange-500 to-amber-700 hover:from-orange-600 hover:to-amber-800';
+  }
   switch (language.toLowerCase()) {
     case 'javascript':
       return 'from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700';
@@ -56,6 +93,13 @@ const getLanguageColor = (language) => {
 };
 
 const getBorderColor = (language) => {
+  const label = getLanguageTypeLabel(language);
+  if (label === 'College') {
+    return 'border-indigo-200 hover:border-indigo-300';
+  }
+  if (label === 'Assessment') {
+    return 'border-orange-200 hover:border-orange-300';
+  }
   switch (language.toLowerCase()) {
     case 'javascript':
       return 'border-yellow-200 hover:border-yellow-300';
