@@ -25,7 +25,7 @@ export async function PUT(request, { params }) {
     if (!student || student.role !== 'student') {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
-    student.username = body.username;
+    student.username = body.username || body.email;
     student.email = body.email;
     student.firstName = body.firstName;
     student.lastName = body.lastName;

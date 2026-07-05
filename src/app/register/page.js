@@ -8,7 +8,6 @@ import Image from 'next/image';
 
 export default function Register() {
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -54,7 +53,7 @@ export default function Register() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: formData.username,
+          username: formData.email,
           email: formData.email,
           password: formData.password,
           firstName: formData.firstName,
@@ -140,22 +139,7 @@ export default function Register() {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                autoComplete="username"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-              />
-            </div>
+
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

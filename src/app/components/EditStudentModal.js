@@ -5,7 +5,6 @@ import { Edit, X } from 'lucide-react';
 
 export default function EditStudentModal({ studentId, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
     firstName: '',
     lastName: '',
@@ -28,7 +27,6 @@ export default function EditStudentModal({ studentId, onClose, onSuccess }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch student');
       setFormData({
-        username: data.student.username,
         email: data.student.email,
         firstName: data.student.firstName,
         lastName: data.student.lastName,
@@ -54,7 +52,10 @@ export default function EditStudentModal({ studentId, onClose, onSuccess }) {
     setSaving(true);
     setError('');
     try {
-      const updateData = { ...formData };
+      const updateData = {
+        ...formData,
+        username: formData.email
+      };
       if (password) updateData.password = password;
       const response = await fetch(`/api/admin/students/${studentId}`, {
         method: 'PUT',
@@ -130,20 +131,7 @@ export default function EditStudentModal({ studentId, onClose, onSuccess }) {
                 />
               </div>
             </div>
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={formData.username}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-              />
-            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email

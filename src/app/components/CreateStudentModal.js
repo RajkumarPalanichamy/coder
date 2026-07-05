@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { UserPlus, X } from 'lucide-react';
 
 const initialFormData = {
-  username: '',
   email: '',
   password: '',
   confirmPassword: '',
@@ -41,7 +40,7 @@ export default function CreateStudentModal({ onClose, onSuccess }) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          username: formData.username,
+          username: formData.email,
           email: formData.email,
           password: formData.password,
           firstName: formData.firstName,
@@ -113,20 +112,7 @@ export default function CreateStudentModal({ onClose, onSuccess }) {
               />
             </div>
           </div>
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              value={formData.username}
-              onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900"
-            />
-          </div>
+
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email

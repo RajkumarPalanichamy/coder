@@ -91,7 +91,6 @@ function AdminStudentsContent() {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
@@ -101,7 +100,6 @@ function AdminStudentsContent() {
                     <tr key={student._id} className="hover:bg-indigo-50 transition-colors">
                       <td className="px-6 py-4 text-black font-medium">{student.firstName} {student.lastName}</td>
                       <td className="px-6 py-4 text-gray-700">{student.email}</td>
-                      <td className="px-6 py-4 text-gray-700">{student.username}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${student.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{student.isActive ? 'Active' : 'Inactive'}</span>
                       </td>

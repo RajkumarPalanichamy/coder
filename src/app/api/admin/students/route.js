@@ -26,10 +26,11 @@ export async function POST(request) {
     await connectDB();
     
     const body = await request.json();
-    const { username, email, password, firstName, lastName } = body;
+    const { email, password, firstName, lastName } = body;
+    const username = body.username || email;
 
     // Validate required fields
-    if (!username || !email || !password || !firstName || !lastName) {
+    if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { error: 'All fields are required' },
         { status: 400 }
@@ -43,7 +44,7 @@ export async function POST(request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User with this email or username already exists' },
+        { error: 'User with this email already exists' },
         { status: 400 }
       );
     }

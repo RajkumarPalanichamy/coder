@@ -33,10 +33,7 @@ export default function StudentProfileCard({ user, isCollapsed, notifications, o
       <div className="text-lg font-semibold text-gray-900 text-center">
         {user.firstName} {user.lastName}
       </div>
-      {/* <div className="text-sm text-gray-500 text-center">{user.email}</div> */}
-      {user.username && (
-        <div className="text-sm text-gray-500">@{user.username}</div>
-      )}
+      <div className="text-sm text-gray-500 text-center">{user.email}</div>
       {/* <div className="mt-2 text-xs px-2 py-1 rounded bg-green-100 text-green-800 font-medium">
         Active
       </div> */}
