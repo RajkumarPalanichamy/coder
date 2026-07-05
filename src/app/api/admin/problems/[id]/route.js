@@ -27,11 +27,34 @@ export async function PUT(request, { params }) {
     if (!problem) {
       return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
+
+    // Normalize language name for consistency
+    const normalizeLanguage = (lang) => {
+      if (!lang) return '';
+      const langLower = lang.toLowerCase().trim();
+      const mapping = {
+        'c++': 'cpp',
+        'c#': 'csharp',
+        'javascript': 'javascript',
+        'python': 'python',
+        'java': 'java',
+        'c': 'c',
+        'go': 'go',
+        'rust': 'rust',
+        'kotlin': 'kotlin',
+        'typescript': 'typescript',
+        'php': 'php',
+        'ruby': 'ruby',
+        'swift': 'swift'
+      };
+      return mapping[langLower] || langLower;
+    };
+
     problem.title = body.title;
     problem.description = body.description;
     problem.difficulty = body.difficulty;
     problem.category = body.category;
-    problem.programmingLanguage = body.language;
+    problem.programmingLanguage = normalizeLanguage(body.language || body.programmingLanguage);
     problem.constraints = body.constraints;
     problem.starterCode = body.starterCode;
     problem.solution = body.solution;

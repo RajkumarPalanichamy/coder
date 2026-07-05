@@ -2,6 +2,26 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Code2, FolderOpen, Target, ChevronRight, ArrowLeft, Search, Filter, BarChart3 } from 'lucide-react';
 
+const formatLanguageName = (language) => {
+  if (!language) return '';
+  const langLower = language.toLowerCase();
+  switch (langLower) {
+    case 'cpp':
+      return 'C++';
+    case 'csharp':
+      return 'C#';
+    case 'javascript':
+      return 'JavaScript';
+    case 'typescript':
+      return 'TypeScript';
+    default:
+      return language
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+  }
+};
+
 export default function ProblemFlow() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedLanguage, setSelectedLanguage] = useState('');
@@ -272,7 +292,7 @@ export default function ProblemFlow() {
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
             <div className="bg-gradient-to-r from-blue-400 to-blue-600 p-4 text-white">
-              <h3 className="text-lg font-semibold">{langData.language.toUpperCase()}</h3>
+              <h3 className="text-lg font-semibold">{formatLanguageName(langData.language)}</h3>
               <p className="text-sm opacity-90">Programming Language</p>
             </div>
             <div className="p-4">
@@ -501,7 +521,7 @@ export default function ProblemFlow() {
           {currentStep === 2 && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                Choose Problem Category for {selectedLanguage.toUpperCase()}
+                Choose Problem Category for {formatLanguageName(selectedLanguage)}
               </h2>
               {loading ? (
                 <div className="text-center py-12">
@@ -516,7 +536,7 @@ export default function ProblemFlow() {
           {currentStep === 3 && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                Choose Difficulty Level for {selectedLanguage.toUpperCase()} - {selectedCategory}
+                Choose Difficulty Level for {formatLanguageName(selectedLanguage)} - {selectedCategory}
               </h2>
               {loading ? (
                 <div className="text-center py-12">
