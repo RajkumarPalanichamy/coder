@@ -144,3 +144,46 @@ export const exportSelectedSubmissionsToExcel = (
 
   return exportSubmissionsToExcel(selectedSubmissions, fileName, submissionType);
 };
+
+export const exportStudentsToExcel = (students, fileName = 'students.xlsx') => {
+  try {
+    const excelData = students.map((student) => ({
+      Name: `${student.firstName || ''} ${student.lastName || ''}`.trim(),
+      Email: student.email || '',
+      Status: student.isActive ? 'Active' : 'Inactive',
+      'Joined Date': student.createdAt ? new Date(student.createdAt).toLocaleDateString() : 'N/A',
+      'Last Login': student.lastLogin ? new Date(student.lastLogin).toLocaleDateString() : 'N/A',
+    }));
+
+    if (excelData.length === 0) {
+      alert('No students to export');
+      return false;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(excelData);
+
+    const maxWidth = 50;
+    const colWidths = {};
+    const headers = Object.keys(excelData[0] || {});
+
+    headers.forEach((key, index) => {
+      const column = XLSX.utils.encode_col(index);
+      const values = [key, ...excelData.map((row) => String(row[key] || ''))];
+      const maxLength = Math.max(...values.map((val) => val.length), 4);
+      colWidths[column] = Math.min(maxLength + 2, maxWidth);
+    });
+
+    ws['!cols'] = Object.keys(colWidths).map((col) => ({ wch: colWidths[col] }));
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Students');
+
+    XLSX.writeFile(wb, fileName);
+
+    return true;
+  } catch (error) {
+    console.error('Error exporting students to Excel:', error);
+    return false;
+  }
+};
+

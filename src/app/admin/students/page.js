@@ -1,10 +1,11 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
-import { Edit, Trash2, UserPlus } from 'lucide-react';
+import { Edit, Trash2, UserPlus, FileSpreadsheet } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import CreateStudentModal from '../../components/CreateStudentModal';
 import EditStudentModal from '../../components/EditStudentModal';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { exportStudentsToExcel } from '../../../lib/excelExport';
 
 function AdminStudentsContent() {
   const router = useRouter();
@@ -64,6 +65,11 @@ function AdminStudentsContent() {
     }
   };
 
+  const handleExportExcel = () => {
+    const fileName = `students_${new Date().toISOString().split('T')[0]}.xlsx`;
+    exportStudentsToExcel(students, fileName);
+  };
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
@@ -71,12 +77,21 @@ function AdminStudentsContent() {
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
             <h1 className="text-3xl font-bold text-black">Students Management</h1>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
-            >
-              <UserPlus className="h-4 w-4" /> Add Student
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="border border-indigo-600 text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 flex items-center gap-2 cursor-pointer"
+              >
+                <FileSpreadsheet className="h-4 w-4" /> Export Excel
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" /> Add Student
+              </button>
+            </div>
           </div>
           {loading ? (
             <div className="text-center py-12 text-gray-500">Loading...</div>
