@@ -6,6 +6,31 @@ import { Play, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft,
 import dynamic from 'next/dynamic';
 import ProblemStatusCard from '../../../../components/ProblemStatusCard';
 
+const mapLanguageToMonacoKey = (lang) => {
+  if (!lang) return 'javascript';
+  const l = lang.toLowerCase().trim();
+  if (l === 'cpp' || l === 'c++' || l === 'c++ programming' || l === 'cpp programming') return 'cpp';
+  if (l === 'c' || l === 'c programming' || l === 'embedded c programming') return 'c';
+  if (l === 'python') return 'python';
+  if (l === 'java') return 'java';
+  if (l === 'javascript' || l === 'js') return 'javascript';
+  return l;
+};
+
+const isStandardLanguage = (lang) => {
+  if (!lang) return false;
+  const l = lang.toLowerCase().trim();
+  return [
+    'javascript', 'js',
+    'python',
+    'java',
+    'cpp', 'c++', 'c++ programming', 'cpp programming',
+    'c', 'c programming', 'embedded c programming',
+    'csharp', 'c#',
+    'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift'
+  ].includes(l);
+};
+
 // Monaco Editor (dynamically loaded to avoid SSR issues)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -17,6 +42,7 @@ export default function LevelProblemsPage() {
   const language = searchParams.get('language');
   const category = searchParams.get('category');
   const { level } = params;
+  const isLanguageFixed = isStandardLanguage(language);
 
   const [levelData, setLevelData] = useState(null);
   const [problems, setProblems] = useState([]);
@@ -101,9 +127,11 @@ export default function LevelProblemsPage() {
         const langs = {};
         const codes = {};
         data.problems.forEach(problem => {
+          const isStd = isStandardLanguage(language || problem.programmingLanguage);
+          const mappedLang = isStd ? mapLanguageToMonacoKey(language || problem.programmingLanguage) : 'javascript';
           // Default to JavaScript console.log if no starter code
-          const defaultStarterCode = problem.starterCode || 'console.log("Hello, World!");';
-          langs[problem._id] = 'javascript'; // Always default to JavaScript
+          const defaultStarterCode = problem.starterCode || (mappedLang === 'javascript' ? 'console.log("Hello, World!");' : '');
+          langs[problem._id] = mappedLang;
           codes[problem._id] = defaultStarterCode; // Initialize with starter code
         });
         setProblemLanguages(langs);
@@ -626,7 +654,12 @@ export default function LevelProblemsPage() {
                   <select
                     value={currentLanguage}
                     onChange={(e) => updateCurrentLanguage(e.target.value)}
-                    className="bg-white border border-gray-300 text-gray-900 px-3 py-1 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLanguageFixed}
+                    className={`border text-sm rounded-lg px-3 py-1 focus:outline-none ${
+                      isLanguageFixed
+                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300'
+                        : 'bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500'
+                    }`}
                   >
                     <option value="javascript">JavaScript</option>
                     <option value="python">Python</option>

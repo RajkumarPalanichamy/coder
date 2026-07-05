@@ -9,6 +9,31 @@ import dynamic from 'next/dynamic';
 const MonacoEditor = dynamic(() => import('../../../components/MonacoEditor'), { ssr: false });
 const CodeExecutor = dynamic(() => import('../../../components/CodeExecutor'), { ssr: false });
 
+const mapLanguageToMonacoKey = (lang) => {
+  if (!lang) return 'javascript';
+  const l = lang.toLowerCase().trim();
+  if (l === 'cpp' || l === 'c++' || l === 'c++ programming' || l === 'cpp programming') return 'cpp';
+  if (l === 'c' || l === 'c programming' || l === 'embedded c programming') return 'c';
+  if (l === 'python') return 'python';
+  if (l === 'java') return 'java';
+  if (l === 'javascript' || l === 'js') return 'javascript';
+  return l;
+};
+
+const isStandardLanguage = (lang) => {
+  if (!lang) return false;
+  const l = lang.toLowerCase().trim();
+  return [
+    'javascript', 'js',
+    'python',
+    'java',
+    'cpp', 'c++', 'c++ programming', 'cpp programming',
+    'c', 'c programming', 'embedded c programming',
+    'csharp', 'c#',
+    'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift'
+  ].includes(l);
+};
+
 export default function ProblemPage() {
   const params = useParams();
   const router = useRouter();
@@ -30,6 +55,7 @@ export default function ProblemPage() {
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const timerRef = useRef();
+  const isLanguageFixed = isStandardLanguage(problem?.programmingLanguage);
 
   useEffect(() => {
     fetchProblem();
@@ -65,7 +91,8 @@ export default function ProblemPage() {
         setCode(data.problem.starterCode || '');
         // Set the language based on the problem's language field
         if (data.problem.programmingLanguage) {
-          setLanguage(data.problem.programmingLanguage);
+          const isStd = isStandardLanguage(data.problem.programmingLanguage);
+          setLanguage(isStd ? mapLanguageToMonacoKey(data.problem.programmingLanguage) : 'javascript');
         }
       } else {
         console.error('Error fetching problem:', data.error);
@@ -522,7 +549,12 @@ export default function ProblemPage() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="text-sm border border-gray-300 rounded px-2 py-1"
+                  disabled={isLanguageFixed}
+                  className={`text-sm border rounded px-2 py-1 focus:outline-none ${
+                    isLanguageFixed
+                      ? 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300'
+                      : 'bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-indigo-500'
+                  }`}
                 >
                   <option value="javascript">JavaScript</option>
                   <option value="python">Python</option>

@@ -21,6 +21,17 @@ import { formatDateTime } from '@/lib/formatDateTime';
 // Monaco Editor for code display
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
+const mapLanguageToMonacoKey = (lang) => {
+  if (!lang) return 'javascript';
+  const l = lang.toLowerCase().trim();
+  if (l === 'cpp' || l === 'c++' || l === 'c++ programming' || l === 'cpp programming') return 'cpp';
+  if (l === 'c' || l === 'c programming' || l === 'embedded c programming') return 'c';
+  if (l === 'python') return 'python';
+  if (l === 'java') return 'java';
+  if (l === 'javascript' || l === 'js') return 'javascript';
+  return l;
+};
+
 export default function LevelSubmissionDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -371,7 +382,7 @@ export default function LevelSubmissionDetailsPage() {
                 <div className="p-0">
                   <MonacoEditor
                     height="500px"
-                    language={submission.programmingLanguage || 'javascript'}
+                    language={mapLanguageToMonacoKey(submission.programmingLanguage || selectedProblem?.submission?.language || 'javascript')}
                     value={selectedProblem.submission.code}
                     theme="vs-light"
                     options={{
