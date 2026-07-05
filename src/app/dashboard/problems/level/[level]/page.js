@@ -1013,6 +1013,12 @@ export default function LevelProblemsPage() {
                 currentProblemIndex={currentProblemIndex}
                 problemCodes={problemLanguages}
                 markedProblems={markedProblems}
+                problems={problems}
+                problemStatuses={problemStatuses}
+                onSelectProblem={(index) => {
+                  setCurrentProblemIndex(index);
+                  setShowProblemStatusPopup(false);
+                }}
               />
             </div>
           </div>
