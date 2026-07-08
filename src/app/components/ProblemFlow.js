@@ -349,9 +349,6 @@ export default function ProblemFlow() {
                 {/* <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span> */}
                 {/* <span className="text-2xl font-bold text-gray-700">∞</span> */}
               </div>
-              <p className="text-gray-600 text-sm mb-4">
-                Available in {langData.categories || 0} {langData.categories === 1 ? 'category' : 'categories'}
-              </p>
               <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
                 Continue
               </button>

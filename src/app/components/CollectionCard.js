@@ -1,4 +1,18 @@
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Calculator, MessageSquare, Brain } from 'lucide-react';
+
+const getCollectionIcon = (collection) => {
+  const name = (collection || '').toLowerCase();
+  if (name.includes('quant') || name.includes('aptitude')) {
+    return <Calculator className="w-8 h-8 text-green-500" />;
+  }
+  if (name.includes('verbal')) {
+    return <MessageSquare className="w-8 h-8 text-purple-500" />;
+  }
+  if (name.includes('reason')) {
+    return <Brain className="w-8 h-8 text-orange-500" />;
+  }
+  return <BookOpen className="w-8 h-8 text-blue-500" />;
+};
 
 export default function CollectionCard({ collection, onClick }) {
   return (
@@ -12,7 +26,7 @@ export default function CollectionCard({ collection, onClick }) {
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <BookOpen className="w-8 h-8 text-blue-500" />
+          {getCollectionIcon(collection)}
           <span className="text-2xl font-bold text-gray-700">∞</span>
         </div>
         <p className="text-gray-600 text-sm mb-4">

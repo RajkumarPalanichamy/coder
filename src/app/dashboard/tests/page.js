@@ -415,17 +415,9 @@ export default function TestListPage() {
                     </div>
                     <div className="p-4">
                       <div className="text-gray-600 mb-4 line-clamp-2 min-h-[40px] whitespace-pre-wrap">{test.description}</div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-                        <span className="flex items-center gap-1">
-                          <BookOpen className="h-4 w-4" /> 
-                          {test.mcqs?.length ?? 0} Questions
-                        </span>
-                        {test.duration && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" /> 
-                            {test.duration} min
-                          </span>
-                        )}
+                      <div className="flex items-center gap-2 mb-4">
+                        <img src="/logo.jpg" alt="Zenith Mentor" className="h-6 w-6 rounded" />
+                        <span className="text-sm font-semibold text-gray-700">Zenith Mentor</span>
                       </div>
                       <Link
                         href={`/dashboard/tests/${test._id}`}
