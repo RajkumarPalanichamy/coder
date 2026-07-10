@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Clock, ArrowLeft, FolderOpen, BarChart3, ChevronRight, Search, Filter } from 'lucide-react';
+import { BookOpen, Clock, ArrowLeft, FolderOpen, BarChart3, ChevronRight, Search, Filter, Target } from 'lucide-react';
 import CollectionCard from '../../components/CollectionCard';
 import TestCategoryCard from '../../components/TestCategoryCard';
 
@@ -415,10 +415,13 @@ export default function TestListPage() {
                     </div>
                     <div className="p-4">
                       <div className="text-gray-600 mb-4 line-clamp-2 min-h-[40px] whitespace-pre-wrap">{test.description}</div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <img src="/logo.jpg" alt="Zenith Mentor" className="h-6 w-6 rounded" />
-                        <span className="text-sm font-semibold text-gray-700">Zenith Mentor</span>
+                      <div className="flex items-center justify-between mb-3">
+                        <Target className="w-8 h-8 text-purple-500" />
+                        <span className="text-2xl font-bold text-gray-700">∞</span>
                       </div>
+                      <p className="text-gray-600 text-sm mb-4">
+                        Problems available at this level
+                      </p>
                       <Link
                         href={`/dashboard/tests/${test._id}`}
                         className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium text-center block"
