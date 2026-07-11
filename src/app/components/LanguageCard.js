@@ -141,7 +141,7 @@ const formatLanguageName = (language) => {
 
 export default function LanguageCard({ language, problemCount, href, onClick }) {
   const CardContent = () => (
-    <div className={`relative overflow-hidden bg-gradient-to-br ${getLanguageColor(language)} text-white rounded-xl p-6 hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-2xl cursor-pointer group border-2 ${getBorderColor(language)} h-32`}>
+    <div className={`relative overflow-hidden bg-gradient-to-br ${getLanguageColor(language)} text-white rounded-2xl p-8 hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-2xl cursor-pointer group border-2 ${getBorderColor(language)} h-44`}>
       {/* Background decorative elements */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -mr-12 -mt-12 transition-transform duration-500 group-hover:scale-125"></div>
       <div className="absolute bottom-0 left-0 w-16 h-16 bg-white bg-opacity-5 rounded-full -ml-8 -mb-8 transition-transform duration-500 group-hover:scale-110"></div>
@@ -154,7 +154,7 @@ export default function LanguageCard({ language, problemCount, href, onClick }) 
         
         {/* Language Name */}
         <div className="flex-1">
-          <h3 className="text-xl font-bold tracking-wide">{formatLanguageName(language)}</h3>
+          <h3 className="text-2xl font-bold tracking-wide">{formatLanguageName(language)}</h3>
         </div>
       </div>
     </div>

@@ -331,7 +331,7 @@ export default function AdminProblemsPage() {
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 bg-gray-50 min-h-screen">
-        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
             <div className="flex items-center gap-3">
               {!showLanguageCards && (
@@ -396,7 +396,7 @@ export default function AdminProblemsPage() {
                   <p>No programming languages found. Create some problems first!</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {languages
                     .filter(langData => langData && langData.language) // Filter out invalid entries
                     .map((langData) => (

@@ -155,7 +155,7 @@ export default function AdminTestsPage() {
     <div className="flex min-h-screen">
       <AdminSidebar />
       <main className="flex-1 bg-gray-50 min-h-screen">
-        <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
                       <div className="flex items-center gap-4">
             {!showCollections && (
@@ -216,7 +216,7 @@ export default function AdminTestsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {collections
                   .filter(collectionData => collectionData && collectionData.collection) // Filter out invalid entries
                   .map((collectionData) => (
