@@ -19,23 +19,21 @@ export async function GET(request) {
     // Decode URL-encoded language parameter to handle special characters
     const language = decodeURIComponent(rawLanguage);
 
-    // Get all unique categories for the specified language
-    const categories = await Problem.distinct('category', { 
-      programmingLanguage: language,
-      isActive: true 
-    });
-    
-    // Get problem count for each category
-    const categoriesWithCounts = await Promise.all(
-      categories.map(async (category) => {
-        const count = await Problem.countDocuments({ 
-          programmingLanguage: language, 
-          category: category,
-          isActive: true 
-        });
-        return { category, count };
-      })
-    );
+    // Get categories ordered by when each topic was first added (insertion order),
+    // not alphabetically. MongoDB's distinct() always returns sorted values, so use
+    // an aggregation grouped by category and sorted by the earliest createdAt.
+    const categoriesWithCounts = await Problem.aggregate([
+      { $match: { programmingLanguage: language, isActive: true } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+          firstAdded: { $min: '$createdAt' }
+        }
+      },
+      { $sort: { firstAdded: 1 } },
+      { $project: { _id: 0, category: '$_id', count: 1 } }
+    ]);
 
     return NextResponse.json({ categories: categoriesWithCounts });
   } catch (error) {

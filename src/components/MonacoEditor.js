@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import { Copy, Download, Upload } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 // Dynamic import to avoid SSR issues
 const Editor = dynamic(() => import('@monaco-editor/react'), { 
@@ -129,7 +129,6 @@ export default function MonacoEditor({
 }) {
   const [currentTheme, setCurrentTheme] = useState('light');
   const [fontSize, setFontSize] = useState(14);
-  const [copied, setCopied] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const editorRef = useRef(null);
   const containerRef = useRef(null);
@@ -160,6 +159,33 @@ export default function MonacoEditor({
       // Run code functionality (can be customized)
     });
 
+    // Anti-cheat: disable copy / cut / paste and Ctrl+P.
+    // Undo (Ctrl+Z) and redo (Ctrl+Y) are intentionally left enabled.
+    editor.onKeyDown((e) => {
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (
+        ctrl &&
+        (e.keyCode === monaco.KeyCode.KeyC ||
+          e.keyCode === monaco.KeyCode.KeyX ||
+          e.keyCode === monaco.KeyCode.KeyV ||
+          e.keyCode === monaco.KeyCode.KeyP)
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+
+    // Also block clipboard events triggered via the mouse / context menu.
+    const domNode = editor.getDomNode();
+    if (domNode) {
+      ['copy', 'cut', 'paste'].forEach((evt) => {
+        domNode.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      });
+    }
+
     // Configure language-specific features
     if (language === 'javascript') {
       monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
@@ -179,17 +205,6 @@ export default function MonacoEditor({
     onMount?.(editor, monaco);
   }, [currentTheme, language, onMount]);
 
-  // Copy code to clipboard
-  const handleCopy = useCallback(() => {
-    if (editorRef.current) {
-      const code = editorRef.current.getValue();
-      navigator.clipboard.writeText(code).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
-    }
-  }, []);
-
   // Download code as file
   const handleDownload = useCallback(() => {
     if (editorRef.current) {
@@ -205,25 +220,6 @@ export default function MonacoEditor({
       URL.revokeObjectURL(url);
     }
   }, [langConfig.fileExtension]);
-
-  // Upload code from file
-  const handleUpload = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = langConfig.fileExtension;
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target.result;
-          onChange?.(content);
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
-  }, [langConfig.fileExtension, onChange]);
 
   // Toggle fullscreen
   const toggleFullscreen = useCallback(() => {
@@ -297,15 +293,6 @@ export default function MonacoEditor({
             </button>
             
             <button
-              onClick={handleCopy}
-              className="flex items-center px-2 py-1 text-sm text-gray-600 hover:text-gray-900"
-              title="Copy code"
-            >
-              <Copy className="h-4 w-4 mr-1" />
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-            
-            <button
               onClick={handleDownload}
               className="flex items-center px-2 py-1 text-sm text-gray-600 hover:text-gray-900"
               title="Download code"
@@ -313,16 +300,7 @@ export default function MonacoEditor({
               <Download className="h-4 w-4 mr-1" />
               Download
             </button>
-            
-            <button
-              onClick={handleUpload}
-              className="flex items-center px-2 py-1 text-sm text-gray-600 hover:text-gray-900"
-              title="Upload code from file"
-            >
-              <Upload className="h-4 w-4 mr-1" />
-              Upload
-            </button>
-            
+
             <button
               onClick={toggleFullscreen}
               className="flex items-center px-2 py-1 text-sm text-gray-600 hover:text-gray-900"
@@ -352,7 +330,7 @@ export default function MonacoEditor({
             tabSize: language === 'python' ? 4 : 2,
             insertSpaces: true,
             wordWrap: 'on',
-            contextmenu: true,
+            contextmenu: false,
             quickSuggestions: true,
             suggestOnTriggerCharacters: true,
             acceptSuggestionOnEnter: 'on',
