@@ -6,9 +6,23 @@ export async function GET() {
   try {
     await connectDB();
 
-    // Get all unique languages
-    const languages = await Problem.distinct('programmingLanguage', { isActive: true });
-    
+    // Get all unique languages ordered by when each was first added (insertion order),
+    // not alphabetically. MongoDB's distinct() always returns sorted values, so use an
+    // aggregation grouped by language and sorted by the earliest createdAt. This keeps
+    // colleges/assessments in the position they were created instead of the middle.
+    const languageOrder = await Problem.aggregate([
+      { $match: { isActive: true } },
+      {
+        $group: {
+          _id: '$programmingLanguage',
+          firstAdded: { $min: '$createdAt' }
+        }
+      },
+      { $sort: { firstAdded: 1 } },
+      { $project: { _id: 0, language: '$_id' } }
+    ]);
+    const languages = languageOrder.map((item) => item.language);
+
     // Get problem count for each language
     const languagesWithCounts = await Promise.all(
       languages.map(async (language) => {

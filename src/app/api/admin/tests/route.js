@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Test from '@/models/Test';
 import { getUserFromRequest, requireAdmin } from '@/lib/auth';
+import { resolveCanonicalCollection } from '@/lib/collections';
 
 export async function GET(req) {
   await dbConnect();
@@ -26,10 +27,13 @@ export async function POST(req) {
   if (!title || !category || !mcqs || !Array.isArray(mcqs) || mcqs.length === 0) {
     return NextResponse.json({ error: 'Title, category, and MCQs are required' }, { status: 400 });
   }
+  // Reuse an existing collection's casing if one already exists with the same
+  // name (case-insensitive), so we don't create case-variant duplicates.
+  const finalCollection = await resolveCanonicalCollection(Test, collection);
   const test = await Test.create({
     title,
     description,
-    collection: collection || 'General', // Default to 'General' if not provided
+    collection: finalCollection, // Canonical collection name (defaults to 'General')
     mcqs,
     language,
     category,

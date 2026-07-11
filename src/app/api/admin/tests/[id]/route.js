@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Test from '@/models/Test';
 import { getUserFromRequest, requireAdmin } from '@/lib/auth';
+import { resolveCanonicalCollection } from '@/lib/collections';
 
 export async function GET(req, { params }) {
   await dbConnect();
@@ -23,9 +24,11 @@ export async function PUT(req, { params }) {
   
   const { id } = await params;
   const { title, description, collection, mcqs, language, category, duration, availableFrom, availableTo } = await req.json();
+  // Reuse an existing collection's casing to avoid case-variant duplicates.
+  const finalCollection = await resolveCanonicalCollection(Test, collection);
   const test = await Test.findByIdAndUpdate(
     id,
-    { title, description, collection, mcqs, language, category, duration, availableFrom, availableTo },
+    { title, description, collection: finalCollection, mcqs, language, category, duration, availableFrom, availableTo },
     { new: true }
   );
   if (!test) return NextResponse.json({ error: 'Not found' }, { status: 404 });

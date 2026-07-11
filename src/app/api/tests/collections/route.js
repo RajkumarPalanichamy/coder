@@ -18,9 +18,13 @@ export async function GET(req) {
         $group: {
           _id: "$collection",
           count: { $sum: 1 },
+          firstAdded: { $min: "$createdAt" },
           tests: { $push: { _id: "$_id", title: "$title", description: "$description" } }
         }
       },
+      // Order collections by when each was first added (insertion order), not
+      // alphabetically or by arbitrary group order.
+      { $sort: { firstAdded: 1 } },
       {
         $project: {
           collection: "$_id",
