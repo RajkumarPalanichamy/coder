@@ -4,6 +4,11 @@ import { getUserFromRequest } from '@/lib/auth';
 import Problem from '@/models/Problem';
 import Submission from '@/models/Submission';
 import StudentTestSubmission from '@/models/StudentTestSubmission';
+// Import Test and User so their schemas are registered before populate() runs.
+// Without these, populate('test')/populate('student') throws MissingSchemaError
+// on a cold server start -> 500 "Internal server error".
+import Test from '@/models/Test';
+import User from '@/models/User';
 
 export async function GET(request) {
   try {
