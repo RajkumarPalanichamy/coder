@@ -8,17 +8,24 @@ export default function TakeTestPage() {
   const params = useParams();
   const [test, setTest] = useState(null);
   const [testStarted, setTestStarted] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTest = async () => {
       try {
-        const res = await fetch(`/api/tests/${params.id}`);
-        if (!res.ok) {
+        const [testRes, resultRes] = await Promise.all([
+          fetch(`/api/tests/${params.id}`),
+          // A 404 here simply means this test has not been attempted yet
+          fetch(`/api/tests/${params.id}/result`)
+        ]);
+
+        if (!testRes.ok) {
           throw new Error('Failed to fetch test');
         }
-        const testData = await res.json();
-        setTest(testData);
+
+        setTest(await testRes.json());
+        setAlreadySubmitted(resultRes.ok);
       } catch (error) {
         console.error('Error fetching test:', error);
         router.push('/dashboard/tests');
@@ -30,33 +37,46 @@ export default function TakeTestPage() {
     fetchTest();
   }, [params.id, router]);
 
-  const handleSubmit = async (answers) => {
+  const exitFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(console.error);
+    }
+  };
+
+  // Returns true when the attempt is on record; false lets the test screen re-enable its button
+  const handleSubmit = async (answers, timeTaken) => {
     try {
       const response = await fetch(`/api/tests/${params.id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({ answers, timeTaken }),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        const errorData = await response.json();
         console.error('Test submission error:', {
           status: response.status,
-          error: errorData.error || 'Unknown error'
+          error: data.error || 'Unknown error'
         });
-        alert(`Submission failed: ${errorData.error || 'Unknown error'}`);
-        return;
+
+        // The attempt is already on record - show it instead of stranding them on the test
+        if (data.code === 'ALREADY_SUBMITTED') {
+          exitFullscreen();
+          router.push(`/dashboard/tests/${params.id}/result`);
+          return true;
+        }
+
+        alert(`Submission failed: ${data.error || 'Unknown error'}`);
+        return false;
       }
 
-      // Exit fullscreen if active
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      }
-
-      router.push('/dashboard/tests');
+      exitFullscreen();
+      router.push(`/dashboard/tests/${params.id}/result`);
+      return true;
     } catch (error) {
       console.error('Network or submission error:', error);
-      alert('Failed to submit test. Please try again.');
+      return false;
     }
   };
 
@@ -70,9 +90,7 @@ export default function TakeTestPage() {
   };
 
   const handleExitTest = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
+    exitFullscreen();
     router.push('/dashboard/tests');
   };
 
@@ -98,6 +116,40 @@ export default function TakeTestPage() {
           >
             Back to Tests
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (alreadySubmitted && !testStarted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+        <div className="max-w-2xl mx-auto pt-16">
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{test.title}</h1>
+            <p className="text-gray-600 mb-8">
+              You have already completed this test. Each test can be attempted only once.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push('/dashboard/tests')}
+                className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Back to Tests
+              </button>
+              <button
+                onClick={() => router.push(`/dashboard/tests/${params.id}/result`)}
+                className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+              >
+                View Result
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );

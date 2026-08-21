@@ -11,10 +11,10 @@ export async function POST(req, context) {
     await dbConnect();
     const user = await getUserFromRequest(req);
     requireStudent(user);
-    const { answers } = await req.json();
-    
+    const { answers, timeTaken } = await req.json();
+
     const { id } = await params;
-    
+
     console.log('Test Submission Request:', {
       testId: id,
       userId: user.userId,
@@ -36,20 +36,28 @@ export async function POST(req, context) {
       return NextResponse.json({ error: 'Invalid answers' }, { status: 400 });
     }
 
-    // Check if already submitted
+    // Unanswered questions arrive as null; store them as 0 so the array stays numeric
+    const normalizedAnswers = answers.map(ans => (Number.isInteger(ans) ? ans : 0));
+
+    // One attempt per student per test
     const existing = await StudentTestSubmission.findOne({ student: user.userId, test: test._id });
     if (existing) {
       console.warn('Test already submitted:', {
         testId: test._id,
-        studentId: user.userId
+        studentId: user.userId,
+        submissionId: existing._id
       });
-      return NextResponse.json({ error: 'Already submitted' }, { status: 400 });
+      return NextResponse.json({
+        error: 'You have already submitted this test',
+        code: 'ALREADY_SUBMITTED',
+        submissionId: existing._id
+      }, { status: 409 });
     }
 
     // Calculate score
     let score = 0;
     const correctAnswers = test.mcqs.map(mcq => mcq.correctOption);
-    answers.forEach((ans, i) => {
+    normalizedAnswers.forEach((ans, i) => {
       if (ans === correctAnswers[i]) score++;
     });
 
@@ -60,25 +68,28 @@ export async function POST(req, context) {
     const submission = await StudentTestSubmission.create({
       student: user.userId,
       test: test._id,
-      answers,
+      answers: normalizedAnswers,
       score: percentageScore,
       totalQuestions: test.mcqs.length,
       correctAnswers: score,
+      timeTaken: Number.isFinite(timeTaken) && timeTaken > 0 ? Math.round(timeTaken) : 0,
       status: 'submitted'
     });
 
     console.log('Test Submission Successful:', {
       testId: test._id,
-      studentId: user._id,
+      studentId: user.userId,
       score: percentageScore,
       totalQuestions: test.mcqs.length,
       correctAnswers: score
     });
 
-    return NextResponse.json({ 
-      score: percentageScore, 
+    return NextResponse.json({
+      score: percentageScore,
+      correctCount: score,
+      totalQuestions: test.mcqs.length,
       correctAnswers: correctAnswers,
-      submissionId: submission._id 
+      submissionId: submission._id
     });
   } catch (error) {
     console.error('Test Submission Error:', {
@@ -87,24 +98,28 @@ export async function POST(req, context) {
       name: error.name
     });
 
-    // Differentiate between different types of errors
+    // Auth failures must not surface as 500s - the client needs to tell them apart
+    if (error.message === 'Student access required') {
+      return NextResponse.json({ error: 'Only students can submit tests' }, { status: 403 });
+    }
+
     if (error.name === 'UnauthorizedError' || error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
     }
 
     if (error.name === 'ValidationError') {
-      return NextResponse.json({ 
-        error: 'Invalid submission data', 
-        details: error.message 
+      return NextResponse.json({
+        error: 'Invalid submission data',
+        details: error.message
       }, { status: 400 });
     }
 
     return NextResponse.json(
-      { 
-        error: 'Internal server error', 
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined 
-      }, 
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
-} 
+}

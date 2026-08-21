@@ -10,17 +10,39 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   const [showWarning, setShowWarning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [markedQuestions, setMarkedQuestions] = useState(new Set());
+  const [submitError, setSubmitError] = useState(null);
   const warningDismissedRef = useRef(false);
+  const autoSubmittedRef = useRef(false);
 
   const totalQuestions = test.mcqs.length;
 
-  const handleAutoSubmit = useCallback(async () => {
-    if (isSubmitting) return;
+  const submitAnswers = useCallback(async () => {
     setIsSubmitting(true);
-    
+    setSubmitError(null);
+
     const filledAnswers = answers.map(answer => answer !== null ? answer : 0);
-    await onSubmit(filledAnswers);
-  }, [answers, onSubmit, isSubmitting]);
+    const timeTaken = Math.max(0, test.duration * 60 - timeLeft);
+
+    try {
+      const succeeded = await onSubmit(filledAnswers, timeTaken);
+      // On failure the button must be released, otherwise it stays on "Submitting..." forever
+      if (!succeeded) {
+        setSubmitError('Submission failed. Check your connection and try again.');
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error('Test submission failed:', error);
+      setSubmitError('Submission failed. Check your connection and try again.');
+      setIsSubmitting(false);
+    }
+  }, [answers, onSubmit, test.duration, timeLeft]);
+
+  const handleAutoSubmit = useCallback(() => {
+    // Fire once only - otherwise the timer effect retries on every tick after a failure
+    if (autoSubmittedRef.current) return;
+    autoSubmittedRef.current = true;
+    submitAnswers();
+  }, [submitAnswers]);
 
   const dismissWarning = () => {
     warningDismissedRef.current = true;
@@ -30,7 +52,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
+      setTimeLeft((prev) => (prev <= 0 ? 0 : prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
@@ -110,9 +132,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
       if (!confirmed) return;
     }
 
-    setIsSubmitting(true);
-    const filledAnswers = answers.map(answer => answer !== null ? answer : 0);
-    await onSubmit(filledAnswers);
+    await submitAnswers();
   };
 
   const handleExit = () => {
@@ -193,6 +213,12 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                 {isSubmitting ? 'Submitting...' : 'Submit Test'}
               </button>
             </div>
+
+            {submitError && (
+              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {submitError}
+              </div>
+            )}
 
             <div className="space-y-4">
               {test.mcqs.map((mcq, index) => (
@@ -423,6 +449,22 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
           </button>
         </div>
       </div>
+
+      {/* Submission failure banner - covers the auto-submit path, which has no button */}
+      {submitError && (
+        <div className="fixed inset-x-0 bottom-24 flex justify-center px-4 z-50">
+          <div className="flex items-center gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 shadow-lg">
+            <span className="text-sm text-red-700">{submitError}</span>
+            <button
+              onClick={() => submitAnswers()}
+              disabled={isSubmitting}
+              className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50 whitespace-nowrap"
+            >
+              {isSubmitting ? 'Retrying...' : 'Retry Submit'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Time warning modal */}
       {showWarning && timeLeft > 0 && (

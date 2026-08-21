@@ -1,7 +1,19 @@
-export default function TestResult({ test, answers, correctAnswers, score }) {
+export default function TestResult({ test, answers, correctAnswers, score, correctCount, totalQuestions }) {
+  const total = totalQuestions ?? test.mcqs.length;
+  // score is a percentage; fall back to counting when an older payload omits correctCount
+  const correct = correctCount ?? answers.reduce(
+    (acc, ans, i) => (ans === correctAnswers[i] ? acc + 1 : acc),
+    0
+  );
+
   return (
     <div className="space-y-8">
-      <div className="text-xl font-bold text-black">Your Score: {score} / {test.mcqs.length}</div>
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="text-3xl font-bold text-indigo-600">{score}%</div>
+        <div className="text-lg font-semibold text-black mt-1">
+          {correct} / {total} correct
+        </div>
+      </div>
       {test.mcqs.map((mcq, idx) => {
         const isCorrect = answers[idx] === correctAnswers[idx];
         return (
@@ -24,4 +36,4 @@ export default function TestResult({ test, answers, correctAnswers, score }) {
       })}
     </div>
   );
-} 
+}
