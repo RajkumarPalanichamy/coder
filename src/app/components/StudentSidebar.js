@@ -195,7 +195,7 @@ export default function StudentSidebar({ onLogout }) {
 
   // Mobile menu component
   const MobileMenu = () => (
-    <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+    <div className="md:hidden fixed inset-0 z-50 bg-black/50">
       <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
@@ -252,7 +252,7 @@ export default function StudentSidebar({ onLogout }) {
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{label}</span>
                   {badge && (
-                    <span className="text-xs bg-white bg-opacity-80 text-purple-700 px-2 py-1 rounded-full font-medium">
+                    <span className="text-xs bg-white/80 text-purple-700 px-2 py-1 rounded-full font-medium">
                       {badge}
                     </span>
                   )}

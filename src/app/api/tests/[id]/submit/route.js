@@ -44,8 +44,10 @@ export async function POST(req, context) {
       return NextResponse.json({ error: 'Invalid answers' }, { status: 400 });
     }
 
-    // Unanswered questions arrive as null; store them as 0 so the array stays numeric
-    const normalizedAnswers = answers.map(ans => (Number.isInteger(ans) ? ans : 0));
+    // Unanswered questions arrive as null (or -1 from the client's own normalization);
+    // store them as -1, which can never equal a real (>= 0) option index, so an
+    // unanswered question is never scored as a match against the correct option.
+    const normalizedAnswers = answers.map(ans => (Number.isInteger(ans) && ans >= 0 ? ans : -1));
 
     // Students may attempt a test any number of times. Every submission is appended as a
     // new numbered attempt and is never updated afterwards - that immutability, not the

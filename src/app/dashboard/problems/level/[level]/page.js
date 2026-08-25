@@ -5,6 +5,15 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Play, ArrowLeft, CheckCircle, XCircle, Clock, Timer, Send, ChevronLeft, ChevronRight, Target, BookOpen, Code, AlertTriangle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import ProblemStatusCard from '../../../../components/ProblemStatusCard';
+import useTestProctoring, { requestFullscreen, exitFullscreen } from '@/lib/useTestProctoring';
+
+// Same wording as the aptitude test - leaving the test screen ends the attempt either way
+const TERMINATION_MESSAGES = {
+  exited_fullscreen: 'You left fullscreen mode, so the test was ended and your work was submitted automatically.',
+  left_test_screen: 'You left the test screen, so the test was ended and your work was submitted automatically.',
+  time_expired: 'Time is up. Your work has been submitted automatically.',
+  manual: 'Your test is being submitted.'
+};
 
 const mapLanguageToMonacoKey = (lang) => {
   if (!lang) return 'javascript';
@@ -53,7 +62,10 @@ export default function LevelProblemsPage() {
   const [submittingProblem, setSubmittingProblem] = useState(false);
   const [submittedProblems, setSubmittedProblems] = useState(new Set()); // Questions answered via the per-question Submit
   const [problemSubmitNotice, setProblemSubmitNotice] = useState(null); // { type, message } for the current question
-  const [autoSubmitNotice, setAutoSubmitNotice] = useState(null); // Shown while time-expiry submit runs
+  const [submitError, setSubmitError] = useState(null); // Final submit failed - offer a retry
+  const [confirmDialog, setConfirmDialog] = useState(null); // { type: 'submit' | 'exit' | 'clear', ... }
+  // Once set the attempt is over - no more coding, whatever happens to the submission
+  const [endedReason, setEndedReason] = useState(null);
    
   // Store code for each problem
   const [problemLanguages, setProblemLanguages] = useState({});
@@ -69,7 +81,7 @@ export default function LevelProblemsPage() {
   const [levelSubmissionId, setLevelSubmissionId] = useState(null);
   const timerRef = useRef();
   const deadlineRef = useRef(null); // Wall-clock end of the session
-  const autoSubmittedRef = useRef(false); // Time-expiry submit must fire exactly once
+  const endedRef = useRef(false); // The attempt may only be ended once
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
   
   // Problem Status popup state
@@ -79,6 +91,7 @@ export default function LevelProblemsPage() {
   // Current problem
   const currentProblem = problems[currentProblemIndex];
   const currentLanguage = currentProblem ? (problemLanguages[currentProblem._id] || 'javascript') : 'javascript';
+  const attemptEnded = endedReason !== null;
    
   useEffect(() => {
     if (language && category && level) {
@@ -106,10 +119,8 @@ export default function LevelProblemsPage() {
 
   // Auto submit when time expires - runs unattended, so it must never prompt
   useEffect(() => {
-    if (timeLeft === 0 && sessionStarted && !autoSubmittedRef.current) {
-      autoSubmittedRef.current = true;
-      setAutoSubmitNotice('Time is up. Submitting your work...');
-      handleSubmitAll({ auto: true });
+    if (timeLeft === 0 && sessionStarted) {
+      endAttempt('time_expired');
     }
   }, [timeLeft, sessionStarted]);
 
@@ -131,6 +142,12 @@ export default function LevelProblemsPage() {
   useEffect(() => {
     setProblemSubmitNotice(null);
   }, [currentProblemIndex]);
+
+  // Fullscreen lock, presence detection and paste blocking - disarmed once the attempt ends
+  const { isFullscreen, armed, enterFullscreen } = useTestProctoring({
+    active: sessionStarted && !attemptEnded,
+    onViolation: (reason) => endAttempt(reason)
+  });
 
   // Remove auto-save functionality
 
@@ -193,10 +210,7 @@ export default function LevelProblemsPage() {
         setLevelSubmissionId(data.levelSubmission._id);
         setTimeLeft(Math.max(0, Math.round((deadlineRef.current - Date.now()) / 1000)));
         setSessionStarted(true);
-        const element = document.documentElement;
-        if (element.requestFullscreen) {
-          element.requestFullscreen().catch(console.error);
-        }
+        requestFullscreen();
       } else {
         alert(data.error || 'Failed to start level session');
       }
@@ -207,7 +221,7 @@ export default function LevelProblemsPage() {
   };
 
   const handleRunCode = async () => {
-    if (!currentProblem) return;
+    if (!currentProblem || attemptEnded) return;
     
     setRunningCode(true);
     setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
@@ -283,7 +297,7 @@ export default function LevelProblemsPage() {
 
   // Submit the question currently on screen, without ending the test
   const handleSubmitProblem = async () => {
-    if (!currentProblem || !sessionStarted || submittingProblem || submitting) return;
+    if (!currentProblem || !sessionStarted || submittingProblem || submitting || attemptEnded) return;
 
     if (!levelSubmissionId) {
       setProblemSubmitNotice({
@@ -348,31 +362,15 @@ export default function LevelProblemsPage() {
     }
   };
 
-  // `auto` is set by the time-expiry path: no prompts, capture everything as-is
-  const handleSubmitAll = async ({ auto = false } = {}) => {
-    if (!sessionStarted) {
-      if (!auto) alert('Please start the level session first');
-      return;
-    }
-
-    if (submitting) return;
-
-    if (!auto) {
-      const answeredCount = problems.filter(
-        p => submittedProblems.has(p._id) || problemStatuses[p._id]
-      ).length;
-
-      const confirmMessage = answeredCount < problems.length
-        ? `You have worked on ${answeredCount} of ${problems.length} questions.\n\nSubmit the test now? Whatever you have written will be saved; the remaining questions are recorded as "not attempted".`
-        : `Submit the test now? You will not be able to change your answers afterwards.`;
-
-      if (!confirm(confirmMessage)) return;
-    }
-
+  /**
+   * Sends every question, including untouched ones, so partial work is never dropped.
+   * Never prompts: by the time it runs the attempt is already over.
+   */
+  const submitAll = async (reason) => {
     setSubmitting(true);
+    setSubmitError(null);
 
     try {
-      // Every question is sent, including untouched ones, so partial work is never dropped
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
         code: problemCodes[problem._id] ?? (problem._id === currentProblem?._id ? currentCode : ''),
@@ -389,65 +387,54 @@ export default function LevelProblemsPage() {
           language,
           category,
           problemSubmissions,
-          autoSubmitted: auto
+          autoSubmitted: reason !== 'manual'
         })
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-        if (auto) {
-          setAutoSubmitNotice(
-            `Time is up. ${data.submittedProblems || problems.length} question(s) were submitted. Taking you to your results...`
-          );
-        } else {
-          // Show simple success message without scores
-          alert(`✅ Successfully submitted ${problems.length} problems for ${level}!\n\nRedirecting to submissions page to view your results.`);
-        }
+      // An attempt already on record is a success from here - show it rather than
+      // stranding the student on a test they can no longer submit.
+      const alreadyOnRecord =
+        data.code === 'ALREADY_SUBMITTED' ||
+        (data.error && data.error.includes('already have a submission'));
 
-        // Exit fullscreen if active before navigating
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        }
-        // Redirect to submissions page
-        router.push('/dashboard/submissions?type=level');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-
-        // Check if it's an "already submitted" error
-        if (errorData.code === 'ALREADY_SUBMITTED' || (errorData.error && errorData.error.includes('already have a submission'))) {
-          if (!auto) {
-            alert('⚠️ ' + errorData.error + '\n\nRedirecting to submissions page...');
-          }
-          if (document.fullscreenElement) {
-            document.exitFullscreen();
-          }
-          router.push('/dashboard/submissions?type=level');
-        } else if (auto) {
-          // Nothing to click on the auto path - surface the failure and let them retry
-          setAutoSubmitNotice(null);
-          setProblemSubmitNotice({
-            type: 'error',
-            message: errorData.error || 'Auto-submit failed. Use Submit Test to send your work.'
-          });
-        } else {
-          alert(errorData.error || 'Failed to submit problems');
-        }
+      if (!response.ok && !alreadyOnRecord) {
+        setSubmitError(data.error || 'Submission failed. Check your connection and try again.');
+        setSubmitting(false);
+        return;
       }
+
+      exitFullscreen();
+      router.push('/dashboard/submissions?type=level');
     } catch (error) {
       console.error('Error submitting all problems:', error);
-      if (auto) {
-        setAutoSubmitNotice(null);
-        setProblemSubmitNotice({
-          type: 'error',
-          message: 'Auto-submit failed because of a network error. Use Submit Test to send your work.'
-        });
-      } else {
-        alert('Error submitting problems');
-      }
-    } finally {
+      setSubmitError('Submission failed. Check your connection and try again.');
       setSubmitting(false);
     }
+  };
+
+  /**
+   * The one and only way out of an attempt. Latched, because a single tab switch usually
+   * fires several proctoring events and the timer keeps ticking through a failed submit.
+   */
+  const endAttempt = (reason) => {
+    if (endedRef.current) return;
+    endedRef.current = true;
+    setEndedReason(reason);
+    setConfirmDialog(null);
+    submitAll(reason);
+  };
+
+  // Manual finish - the modal is the confirmation, so this just ends the attempt
+  const handleSubmitAll = () => {
+    if (!sessionStarted || submitting || attemptEnded) return;
+
+    const answeredCount = problems.filter(
+      p => submittedProblems.has(p._id) || problemStatuses[p._id]
+    ).length;
+
+    setConfirmDialog({ type: 'submit', answeredCount });
   };
 
   // updateCurrentCode function is removed
@@ -542,16 +529,20 @@ export default function LevelProblemsPage() {
   };
 
   const handleClearProblem = () => {
+    if (!currentProblem || attemptEnded) return;
+    setConfirmDialog({ type: 'clear' });
+  };
+
+  const clearCurrentProblem = () => {
+    setConfirmDialog(null);
     if (!currentProblem) return;
-    
-    if (confirm('Are you sure you want to clear all code for this problem?')) {
-      setCurrentCode('');
-      setProblemCodes(prev => ({
-        ...prev,
-        [currentProblem._id]: ''
-      }));
-      setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
-    }
+
+    setCurrentCode('');
+    setProblemCodes(prev => ({
+      ...prev,
+      [currentProblem._id]: ''
+    }));
+    setRunResults(prev => ({ ...prev, [currentProblem._id]: null }));
   };
 
   const isProblemMarked = (problemId) => {
@@ -633,6 +624,8 @@ export default function LevelProblemsPage() {
                 <li>• Use <strong>Submit Answer</strong> to record a question, then click <strong>Next</strong> to move on</li>
                 <li>• You can resubmit a question any time before the test ends</li>
                 <li>• Make sure you have a stable internet connection</li>
+                <li className="font-semibold">• The test runs in fullscreen. If you switch back to the normal screen, or leave the test screen, the test ends immediately and your work is submitted automatically</li>
+                <li>• Copy-paste into the editor is disabled for the whole test</li>
                 <li>• When the timer runs out, everything you have written is submitted automatically</li>
                 <li>• Use <strong>Submit Test</strong> to finish early</li>
               </ul>
@@ -1141,15 +1134,9 @@ export default function LevelProblemsPage() {
 
           {sessionStarted && (
             <button
-              onClick={() => {
-                if (confirm('Leave the test now?\n\nAnswers you already submitted are saved. Anything not submitted will be lost.')) {
-                  if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                  }
-                  router.push('/dashboard/problems');
-                }
-              }}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              onClick={() => setConfirmDialog({ type: 'exit' })}
+              disabled={submitting || attemptEnded}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" />
               End Test
@@ -1158,16 +1145,149 @@ export default function LevelProblemsPage() {
         </div>
       </div>
 
-      {/* Time-expiry capture - blocks the editor while the auto-submit runs */}
-      {autoSubmitNotice && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70]">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 text-center">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-6 h-6 text-red-600" />
+      {/* Confirmations. window.confirm cannot be used anywhere in here: the native dialog
+          blurs the window, which the proctoring hook correctly reads as leaving the test. */}
+      {confirmDialog?.type === 'submit' && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[85] p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Submit test?</h3>
+            <p className="text-gray-600 mb-6">
+              {confirmDialog.answeredCount < problems.length
+                ? `You have worked on ${confirmDialog.answeredCount} of ${problems.length} questions. Everything you have written is saved; the rest are recorded as "not attempted". Once submitted you cannot return to this attempt.`
+                : 'Once submitted you cannot return to this attempt.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Keep Working
+              </button>
+              <button
+                onClick={() => endAttempt('manual')}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+              >
+                Submit Test
+              </button>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Time&apos;s Up</h2>
-            <p className="text-gray-600 mb-4">{autoSubmitNotice}</p>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          </div>
+        </div>
+      )}
+
+      {confirmDialog?.type === 'exit' && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[85] p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">End the test?</h3>
+            <p className="text-gray-600 mb-6">
+              Your work will be submitted as it stands and the attempt will be closed.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Keep Working
+              </button>
+              <button
+                onClick={() => endAttempt('manual')}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+              >
+                End Test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDialog?.type === 'clear' && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[85] p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Clear your code?</h3>
+            <p className="text-gray-600 mb-6">
+              This removes everything you have written for this question.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={clearCurrentProblem}
+                className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-semibold"
+              >
+                Clear Code
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*
+        Only ever seen before fullscreen is first entered - if the browser refuses the
+        initial request the questions stay covered instead of being readable in a window.
+      */}
+      {sessionStarted && !attemptEnded && !isFullscreen && (
+        <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Fullscreen required</h3>
+            <p className="text-gray-600 mb-6">
+              This test can only be taken in fullscreen, so the questions stay hidden until you
+              enter it. Once you are in, leaving fullscreen ends the test and submits your work.
+            </p>
+            <button
+              onClick={enterFullscreen}
+              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Enter Fullscreen
+            </button>
+
+            {/* Escape hatch for a browser that will not grant fullscreen at all. Offered only
+                before the first entry, when no question has ever been rendered. */}
+            {!armed && (
+              <button
+                onClick={() => router.push('/dashboard/problems')}
+                className="w-full mt-3 px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                My browser cannot go fullscreen - leave without starting
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Terminal state: the attempt is over, only the submission is still in flight. */}
+      {attemptEnded && (
+        <div className="fixed inset-0 bg-gray-900/90 flex items-center justify-center z-[110] p-4">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
+            <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-7 h-7 text-amber-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Test ended</h3>
+            <p className="text-gray-600 mb-6">
+              {TERMINATION_MESSAGES[endedReason] || TERMINATION_MESSAGES.manual}
+            </p>
+
+            {submitError ? (
+              <>
+                <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
+                  {submitError} Your work is not saved yet - do not close this window.
+                </p>
+                <button
+                  onClick={() => submitAll(endedReason)}
+                  disabled={submitting}
+                  className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  {submitting ? 'Retrying...' : 'Retry Submit'}
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center justify-center gap-3 text-gray-600">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                <span>Submitting your work...</span>
+              </div>
+            )}
           </div>
         </div>
       )}

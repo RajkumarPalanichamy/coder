@@ -2,13 +2,13 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Code, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Code,
+  Code2,
   FileText,
-  BookOpen,
   Trophy,
   Target,
   Timer,
@@ -138,14 +138,18 @@ function SubmissionsContent() {
     let filteredSubmissions = [];
     let filteredLevelSubmissions = [];
 
-    if (filter === 'all' || filter === 'individual') {
-      filteredSubmissions = submissions.filter(submission => {
-        if (filter === 'all') return true;
-        return submission.type === 'problem' || submission.type === 'test';
-      });
-    }
-
-    if (filter === 'all' || filter === 'level') {
+    if (filter === 'all') {
+      filteredSubmissions = submissions;
+      filteredLevelSubmissions = levelSubmissions;
+    } else if (filter === 'level') {
+      filteredLevelSubmissions = levelSubmissions;
+    } else if (filter === 'aptitude') {
+      // MCQ assessments - matches "Aptitude Tests" in the sidebar
+      filteredSubmissions = submissions.filter(submission => submission.type === 'test');
+    } else if (filter === 'technical') {
+      // Coding challenges - matches "Technical Courses" in the sidebar
+      // Level submissions are batches of problem (coding) submissions, so they belong here too
+      filteredSubmissions = submissions.filter(submission => submission.type === 'problem');
       filteredLevelSubmissions = levelSubmissions;
     }
 
@@ -208,24 +212,24 @@ function SubmissionsContent() {
             All
           </button>
           <button
-            onClick={() => setFilter('level')}
+            onClick={() => setFilter('aptitude')}
             className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center transition ${
-              filter === 'level' 
-                ? 'bg-indigo-600 text-white' 
+              filter === 'aptitude'
+                ? 'bg-indigo-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <Target className="h-4 w-4 mr-2" /> Levels
+            <Trophy className="h-4 w-4 mr-2" /> Aptitude Test
           </button>
           <button
-            onClick={() => setFilter('individual')}
+            onClick={() => setFilter('technical')}
             className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center transition ${
-              filter === 'individual' 
-                ? 'bg-indigo-600 text-white' 
+              filter === 'technical'
+                ? 'bg-indigo-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            <BookOpen className="h-4 w-4 mr-2" /> Individual
+            <Code2 className="h-4 w-4 mr-2" /> Technical Test
           </button>
         </div>
       </div>
@@ -318,7 +322,7 @@ function SubmissionsContent() {
             const title = submission.type === 'problem' 
               ? submission.problem?.title 
               : submission.test?.title || 'Unknown';
-            const TypeIcon = submission.type === 'problem' ? BookOpen : Trophy;
+            const TypeIcon = submission.type === 'problem' ? Code2 : Trophy;
             
             const StatusIcon = getStatusStyle(submission.status).icon;
             const statusStyle = getStatusStyle(submission.status);

@@ -20,6 +20,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
   const [markedQuestions, setMarkedQuestions] = useState(new Set());
   const [submitError, setSubmitError] = useState(null);
   const [confirmSubmit, setConfirmSubmit] = useState(null);
+  const [showQuestionPanel, setShowQuestionPanel] = useState(false);
   // Once set the attempt is over - no more answering, whatever happens to the submission
   const [endedReason, setEndedReason] = useState(null);
   const warningDismissedRef = useRef(false);
@@ -32,7 +33,9 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const filledAnswers = answers.map(answer => (answer !== null ? answer : 0));
+    // -1 marks a question the student never touched. It must never equal a real option
+    // index, or an unanswered question gets scored as if "the first option" was picked.
+    const filledAnswers = answers.map(answer => (answer !== null ? answer : -1));
     const timeTaken = Math.max(0, test.duration * 60 - timeLeft);
 
     try {
@@ -125,6 +128,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
   const handleQuestionJump = (questionIndex) => {
     setCurrentQuestion(questionIndex);
     setShowReview(false);
+    setShowQuestionPanel(false);
   };
 
   const handleReviewToggle = () => {
@@ -253,7 +257,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
   );
 
   const confirmSubmitModal = confirmSubmit && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[90] p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Submit test?</h3>
         <p className="text-gray-600 mb-6">
@@ -371,13 +375,24 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
           <div className={`px-3 py-2 rounded-lg text-sm font-medium ${timerClasses}`}>
             Time Left: {formatTime(timeLeft)}
           </div>
+          <button
+            onClick={() => setShowQuestionPanel(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Question Numbers"
+          >
+            <div className="flex flex-col gap-1">
+              <div className="w-5 h-0.5 bg-gray-600"></div>
+              <div className="w-5 h-0.5 bg-gray-600"></div>
+              <div className="w-5 h-0.5 bg-gray-600"></div>
+            </div>
+          </button>
         </div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex flex-1 min-h-0">
-        {/* Left Panel - Question Content */}
-        <div className="w-3/4 bg-white border-r border-gray-200 overflow-y-auto">
+        {/* Question Content */}
+        <div className="w-full bg-white overflow-y-auto">
           <div className="p-6">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-blue-600 mb-2">Answer The Following</h2>
@@ -421,70 +436,6 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
                   <span className="text-gray-800 whitespace-pre-wrap font-mono text-sm">{formatQuestionText(option)}</span>
                 </label>
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel - Question Navigation & Summary */}
-        <div className="w-1/4 bg-gray-50 flex flex-col">
-          {/* Questions Navigation */}
-          <div className="bg-white border-b border-gray-200 p-4 flex-shrink-0">
-            <h3 className="font-semibold text-gray-900 mb-3">Questions</h3>
-            <div className="grid grid-cols-5 gap-2">
-              {Array.from({ length: totalQuestions }, (_, index) => {
-                const status = getQuestionStatus(index);
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleQuestionJump(index)}
-                    className={`
-                      w-8 h-8 rounded-full text-xs font-medium transition-colors
-                      ${status === 'current'
-                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
-                        : status === 'answered'
-                          ? 'bg-green-500 text-white'
-                          : status === 'marked'
-                            ? 'bg-yellow-500 text-white'
-                            : 'bg-blue-500 text-white hover:bg-blue-600'
-                      }
-                    `}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Summary Section */}
-          <div className="bg-white p-4 flex-shrink-0">
-            <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span>Total Questions</span>
-                <span className="font-medium">{totalQuestions}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                  Answered
-                </span>
-                <span className="font-medium">{getAnsweredCount()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                  Not Answered
-                </span>
-                <span className="font-medium">{totalQuestions - getAnsweredCount()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                  Marked
-                </span>
-                <span className="font-medium">{markedQuestions.size}</span>
-              </div>
             </div>
           </div>
         </div>
@@ -543,7 +494,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
 
       {/* Time warning modal */}
       {showWarning && timeLeft > 0 && !attemptEnded && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[90]">
           <div className="bg-white rounded-lg p-6 max-w-md mx-4">
             <div className="flex items-center mb-4">
               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
@@ -562,6 +513,81 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
             >
               Continue
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Question Panel Overlay - opened via the 3-bar menu in the top bar */}
+      {showQuestionPanel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[95] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
+            <div className="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Questions</h2>
+              <button
+                onClick={() => setShowQuestionPanel(false)}
+                className="text-white hover:text-gray-200 transition-colors p-1 rounded-lg hover:bg-indigo-700"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-64px)]">
+              <div className="grid grid-cols-5 gap-2 mb-6">
+                {Array.from({ length: totalQuestions }, (_, index) => {
+                  const status = getQuestionStatus(index);
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleQuestionJump(index)}
+                      className={`
+                        w-10 h-10 rounded-full text-sm font-medium transition-colors
+                        ${status === 'current'
+                          ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
+                          : status === 'answered'
+                            ? 'bg-green-500 text-white'
+                            : status === 'marked'
+                              ? 'bg-yellow-500 text-white'
+                              : 'bg-blue-500 text-white hover:bg-blue-600'
+                        }
+                      `}
+                    >
+                      {index + 1}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>Total Questions</span>
+                  <span className="font-medium">{totalQuestions}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center">
+                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    Answered
+                  </span>
+                  <span className="font-medium">{getAnsweredCount()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                    Not Answered
+                  </span>
+                  <span className="font-medium">{totalQuestions - getAnsweredCount()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                    Marked
+                  </span>
+                  <span className="font-medium">{markedQuestions.size}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

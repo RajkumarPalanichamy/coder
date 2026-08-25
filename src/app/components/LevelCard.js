@@ -56,7 +56,7 @@ export default function LevelCard({ level, problemCount, onClick }) {
   return (
     <div onClick={onClick}>
       <div className={`relative overflow-hidden bg-gradient-to-br ${getLevelColor(level)} text-white rounded-xl p-6 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl cursor-pointer group`}>
-        <div className="absolute top-0 right-0 w-20 h-20 bg-white bg-opacity-10 rounded-full -mr-10 -mt-10 transition-transform duration-300 group-hover:scale-110"></div>
+        <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 transition-transform duration-300 group-hover:scale-110"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
             {getLevelIcon(level)}
