@@ -39,6 +39,9 @@ export default function StudentProfilePage() {
     return <div className="flex justify-center items-center min-h-screen bg-gray-50">User not found.</div>;
   }
 
+  const totalProblems = stats?.totalProblems || 0;
+  const solvedProblems = stats?.solvedProblems || 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white py-12 px-2">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl p-12 flex flex-col items-center border border-indigo-100" style={{ background: 'linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%)' }}>
@@ -49,18 +52,16 @@ export default function StudentProfilePage() {
         <div className="flex items-center gap-2 text-gray-500 mb-1"><Mail className="h-4 w-4" />{user.email}</div>
         <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full mb-2">Student</span>
         <div className="flex items-center gap-2 text-gray-500 mb-2"><MapPin className="h-4 w-4" />India</div>
-        {/* Progress Card */}
-        {stats && (
-          <div className="w-full flex justify-center mb-8 mt-4">
-            <StudentProgressCard
-              solved={stats.solvedProblems}
-              total={stats.totalProblems}
-              attempting={stats.totalProblems - stats.solvedProblems}
-              perLevelSolved={stats.perLevelSolved || { 1: 0, 2: 0, 3: 0 }}
-              perLevelTotal={stats.perLevelTotal || { 1: 0, 2: 0, 3: 0 }}
-            />
-          </div>
-        )}
+        {/* Progress Card - email ID and cumulative score, no level breakdown */}
+        <div className="w-full flex justify-center mb-8 mt-4">
+          <StudentProgressCard
+            solved={solvedProblems}
+            total={totalProblems}
+            attempting={Math.max(totalProblems - solvedProblems, 0)}
+            cumulativeScore={stats?.cumulativeScore || 0}
+            email={user.email}
+          />
+        </div>
         {/* Submission Details */}
         {stats && (
           <div className="w-full bg-white rounded-xl shadow px-6 py-6 border border-indigo-50 mb-8">

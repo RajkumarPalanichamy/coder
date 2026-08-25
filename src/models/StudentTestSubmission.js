@@ -34,6 +34,24 @@ const StudentTestSubmissionSchema = new mongoose.Schema({
     enum: ['completed', 'in_progress', 'submitted', 'failed'],
     default: 'submitted'
   },
+  // Attempts are append-only: each submission is its own immutable record, so a handed-in
+  // answer sheet can never be revised - not from the review screen, not from anywhere.
+  attemptNumber: {
+    type: Number,
+    required: true,
+    default: 1,
+    min: 1
+  },
+  autoSubmitted: {
+    type: Boolean,
+    default: false
+  },
+  // Why the attempt ended. Anything other than 'manual' means proctoring cut it short.
+  terminationReason: {
+    type: String,
+    enum: ['manual', 'time_expired', 'exited_fullscreen', 'left_test_screen'],
+    default: 'manual'
+  },
   timeTaken: { 
     type: Number, // in seconds
     default: 0 
@@ -63,6 +81,8 @@ const StudentTestSubmissionSchema = new mongoose.Schema({
 
 // Add indexes for performance
 StudentTestSubmissionSchema.index({ student: 1, test: 1, submittedAt: -1 });
+// Drives "latest attempt" lookups and the next attempt number on submit
+StudentTestSubmissionSchema.index({ student: 1, test: 1, attemptNumber: -1 });
 StudentTestSubmissionSchema.index({ score: -1 });
 StudentTestSubmissionSchema.index({ status: 1 });
 

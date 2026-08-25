@@ -4,6 +4,7 @@ import User from '../../../../../models/User';
 import { LevelSubmission } from '../../../../../models/Submission';
 import { verifyAuth } from '../../../../../lib/auth';
 import { getLevelTimeUsed } from '../../../../../lib/levelSubmissionTime';
+import { getExistingUserIds } from '../../../../../lib/studentDataCleanup';
 
 export async function GET(request) {
   try {
@@ -29,7 +30,13 @@ export async function GET(request) {
     const language = searchParams.get('language');
     const status = searchParams.get('status');
 
-    if (userId) filter.user = userId;
+    if (userId) {
+      filter.user = userId;
+    } else {
+      // Restrict to accounts that still exist so leftovers from deleted users
+      // stay out of the rows, the totals and the exports alike.
+      filter.user = { $in: await getExistingUserIds() };
+    }
     if (level) filter.level = level;
     if (category) filter.category = category;
     if (language) filter.programmingLanguage = language;

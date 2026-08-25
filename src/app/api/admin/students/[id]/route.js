@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { deleteStudentAndAllData } from '@/lib/studentDataCleanup';
 
 export async function GET(request, { params }) {
   try {
@@ -48,9 +49,18 @@ export async function DELETE(request, { params }) {
     if (!student || student.role !== 'student') {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
-    await student.deleteOne();
-    return NextResponse.json({ message: 'Student deleted successfully' });
+
+    // Permanently remove the account together with all of its progress,
+    // submissions and results — nothing may survive to show up in listings,
+    // filters or exports.
+    const deleted = await deleteStudentAndAllData(student._id);
+
+    return NextResponse.json({
+      message: 'Student and all associated data deleted successfully',
+      deleted,
+    });
   } catch (error) {
+    console.error('Error deleting student:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

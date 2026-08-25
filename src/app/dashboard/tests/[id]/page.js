@@ -1,55 +1,82 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import ProfessionalTestTaking from '../../../components/ProfessionalTestTaking';
+import { exitFullscreen, requestFullscreen } from '@/lib/useTestProctoring';
+import { closeAttempt, clearAttempt, isAttemptClosed, startAttempt } from '@/lib/testAttemptSession';
 
 export default function TakeTestPage() {
   const router = useRouter();
   const params = useParams();
+  const testId = params.id;
+
   const [test, setTest] = useState(null);
   const [testStarted, setTestStarted] = useState(false);
-  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [attemptLocked, setAttemptLocked] = useState(false);
+  const [previousAttempts, setPreviousAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
+    // Read the query directly rather than via useSearchParams, which would force this
+    // whole page behind a Suspense boundary for no benefit.
+    const wantsNewAttempt =
+      new URLSearchParams(window.location.search).get('attempt') === 'new';
+
+    if (wantsNewAttempt) {
+      // Arriving from the test list is the sanctioned way to begin again: release the lock,
+      // then strip the flag so a later back-navigation cannot replay it and reopen the
+      // attempt the student just handed in.
+      clearAttempt(testId);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+
+    const locked = !wantsNewAttempt && isAttemptClosed(testId);
+    setAttemptLocked(locked);
+
     const fetchTest = async () => {
       try {
         const [testRes, resultRes] = await Promise.all([
-          fetch(`/api/tests/${params.id}`),
+          fetch(`/api/tests/${testId}`),
           // A 404 here simply means this test has not been attempted yet
-          fetch(`/api/tests/${params.id}/result`)
+          fetch(`/api/tests/${testId}/result`)
         ]);
 
         if (!testRes.ok) {
           throw new Error('Failed to fetch test');
         }
 
-        setTest(await testRes.json());
-        setAlreadySubmitted(resultRes.ok);
+        const testData = await testRes.json();
+        const attempts = resultRes.ok ? (await resultRes.json()).attempts || [] : [];
+
+        if (cancelled) return;
+        setTest(testData);
+        setPreviousAttempts(attempts);
       } catch (error) {
         console.error('Error fetching test:', error);
-        router.push('/dashboard/tests');
+        if (!cancelled) router.push('/dashboard/tests');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchTest();
-  }, [params.id, router]);
+    return () => {
+      cancelled = true;
+    };
+  }, [testId, router]);
 
-  const exitFullscreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(console.error);
-    }
-  };
-
-  // Returns true when the attempt is on record; false lets the test screen re-enable its button
-  const handleSubmit = async (answers, timeTaken) => {
+  /**
+   * Returns true once the attempt is on record. The attempt is locked before navigating,
+   * so the back button lands on the "already submitted" screen rather than a live answer sheet.
+   */
+  const handleSubmit = useCallback(async (answers, timeTaken, terminationReason) => {
     try {
-      const response = await fetch(`/api/tests/${params.id}/submit`, {
+      const response = await fetch(`/api/tests/${testId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, timeTaken }),
+        body: JSON.stringify({ answers, timeTaken, terminationReason })
       });
 
       const data = await response.json().catch(() => ({}));
@@ -59,40 +86,36 @@ export default function TakeTestPage() {
           status: response.status,
           error: data.error || 'Unknown error'
         });
-
-        // The attempt is already on record - show it instead of stranding them on the test
-        if (data.code === 'ALREADY_SUBMITTED') {
-          exitFullscreen();
-          router.push(`/dashboard/tests/${params.id}/result`);
-          return true;
-        }
-
-        alert(`Submission failed: ${data.error || 'Unknown error'}`);
         return false;
       }
 
-      exitFullscreen();
-      router.push(`/dashboard/tests/${params.id}/result`);
+      closeAttempt(testId, terminationReason);
+      await exitFullscreen();
+      router.push(
+        data.submissionId
+          ? `/dashboard/tests/${testId}/result?submissionId=${data.submissionId}`
+          : `/dashboard/tests/${testId}/result`
+      );
       return true;
     } catch (error) {
       console.error('Network or submission error:', error);
       return false;
     }
-  };
+  }, [testId, router]);
 
-  const handleStartTest = () => {
+  const handleStartTest = async () => {
+    startAttempt(testId);
     setTestStarted(true);
-    // Request fullscreen
-    const element = document.documentElement;
-    if (element.requestFullscreen) {
-      element.requestFullscreen().catch(console.error);
-    }
+    // Must be called straight off the click - browsers reject fullscreen without a gesture
+    await requestFullscreen();
   };
 
-  const handleExitTest = () => {
-    exitFullscreen();
+  /** Only reachable before fullscreen is ever entered, so nothing has been shown or answered. */
+  const handleAbandon = useCallback(async () => {
+    clearAttempt(testId);
+    await exitFullscreen();
     router.push('/dashboard/tests');
-  };
+  }, [testId, router]);
 
   if (loading) {
     return (
@@ -110,7 +133,7 @@ export default function TakeTestPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 text-lg">Test not found</p>
-          <button 
+          <button
             onClick={() => router.push('/dashboard/tests')}
             className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
           >
@@ -121,7 +144,8 @@ export default function TakeTestPage() {
     );
   }
 
-  if (alreadySubmitted && !testStarted) {
+  // A submitted attempt is closed for good. Reviewing it is fine; re-entering it is not.
+  if (attemptLocked && !testStarted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
         <div className="max-w-2xl mx-auto pt-16">
@@ -132,10 +156,13 @@ export default function TakeTestPage() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{test.title}</h1>
-            <p className="text-gray-600 mb-8">
-              You have already completed this test. Each test can be attempted only once.
+            <p className="text-gray-600 mb-2">
+              This attempt has been submitted and cannot be reopened.
             </p>
-            <div className="flex gap-4">
+            <p className="text-sm text-gray-500 mb-8">
+              You can review your answers, or begin a new attempt from the test list.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => router.push('/dashboard/tests')}
                 className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
@@ -143,10 +170,10 @@ export default function TakeTestPage() {
                 Back to Tests
               </button>
               <button
-                onClick={() => router.push(`/dashboard/tests/${params.id}/result`)}
+                onClick={() => router.push(`/dashboard/tests/${testId}/result`)}
                 className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
               >
-                View Result
+                Review Answers
               </button>
             </div>
           </div>
@@ -156,6 +183,11 @@ export default function TakeTestPage() {
   }
 
   if (!testStarted) {
+    const attemptNumber = previousAttempts.length + 1;
+    const bestScore = previousAttempts.length
+      ? Math.max(...previousAttempts.map(a => a.score ?? 0))
+      : null;
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
         <div className="max-w-2xl mx-auto pt-16">
@@ -169,6 +201,22 @@ export default function TakeTestPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{test.title}</h1>
               <p className="text-gray-600">{test.description}</p>
             </div>
+
+            {previousAttempts.length > 0 && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6 text-sm">
+                <p className="text-indigo-900">
+                  <span className="font-semibold">
+                    You have completed {previousAttempts.length} attempt
+                    {previousAttempts.length === 1 ? '' : 's'}
+                  </span>
+                  {bestScore !== null && <> - best score {bestScore}%.</>}
+                </p>
+                <p className="text-indigo-700 mt-1">
+                  This will be attempt {attemptNumber}. Every attempt is recorded separately and
+                  kept, and earlier attempts can never be changed.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-gray-50 rounded-lg p-4">
@@ -200,19 +248,24 @@ export default function TakeTestPage() {
                 Important Instructions
               </h3>
               <ul className="text-amber-700 space-y-2 text-sm">
-                <li>• The test will automatically enter fullscreen mode</li>
+                <li>• The test runs in fullscreen and stays there until you submit</li>
+                <li>
+                  • <span className="font-semibold">Leaving fullscreen, switching tabs or
+                  switching windows ends your attempt immediately</span> and submits the answers
+                  you have so far
+                </li>
+                <li>• Pasting is disabled; copy and undo still work</li>
                 <li>• You have {test.duration} minutes to complete all questions</li>
-                <li>• The timer will be visible throughout the test</li>
-                <li>• You can navigate between questions and review answers</li>
-                <li>• Make sure you have a stable internet connection</li>
                 <li>• Once started, the timer cannot be paused</li>
                 <li>• The test will auto-submit when time expires</li>
+                <li>• Once submitted, this attempt cannot be reopened or changed</li>
+                <li>• Make sure you have a stable internet connection</li>
               </ul>
             </div>
 
             <div className="flex gap-4">
               <button
-                onClick={handleExitTest}
+                onClick={() => router.push('/dashboard/tests')}
                 className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
@@ -221,7 +274,7 @@ export default function TakeTestPage() {
                 onClick={handleStartTest}
                 className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
               >
-                Start Test
+                {previousAttempts.length > 0 ? `Start Attempt ${attemptNumber}` : 'Start Test'}
               </button>
             </div>
           </div>
@@ -231,10 +284,10 @@ export default function TakeTestPage() {
   }
 
   return (
-    <ProfessionalTestTaking 
-      test={test} 
-      onSubmit={handleSubmit} 
-      onExit={handleExitTest}
+    <ProfessionalTestTaking
+      test={test}
+      onSubmit={handleSubmit}
+      onAbandon={handleAbandon}
     />
   );
-} 
+}

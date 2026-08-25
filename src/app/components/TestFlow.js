@@ -114,7 +114,7 @@ export default function TestFlow() {
 
   const handleTestSelect = (test) => {
     setSelectedTest(test);
-    router.push(`/dashboard/tests/${test._id}`);
+    router.push(`/dashboard/tests/${test._id}?attempt=new`);
   };
 
   const goBack = () => {

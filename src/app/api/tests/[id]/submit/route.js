@@ -5,13 +5,21 @@ import MCQ from '../../../../../models/MCQ';
 import StudentTestSubmission from '../../../../../models/StudentTestSubmission';
 import { getUserFromRequest, requireStudent } from '../../../../../lib/auth';
 
+// Mirrors the terminationReason enum on StudentTestSubmission
+const VALID_TERMINATION_REASONS = new Set([
+  'manual',
+  'time_expired',
+  'exited_fullscreen',
+  'left_test_screen'
+]);
+
 export async function POST(req, context) {
   const { params } = context;
   try {
     await dbConnect();
     const user = await getUserFromRequest(req);
     requireStudent(user);
-    const { answers, timeTaken } = await req.json();
+    const { answers, timeTaken, terminationReason } = await req.json();
 
     const { id } = await params;
 
@@ -39,20 +47,17 @@ export async function POST(req, context) {
     // Unanswered questions arrive as null; store them as 0 so the array stays numeric
     const normalizedAnswers = answers.map(ans => (Number.isInteger(ans) ? ans : 0));
 
-    // One attempt per student per test
-    const existing = await StudentTestSubmission.findOne({ student: user.userId, test: test._id });
-    if (existing) {
-      console.warn('Test already submitted:', {
-        testId: test._id,
-        studentId: user.userId,
-        submissionId: existing._id
-      });
-      return NextResponse.json({
-        error: 'You have already submitted this test',
-        code: 'ALREADY_SUBMITTED',
-        submissionId: existing._id
-      }, { status: 409 });
-    }
+    // Students may attempt a test any number of times. Every submission is appended as a
+    // new numbered attempt and is never updated afterwards - that immutability, not the
+    // client-side lock, is what stops the review screen from being used to revise answers.
+    const previousAttempts = await StudentTestSubmission.countDocuments({
+      student: user.userId,
+      test: test._id
+    });
+    const attemptNumber = previousAttempts + 1;
+
+    // Only proctoring may set a reason; anything unrecognised is recorded as a normal submit
+    const reason = VALID_TERMINATION_REASONS.has(terminationReason) ? terminationReason : 'manual';
 
     // Calculate score
     let score = 0;
@@ -73,7 +78,10 @@ export async function POST(req, context) {
       totalQuestions: test.mcqs.length,
       correctAnswers: score,
       timeTaken: Number.isFinite(timeTaken) && timeTaken > 0 ? Math.round(timeTaken) : 0,
-      status: 'submitted'
+      status: 'submitted',
+      attemptNumber,
+      autoSubmitted: reason !== 'manual',
+      terminationReason: reason
     });
 
     console.log('Test Submission Successful:', {
@@ -81,7 +89,9 @@ export async function POST(req, context) {
       studentId: user.userId,
       score: percentageScore,
       totalQuestions: test.mcqs.length,
-      correctAnswers: score
+      correctAnswers: score,
+      attemptNumber,
+      terminationReason: reason
     });
 
     return NextResponse.json({
@@ -89,7 +99,8 @@ export async function POST(req, context) {
       correctCount: score,
       totalQuestions: test.mcqs.length,
       correctAnswers: correctAnswers,
-      submissionId: submission._id
+      submissionId: submission._id,
+      attemptNumber
     });
   } catch (error) {
     console.error('Test Submission Error:', {

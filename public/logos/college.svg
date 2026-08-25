@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="College">
+  <title>College</title>
+  <defs>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+  </defs>
+  <!-- Crest -->
+  <path d="M64 8 110 23v42c0 25-19 44-46 51-27-7-46-26-46-51V23z" fill="url(#shield)"/>
+  <path d="M64 8 110 23v42c0 25-19 44-46 51-27-7-46-26-46-51V23z" fill="none" stroke="#312e81" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Mortarboard -->
+  <path d="M64 34 98 47 64 60 30 47z" fill="#ffffff"/>
+  <path d="M46 54v12c0 5 8 9 18 9s18-4 18-9V54l-18 7z" fill="#e0e7ff"/>
+  <path d="M98 47v17" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="98" cy="67" r="4" fill="#ffffff"/>
+  <!-- Banner -->
+  <rect x="42" y="86" width="44" height="8" rx="4" fill="#ffffff" opacity=".85"/>
+</svg>

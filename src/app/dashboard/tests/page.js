@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Clock, ArrowLeft, FolderOpen, BarChart3, ChevronRight, Search, Filter, Target } from 'lucide-react';
 import CollectionCard from '../../components/CollectionCard';
+import BrandLogo from '../../components/BrandLogo';
 import TestCategoryCard from '../../components/TestCategoryCard';
 
 export default function TestListPage() {
@@ -416,14 +417,17 @@ export default function TestListPage() {
                     <div className="p-4">
                       <div className="text-gray-600 mb-4 line-clamp-2 min-h-[40px] whitespace-pre-wrap">{test.description}</div>
                       <div className="flex items-center justify-between mb-3">
-                        <Target className="w-8 h-8 text-purple-500" />
+                        {/* Logo of the collection this test belongs to (Zoho, Accenture, college, ...) */}
+                        <BrandLogo name={selectedCollection} size="sm" />
                         <span className="text-2xl font-bold text-gray-700">∞</span>
                       </div>
                       <p className="text-gray-600 text-sm mb-4">
                         Problems available at this level
                       </p>
                       <Link
-                        href={`/dashboard/tests/${test._id}`}
+                        // attempt=new is the sanctioned entry point: it releases the lock
+                        // left by a previous submission so a fresh attempt can start
+                        href={`/dashboard/tests/${test._id}?attempt=new`}
                         className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium text-center block"
                       >
                         Start Test

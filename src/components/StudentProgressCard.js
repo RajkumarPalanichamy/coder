@@ -1,44 +1,15 @@
 import React from "react";
 
-const levelColors = {
-  1: "#22c55e", // green
-  2: "#eab308", // yellow
-  3: "#ef4444", // red
-};
-const levelLabels = {
-  1: "Level 1",
-  2: "Level 2",
-  3: "Level 3",
-};
-
-function CircularProgress({ solved, total, perLevelSolved, perLevelTotal }) {
-  const radius = 90; // Increased from 60
-  const stroke = 12; // Slightly thicker for larger circle
+// Overall progress only - the legacy Level 1 / Level 2 / Level 3 breakdown was
+// removed from the student profile.
+function CircularProgress({ solved, total }) {
+  const radius = 90;
+  const stroke = 12;
   const normalizedRadius = radius - stroke / 2;
   const circumference = 2 * Math.PI * normalizedRadius;
 
-  let prevPercent = 0;
-  const arcs = [1, 2, 3].map((level) => {
-    const percent = total > 0 ? perLevelSolved[level] / total : 0;
-    const arcLength = circumference * percent;
-    const dashArray = `${arcLength} ${circumference - arcLength}`;
-    const dashOffset = circumference * prevPercent;
-    prevPercent += percent;
-    return (
-      <circle
-        key={level}
-        stroke={levelColors[level]}
-        fill="transparent"
-        strokeWidth={stroke}
-        strokeDasharray={dashArray}
-        strokeDashoffset={-dashOffset}
-        r={normalizedRadius}
-        cx={radius}
-        cy={radius}
-        style={{ transition: "stroke-dasharray 0.5s" }}
-      />
-    );
-  });
+  const percent = total > 0 ? Math.min(solved / total, 1) : 0;
+  const arcLength = circumference * percent;
 
   return (
     <svg height={radius * 2} width={radius * 2} style={{ position: "relative" }}>
@@ -51,8 +22,19 @@ function CircularProgress({ solved, total, perLevelSolved, perLevelTotal }) {
         cx={radius}
         cy={radius}
       />
-      {/* Progress arcs */}
-      {arcs}
+      {/* Progress */}
+      <circle
+        stroke="#22c55e"
+        fill="transparent"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={`${arcLength} ${circumference - arcLength}`}
+        r={normalizedRadius}
+        cx={radius}
+        cy={radius}
+        transform={`rotate(-90 ${radius} ${radius})`}
+        style={{ transition: "stroke-dasharray 0.5s" }}
+      />
     </svg>
   );
 }
@@ -61,22 +43,18 @@ export default function StudentProgressCard({
   solved = 0,
   total = 0,
   attempting = 0,
-  perLevelSolved = { 1: 0, 2: 0, 3: 0 },
-  perLevelTotal = { 1: 0, 2: 0, 3: 0 },
+  cumulativeScore = 0,
+  email = "",
 }) {
+  const percent = total > 0 ? Math.round((solved / total) * 100) : 0;
+
   return (
     <div className="w-full max-w-4xl bg-white rounded-2xl shadow flex flex-col md:flex-row items-center justify-between px-12 py-8 gap-8 md:gap-14 border border-gray-100 mx-auto">
-      {/* Title */}
-      <div className="absolute left-8 top-4 text-lg font-semibold text-gray-700 hidden md:block">Progress Overview</div>
-      {/* Progress + stats */}
+      {/* Progress ring */}
       <div className="flex flex-col items-center justify-center flex-1 min-w-[220px]">
+        <div className="text-lg font-semibold text-gray-700 mb-4">Progress Overview</div>
         <div className="relative flex items-center justify-center" style={{ width: 180, height: 180 }}>
-          <CircularProgress
-            solved={solved}
-            total={total}
-            perLevelSolved={perLevelSolved}
-            perLevelTotal={perLevelTotal}
-          />
+          <CircularProgress solved={solved} total={total} />
           <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
             <span className="text-4xl font-extrabold text-gray-900 leading-none">{solved}</span>
             <span className="text-gray-400 text-base font-medium">/ {total}</span>
@@ -85,25 +63,28 @@ export default function StudentProgressCard({
           </div>
         </div>
       </div>
-      {/* Level stats - horizontal on desktop, vertical on mobile */}
-      <div className="flex flex-row md:flex-col gap-4 md:gap-4 flex-1 justify-center md:justify-start">
-        {[1, 2, 3].map((level) => (
-          <div
-            key={level}
-            className="rounded-xl px-6 py-4 flex flex-col items-center shadow-sm bg-gray-50 min-w-[110px] border border-gray-100"
-          >
-            <span
-              className="font-bold text-base mb-1"
-              style={{ color: levelColors[level] }}
-            >
-              {levelLabels[level]}
-            </span>
-            <span className="text-gray-900 text-2xl font-extrabold">
-              {perLevelSolved[level]}/{perLevelTotal[level]}
-            </span>
-          </div>
-        ))}
+
+      {/* Email ID + cumulative score */}
+      <div className="flex flex-col gap-4 flex-1 w-full md:w-auto">
+        <div className="rounded-xl px-6 py-4 bg-indigo-50 border border-indigo-100 shadow-sm">
+          <span className="block text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-1">
+            Email ID
+          </span>
+          <span className="block text-gray-900 font-semibold break-all">{email || "-"}</span>
+        </div>
+        <div className="rounded-xl px-6 py-4 bg-yellow-50 border border-yellow-100 shadow-sm">
+          <span className="block text-xs font-semibold text-yellow-600 uppercase tracking-wide mb-1">
+            Cumulative Score
+          </span>
+          <span className="block text-3xl font-extrabold text-gray-900">{cumulativeScore}</span>
+        </div>
+        <div className="rounded-xl px-6 py-4 bg-green-50 border border-green-100 shadow-sm">
+          <span className="block text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">
+            Completion
+          </span>
+          <span className="block text-3xl font-extrabold text-gray-900">{percent}%</span>
+        </div>
       </div>
     </div>
   );
-} 
+}

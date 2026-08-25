@@ -3,6 +3,7 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import StudentTestSubmission from '@/models/StudentTestSubmission';
 import { getUserFromRequest, requireAdmin } from '@/lib/auth';
+import { dropOrphanedDocs } from '@/lib/studentDataCleanup';
 
 export async function GET(req, { params }) {
   await dbConnect();
@@ -19,5 +20,6 @@ export async function GET(req, { params }) {
     .populate('student', 'firstName lastName email username')
     .sort({ submittedAt: -1 })
     .lean();
-  return NextResponse.json(submissions);
+  // Leftovers from deleted accounts must never appear in listings or exports.
+  return NextResponse.json(dropOrphanedDocs(submissions, 'student'));
 } 

@@ -50,6 +50,10 @@ export default function LevelProblemsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [runningCode, setRunningCode] = useState(false);
+  const [submittingProblem, setSubmittingProblem] = useState(false);
+  const [submittedProblems, setSubmittedProblems] = useState(new Set()); // Questions answered via the per-question Submit
+  const [problemSubmitNotice, setProblemSubmitNotice] = useState(null); // { type, message } for the current question
+  const [autoSubmitNotice, setAutoSubmitNotice] = useState(null); // Shown while time-expiry submit runs
    
   // Store code for each problem
   const [problemLanguages, setProblemLanguages] = useState({});
@@ -64,6 +68,8 @@ export default function LevelProblemsPage() {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [levelSubmissionId, setLevelSubmissionId] = useState(null);
   const timerRef = useRef();
+  const deadlineRef = useRef(null); // Wall-clock end of the session
+  const autoSubmittedRef = useRef(false); // Time-expiry submit must fire exactly once
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
   
   // Problem Status popup state
@@ -82,17 +88,28 @@ export default function LevelProblemsPage() {
     }
   }, [language, category, level]);
 
-  // Timer logic
+  // Timer logic - remaining time is derived from the wall clock, not from counting
+  // ticks, so a throttled/backgrounded tab still hits zero at the right moment
   useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0) return;
-    timerRef.current = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-    return () => clearTimeout(timerRef.current);
-  }, [timeLeft]);
+    if (!sessionStarted || deadlineRef.current === null) return;
 
-  // Auto submit when time expires
+    const tick = () => {
+      const remaining = Math.max(0, Math.round((deadlineRef.current - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) clearInterval(timerRef.current);
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [sessionStarted]);
+
+  // Auto submit when time expires - runs unattended, so it must never prompt
   useEffect(() => {
-    if (timeLeft === 0 && sessionStarted) {
-      handleSubmitAll();
+    if (timeLeft === 0 && sessionStarted && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
+      setAutoSubmitNotice('Time is up. Submitting your work...');
+      handleSubmitAll({ auto: true });
     }
   }, [timeLeft, sessionStarted]);
 
@@ -109,6 +126,11 @@ export default function LevelProblemsPage() {
       setCurrentCode(problemCodes[currentProblem._id] || '');
     }
   }, [currentProblemIndex, currentProblem, problemCodes]);
+
+  // The submit banner belongs to the question it was raised on
+  useEffect(() => {
+    setProblemSubmitNotice(null);
+  }, [currentProblemIndex]);
 
   // Remove auto-save functionality
 
@@ -163,8 +185,13 @@ export default function LevelProblemsPage() {
       const data = await response.json();
       
       if (response.ok) {
+        const { timeAllowed, startTime } = data.levelSubmission;
+        // Anchor to the server's start time so a reload or a slow tab cannot extend the sitting
+        const startedAt = startTime ? new Date(startTime).getTime() : Date.now();
+        deadlineRef.current = startedAt + timeAllowed * 1000;
+
         setLevelSubmissionId(data.levelSubmission._id);
-        setTimeLeft(data.levelSubmission.timeAllowed);
+        setTimeLeft(Math.max(0, Math.round((deadlineRef.current - Date.now()) / 1000)));
         setSessionStarted(true);
         const element = document.documentElement;
         if (element.requestFullscreen) {
@@ -254,30 +281,101 @@ export default function LevelProblemsPage() {
     }
   };
 
-  const handleSubmitAll = async () => {
+  // Submit the question currently on screen, without ending the test
+  const handleSubmitProblem = async () => {
+    if (!currentProblem || !sessionStarted || submittingProblem || submitting) return;
+
+    if (!levelSubmissionId) {
+      setProblemSubmitNotice({
+        type: 'error',
+        message: 'Session not ready yet. Please try again in a moment.'
+      });
+      return;
+    }
+
+    const problemId = currentProblem._id;
+    const alreadySubmitted = submittedProblems.has(problemId);
+
+    setSubmittingProblem(true);
+    setProblemSubmitNotice(null);
+
+    try {
+      const response = await fetch(`/api/submissions/level/${levelSubmissionId}/problem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          problemId,
+          code: currentCode,
+          language: currentLanguage,
+          passFailStatus: problemStatuses[problemId] || 'not_attempted'
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setProblemSubmitNotice({
+          type: 'error',
+          message: data.error || 'Failed to submit this question. Please try again.'
+        });
+        return;
+      }
+
+      // Keep the answer on record locally too, so the final submit sends the same code
+      setProblemCodes(prev => ({ ...prev, [problemId]: currentCode }));
+      setSubmittedProblems(prev => new Set(prev).add(problemId));
+
+      const isLastProblem = currentProblemIndex === problems.length - 1;
+      setProblemSubmitNotice({
+        type: 'success',
+        message: alreadySubmitted || data.resubmitted
+          ? isLastProblem
+            ? 'Answer updated. This is the last question - use Submit Test when you are done.'
+            : 'Answer updated. Click Next to move to the following question.'
+          : isLastProblem
+            ? 'Answer submitted. This is the last question - use Submit Test when you are done.'
+            : 'Answer submitted. Click Next to move to the following question.'
+      });
+    } catch (error) {
+      console.error('Error submitting problem:', error);
+      setProblemSubmitNotice({
+        type: 'error',
+        message: 'Network error while submitting this question. Please try again.'
+      });
+    } finally {
+      setSubmittingProblem(false);
+    }
+  };
+
+  // `auto` is set by the time-expiry path: no prompts, capture everything as-is
+  const handleSubmitAll = async ({ auto = false } = {}) => {
     if (!sessionStarted) {
-      alert('Please start the level session first');
+      if (!auto) alert('Please start the level session first');
       return;
     }
 
-    // Check if any problems have been tested
-    const testedProblems = Object.keys(problemStatuses).length;
-    if (testedProblems === 0) {
-      alert('⚠️ No problems have been tested!\n\nPlease run code for at least one problem before submitting.');
-      return;
-    }
+    if (submitting) return;
 
-    if (testedProblems < problems.length) {
-      const confirmSubmit = confirm(`⚠️ Only ${testedProblems} out of ${problems.length} problems have been tested.\n\nAre you sure you want to submit? Untested problems will be marked as "not attempted".`);
-      if (!confirmSubmit) return;
+    if (!auto) {
+      const answeredCount = problems.filter(
+        p => submittedProblems.has(p._id) || problemStatuses[p._id]
+      ).length;
+
+      const confirmMessage = answeredCount < problems.length
+        ? `You have worked on ${answeredCount} of ${problems.length} questions.\n\nSubmit the test now? Whatever you have written will be saved; the remaining questions are recorded as "not attempted".`
+        : `Submit the test now? You will not be able to change your answers afterwards.`;
+
+      if (!confirm(confirmMessage)) return;
     }
 
     setSubmitting(true);
 
     try {
+      // Every question is sent, including untouched ones, so partial work is never dropped
       const problemSubmissions = problems.map(problem => ({
         problemId: problem._id,
-        code: problemCodes[problem._id] || currentCode || '', // Use problem-specific code or fallback to current code
+        code: problemCodes[problem._id] ?? (problem._id === currentProblem?._id ? currentCode : ''),
         submissionLanguage: problemLanguages[problem._id] || 'javascript',
         status: problemStatuses[problem._id] || 'not_attempted', // This will be used as passFailStatus
         passFailStatus: problemStatuses[problem._id] || 'not_attempted' // Explicit pass/fail status
@@ -290,16 +388,23 @@ export default function LevelProblemsPage() {
         body: JSON.stringify({
           language,
           category,
-          problemSubmissions
+          problemSubmissions,
+          autoSubmitted: auto
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        
-        // Show simple success message without scores
-        alert(`✅ Successfully submitted ${problems.length} problems for ${level}!\n\nRedirecting to submissions page to view your results.`);
-        
+
+        if (auto) {
+          setAutoSubmitNotice(
+            `Time is up. ${data.submittedProblems || problems.length} question(s) were submitted. Taking you to your results...`
+          );
+        } else {
+          // Show simple success message without scores
+          alert(`✅ Successfully submitted ${problems.length} problems for ${level}!\n\nRedirecting to submissions page to view your results.`);
+        }
+
         // Exit fullscreen if active before navigating
         if (document.fullscreenElement) {
           document.exitFullscreen();
@@ -307,22 +412,39 @@ export default function LevelProblemsPage() {
         // Redirect to submissions page
         router.push('/dashboard/submissions?type=level');
       } else {
-        const errorData = await response.json();
-        
+        const errorData = await response.json().catch(() => ({}));
+
         // Check if it's an "already submitted" error
-        if (errorData.error && errorData.error.includes('already have a submission')) {
-          alert('⚠️ ' + errorData.error + '\n\nRedirecting to submissions page...');
+        if (errorData.code === 'ALREADY_SUBMITTED' || (errorData.error && errorData.error.includes('already have a submission'))) {
+          if (!auto) {
+            alert('⚠️ ' + errorData.error + '\n\nRedirecting to submissions page...');
+          }
           if (document.fullscreenElement) {
             document.exitFullscreen();
           }
           router.push('/dashboard/submissions?type=level');
+        } else if (auto) {
+          // Nothing to click on the auto path - surface the failure and let them retry
+          setAutoSubmitNotice(null);
+          setProblemSubmitNotice({
+            type: 'error',
+            message: errorData.error || 'Auto-submit failed. Use Submit Test to send your work.'
+          });
         } else {
           alert(errorData.error || 'Failed to submit problems');
         }
       }
     } catch (error) {
       console.error('Error submitting all problems:', error);
-      alert('Error submitting problems');
+      if (auto) {
+        setAutoSubmitNotice(null);
+        setProblemSubmitNotice({
+          type: 'error',
+          message: 'Auto-submit failed because of a network error. Use Submit Test to send your work.'
+        });
+      } else {
+        alert('Error submitting problems');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -390,6 +512,14 @@ export default function LevelProblemsPage() {
 
   const getTestedProblemsCount = () => {
     return Object.keys(problemStatuses).length;
+  };
+
+  const getSubmittedProblemsCount = () => {
+    return problems.filter(p => submittedProblems.has(p._id)).length;
+  };
+
+  const isCurrentProblemSubmitted = () => {
+    return !!currentProblem && submittedProblems.has(currentProblem._id);
   };
 
   const getCurrentProblemStatus = () => {
@@ -499,10 +629,12 @@ export default function LevelProblemsPage() {
                 <li>• You have {problems.reduce((total, problem) => total + (problem.timeLimit ? Math.floor(problem.timeLimit / 60) : 10), 0)} minutes to complete all {problems.length} problems</li>
                 <li>• The timer will run for the entire level, not individual problems</li>
                 <li>• You can navigate between problems freely during the session</li>
-                <li>• Your code will be auto-saved as you work</li>
+                <li>• Use <strong>Run Code</strong> to compile your solution and check it against the examples</li>
+                <li>• Use <strong>Submit Answer</strong> to record a question, then click <strong>Next</strong> to move on</li>
+                <li>• You can resubmit a question any time before the test ends</li>
                 <li>• Make sure you have a stable internet connection</li>
-                <li>• The session will auto-submit when time expires</li>
-                <li>• You can manually submit all solutions before time expires</li>
+                <li>• When the timer runs out, everything you have written is submitted automatically</li>
+                <li>• Use <strong>Submit Test</strong> to finish early</li>
               </ul>
             </div>
 
@@ -535,7 +667,7 @@ export default function LevelProblemsPage() {
             <h1 className="text-lg font-semibold text-gray-900">Programming Challenge... ({problems.length})</h1>
             <p className="text-sm text-gray-500">{level.toUpperCase()} - {language} - {category}</p>
             <p className="text-xs text-blue-600 mt-1">
-               🧪 Tested: {getTestedProblemsCount()}/{problems.length} | Current: {getCurrentProblemStatus()}
+               🧪 Tested: {getTestedProblemsCount()}/{problems.length} | 📤 Submitted: {getSubmittedProblemsCount()}/{problems.length} | Current: {getCurrentProblemStatus()}
               </p>
           </div>
         </div>
@@ -748,28 +880,56 @@ export default function LevelProblemsPage() {
                     </>
                   )}
                 </button>
-                
-                {/* {sessionStarted && (
-                  <button
-                    onClick={handleSubmitAll}
-                    disabled={submitting}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {submitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Submit All ({getTestedProblemsCount()}/{problems.length})
-                      </>
-                    )}
-                  </button>
-                )} */}
+
+                {/* Per-question submit - records this answer without ending the test */}
+                <button
+                  onClick={handleSubmitProblem}
+                  disabled={submittingProblem || submitting || !sessionStarted}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {submittingProblem ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      {isCurrentProblemSubmitted() ? 'Resubmit Answer' : 'Submit Answer'}
+                    </>
+                  )}
+                </button>
               </div>
             </div>
+
+            {/* Result of the last per-question submit */}
+            {problemSubmitNotice && (
+              <div
+                className={`px-6 py-3 border-t flex items-center justify-between gap-4 flex-shrink-0 ${
+                  problemSubmitNotice.type === 'success'
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {problemSubmitNotice.type === 'success' ? (
+                    <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  )}
+                  <span className="text-sm">{problemSubmitNotice.message}</span>
+                </div>
+                {problemSubmitNotice.type === 'success' && currentProblemIndex < problems.length - 1 && (
+                  <button
+                    onClick={goToNext}
+                    className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors whitespace-nowrap"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -949,16 +1109,21 @@ export default function LevelProblemsPage() {
           <button
             onClick={goToNext}
             disabled={currentProblemIndex === problems.length - 1}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
+              isCurrentProblemSubmitted()
+                ? 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
           >
             Next
           </button>
 
           {sessionStarted && (
                   <button
-                    onClick={handleSubmitAll}
+                    onClick={() => handleSubmitAll()}
                     disabled={submitting}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                    title="Ends the test and submits every question"
                   >
                     {submitting ? (
                       <>
@@ -968,7 +1133,7 @@ export default function LevelProblemsPage() {
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Submit  {/* {All ({getTestedProblemsCount()}/{problems.length})} */}
+                        Submit Test ({getSubmittedProblemsCount()}/{problems.length})
                       </>
                     )}
                   </button>
@@ -977,7 +1142,10 @@ export default function LevelProblemsPage() {
           {sessionStarted && (
             <button
               onClick={() => {
-                if (confirm('Are you sure you want to end this test? All progress will be lost.')) {
+                if (confirm('Leave the test now?\n\nAnswers you already submitted are saved. Anything not submitted will be lost.')) {
+                  if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                  }
                   router.push('/dashboard/problems');
                 }
               }}
@@ -989,6 +1157,20 @@ export default function LevelProblemsPage() {
           )}
         </div>
       </div>
+
+      {/* Time-expiry capture - blocks the editor while the auto-submit runs */}
+      {autoSubmitNotice && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70]">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 text-center">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-6 h-6 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Time&apos;s Up</h2>
+            <p className="text-gray-600 mb-4">{autoSubmitNotice}</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          </div>
+        </div>
+      )}
 
       {/* Problem Status Overlay */}
       {showProblemStatusPopup && (
@@ -1013,6 +1195,7 @@ export default function LevelProblemsPage() {
                 currentProblemIndex={currentProblemIndex}
                 problemCodes={problemLanguages}
                 markedProblems={markedProblems}
+                submittedProblems={submittedProblems}
                 problems={problems}
                 problemStatuses={problemStatuses}
                 onSelectProblem={(index) => {

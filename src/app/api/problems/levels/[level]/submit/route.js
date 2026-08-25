@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Problem from '@/models/Problem';
 import Submission, { LevelSubmission } from '@/models/Submission';
 import { getUserFromRequest } from '@/lib/auth';
+import { normalizeSubmissionLanguage, normalizeSubmissionCode } from '@/lib/submissionNormalize';
 
 export async function POST(request, { params }) {
   try {
@@ -26,7 +27,7 @@ export async function POST(request, { params }) {
 
     const { level } = await params;
     const body = await request.json();
-    const { language, category, problemSubmissions } = body;
+    const { language, category, problemSubmissions, autoSubmitted } = body;
 
     // Validate level
     if (!['level1', 'level2', 'level3'].includes(level)) {
@@ -66,32 +67,36 @@ export async function POST(request, { params }) {
     const timeAllowedSeconds = totalTimeMinutes * 60;
 
     // Check if user already has a level submission for this combination
+    // 'time_expired' is included so an auto-submit can still finalise the session
+    // that the per-question endpoint flagged as expired, instead of orphaning the
+    // answers already recorded against it.
     const existingLevelSubmission = await LevelSubmission.findOne({
       user: userId,
       level,
       category,
       programmingLanguage: language,
-      status: { $in: ['in_progress', 'completed', 'submitted'] }
-    });
+      status: { $in: ['in_progress', 'time_expired', 'completed', 'submitted'] }
+    }).sort({ createdAt: -1 });
 
     let levelSubmission;
 
-    // If there's an existing submission, check if it's incomplete (no problemSubmissions)
     if (existingLevelSubmission) {
-      if (existingLevelSubmission.problemSubmissions && existingLevelSubmission.problemSubmissions.length > 0) {
-        // This submission already has problems, don't allow resubmission
+      // Only a finalised attempt blocks a resubmit. A session that is still
+      // in_progress may already hold per-question submits made during the test -
+      // those get merged below rather than rejected.
+      if (['submitted', 'completed'].includes(existingLevelSubmission.status)) {
         return NextResponse.json(
-          { error: '⚠️ You already have a submission for this level!\n\nPlease check your submissions page to view your results.' },
+          {
+            error: '⚠️ You already have a submission for this level!\n\nPlease check your submissions page to view your results.',
+            code: 'ALREADY_SUBMITTED'
+          },
           { status: 400 }
         );
-      } else {
-        // This submission exists but has no problems, we can complete it
-    
-        // Use the existing submission instead of creating a new one
-        levelSubmission = existingLevelSubmission;
       }
+
+      levelSubmission = existingLevelSubmission;
     } else {
-      
+
       // Create new level submission record
       levelSubmission = new LevelSubmission({
         user: userId,
@@ -108,57 +113,78 @@ export async function POST(request, { params }) {
 
     // Process each problem submission
     const submissionResults = [];
-    
 
-    
     for (let i = 0; i < problemSubmissions.length; i++) {
       const problemSubmission = problemSubmissions[i];
       const { problemId, code, submissionLanguage } = problemSubmission;
-      
 
       // Validate problem exists in this level
       const problem = problems.find(p => p._id.toString() === problemId);
       if (!problem) {
         continue; // Skip invalid problems
       }
-      
+
+      const order = i + 1;
+      const resolvedCode = normalizeSubmissionCode(code);
+      const resolvedLanguage = normalizeSubmissionLanguage(submissionLanguage || language);
+      const passFailStatus = ['passed', 'failed'].includes(problemSubmission.status)
+        ? problemSubmission.status
+        : 'not_attempted';
 
       try {
-        // Create individual submission
-        const submission = new Submission({
-          user: userId,
-          problem: problemId,
-          code: code,
-          language: submissionLanguage || language,
-          isLevelSubmission: true,
-          levelSubmission: levelSubmission._id,
-          levelInfo: {
-            level,
-            category,
-            programmingLanguage: language,
-            submissionOrder: i + 1
-          },
-          status: 'pending', // Keep original status for program execution
-          // Add pass/fail status from frontend for user tracking
-          passFailStatus: problemSubmission.status || 'not_attempted' // Use status field directly
-        });
+        // A question submitted individually during the test already has a record -
+        // update it in place so the final submit never duplicates or discards it.
+        const existingEntry = levelSubmission.problemSubmissions.find(
+          ps => ps.problem.toString() === problemId
+        );
 
-        await submission.save();
+        let submission = existingEntry
+          ? await Submission.findById(existingEntry.submission)
+          : null;
 
-        // Add to level submission
-        const problemSubmissionEntry = {
-          problem: problemId,
-          submission: submission._id,
-          order: i + 1
-        };
-        
-        levelSubmission.problemSubmissions.push(problemSubmissionEntry);
+        if (submission) {
+          submission.code = resolvedCode;
+          submission.language = resolvedLanguage;
+          submission.passFailStatus = passFailStatus;
+          submission.submittedAt = new Date();
+          await submission.save();
+        } else {
+          submission = new Submission({
+            user: userId,
+            problem: problemId,
+            code: resolvedCode,
+            language: resolvedLanguage,
+            isLevelSubmission: true,
+            levelSubmission: levelSubmission._id,
+            levelInfo: {
+              level,
+              category,
+              programmingLanguage: language,
+              submissionOrder: existingEntry ? existingEntry.order : order
+            },
+            status: 'pending', // Keep original status for program execution
+            // Add pass/fail status from frontend for user tracking
+            passFailStatus
+          });
+
+          await submission.save();
+
+          if (existingEntry) {
+            existingEntry.submission = submission._id;
+          } else {
+            levelSubmission.problemSubmissions.push({
+              problem: problemId,
+              submission: submission._id,
+              order
+            });
+          }
+        }
 
         submissionResults.push({
           problemId,
           submissionId: submission._id,
           status: 'submitted',
-          order: i + 1
+          order
         });
 
       } catch (error) {
@@ -167,22 +193,30 @@ export async function POST(request, { params }) {
           problemId,
           status: 'failed',
           error: error.message,
-          order: i + 1
+          order
         });
       }
     }
 
     // Update level submission with problem submissions
     await levelSubmission.save();
-    
-    // Update status if all submissions are created
-    if (submissionResults.every(result => result.status === 'submitted')) {
-      levelSubmission.status = 'submitted';
-      levelSubmission.submitTime = new Date();
-      levelSubmission.calculateTimeUsed();
 
-      // Re-enable submission summary update for pass/fail calculation
-      await levelSubmission.updateSubmissionSummary();
+    // Finalise the attempt even if individual records failed to save - the sitting
+    // is over either way, and leaving it in_progress would strand the student with
+    // no result and no way to resubmit.
+    levelSubmission.status = 'submitted';
+    levelSubmission.submitTime = new Date();
+    levelSubmission.calculateTimeUsed();
+
+    // Re-enable submission summary update for pass/fail calculation
+    await levelSubmission.updateSubmissionSummary();
+
+    const failedResults = submissionResults.filter(r => r.status === 'failed');
+    if (failedResults.length > 0) {
+      console.error(
+        `Level submit ${levelSubmission._id}: ${failedResults.length} problem submission(s) failed to save`,
+        failedResults
+      );
     }
 
     // Remove final scoring data fetch
@@ -201,6 +235,8 @@ export async function POST(request, { params }) {
       category,
       totalProblems: problems.length,
       submittedProblems: submissionResults.filter(r => r.status === 'submitted').length,
+      failedProblems: failedResults.length,
+      autoSubmitted: !!autoSubmitted,
       timeAllowed: timeAllowedSeconds,
       // Remove totalPoints reference
       // totalPoints: levelSubmission.totalPoints,

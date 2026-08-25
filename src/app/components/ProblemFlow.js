@@ -1,60 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Code2, FolderOpen, Target, ChevronRight, ArrowLeft, Search, Filter, BarChart3, GraduationCap, ClipboardList, BookOpen } from 'lucide-react';
+import { FolderOpen, Target, ChevronRight, ArrowLeft, Search, Filter, BarChart3, BookOpen } from 'lucide-react';
+import BrandLogo from './BrandLogo';
+import { formatBrandName, getBrandTypeLabel, isProgrammingLanguage, resolveBrand } from '@/lib/brandLogos';
 
-const formatLanguageName = (language) => {
-  if (!language) return '';
-  const langLower = language.toLowerCase();
-  switch (langLower) {
-    case 'cpp':
-      return 'C++';
-    case 'csharp':
-      return 'C#';
-    case 'javascript':
-      return 'JavaScript';
-    case 'typescript':
-      return 'TypeScript';
-    default:
-      return language
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-  }
-};
+// Names, labels and artwork all come from the shared registry in
+// `src/lib/brandLogos.js` so a language, company or college only has to be
+// registered once for every card in the app to pick it up.
+const formatLanguageName = (language) => formatBrandName(language);
 
-const isProgrammingLanguage = (language) => {
-  if (!language) return false;
-  const langLower = language.toLowerCase().trim();
-  const knownLanguages = [
-    'javascript', 'python', 'java', 'cpp', 'c++', 'c++ programming', 'cpp programming',
-    'csharp', 'c#', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift',
-    'sql', 'html', 'css', 'bash', 'shell'
-  ];
-  return knownLanguages.includes(langLower);
-};
+const getLanguageTypeLabel = (language) => (language ? getBrandTypeLabel(language) : '');
 
-const getLanguageTypeLabel = (language) => {
-  if (!language) return '';
-  if (isProgrammingLanguage(language)) {
-    return 'Programming Language';
-  }
-  const langLower = language.toLowerCase();
-  if (langLower.includes('college') || langLower.includes('university') || langLower.includes('institute') || langLower.includes('school')) {
-    return 'College';
-  }
-  return 'Assessment';
-};
-
-const getCardHeaderGradient = (language) => {
-  const label = getLanguageTypeLabel(language);
-  if (label === 'College') {
-    return 'from-indigo-500 to-indigo-600';
-  }
-  if (label === 'Assessment') {
-    return 'from-orange-500 to-amber-600';
-  }
-  return 'from-blue-400 to-blue-600';
-};
+const getCardHeaderGradient = (language) => resolveBrand(language).gradient;
 
 export default function ProblemFlow() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -199,57 +156,6 @@ export default function ProblemFlow() {
     });
   };
 
-  const getLanguageImage = (language) => {
-    if (!language) return <Code2 className="w-16 h-16 text-blue-500" />;
-    console.log(language);
-    switch (language.toLowerCase()) {
-      case 'javascript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="w-40 h-40" />;
-      case 'python':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="w-40 h-40" />;
-      case 'java':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-40 h-40" />;
-      case 'cpp':
-      case 'c++':
-      case 'c++ programming':
-      case 'C++':
-      case 'Cpp':
-        return <img  src="/c.svg" alt="C++" className="w-40 h-40" />;
-      case 'csharp':
-      case 'c#':
-        return <img  src="/c--4.svg" alt="C#" className="w-40 h-40" />;
-      case 'c':
-        return <img  src="/c-1.svg" alt="C" className="w-40 h-40" />;
-      case 'go':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="w-40 h-40" />;
-      case 'rust':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="w-40 h-40" />;
-      case 'kotlin':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-40 h-40" />;
-      case 'typescript':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="w-40 h-40" />;
-      case 'php':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="w-40 h-40" />;
-      case 'ruby':
-        return <img  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="w-40 h-40" />;
-      case 'swift':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="w-40 h-40" />;
-      default:
-        const typeLabel = getLanguageTypeLabel(language);
-        if (typeLabel === 'College') {
-          return (
-            <div className="w-40 h-40 flex items-center justify-center bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl border border-indigo-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
-              <GraduationCap className="w-20 h-20 text-indigo-600" />
-            </div>
-          );
-        }
-        return (
-          <div className="w-40 h-40 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-100 rounded-2xl border border-orange-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
-            <ClipboardList className="w-20 h-20 text-orange-600" />
-          </div>
-        );
-    }
-  };
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -345,7 +251,7 @@ export default function ProblemFlow() {
             </div>
             <div className="p-4">
               <div className="flex flex-col items-center gap-3 mb-3">
-                {getLanguageImage(langData.language)}
+                <BrandLogo name={langData.language} size="lg" />
                 {/* <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span> */}
                 {/* <span className="text-2xl font-bold text-gray-700">∞</span> */}
               </div>

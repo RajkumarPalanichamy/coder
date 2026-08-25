@@ -14,10 +14,27 @@ export async function GET(req, { params }) {
     const test = await Test.findById(id).populate('mcqs');
     if (!test) return NextResponse.json({ error: 'Test not found' }, { status: 404 });
 
-    const submission = await StudentTestSubmission.findOne({ student: user.userId, test: test._id });
-    if (!submission) {
+    // Every attempt is kept. Newest first, so index 0 is the one to show by default.
+    const attempts = await StudentTestSubmission.find({ student: user.userId, test: test._id })
+      .sort({ attemptNumber: -1, createdAt: -1 });
+
+    if (attempts.length === 0) {
       return NextResponse.json(
         { error: 'No submission', code: 'NO_SUBMISSION' },
+        { status: 404 }
+      );
+    }
+
+    // ?submissionId= opens an older attempt. Scoped to this student's own attempts, so it
+    // cannot be used to read someone else's answer sheet.
+    const requestedId = new URL(req.url).searchParams.get('submissionId');
+    const submission = requestedId
+      ? attempts.find(a => a._id.toString() === requestedId)
+      : attempts[0];
+
+    if (!submission) {
+      return NextResponse.json(
+        { error: 'Attempt not found', code: 'NO_SUBMISSION' },
         { status: 404 }
       );
     }
@@ -31,12 +48,25 @@ export async function GET(req, { params }) {
     );
 
     return NextResponse.json({
+      submissionId: submission._id,
       answers: submission.answers,
       score: submission.score,
       correctAnswers,
       correctCount,
       totalQuestions,
-      submittedAt: submission.submittedAt || submission.createdAt
+      submittedAt: submission.submittedAt || submission.createdAt,
+      attemptNumber: submission.attemptNumber ?? 1,
+      autoSubmitted: submission.autoSubmitted ?? false,
+      terminationReason: submission.terminationReason || 'manual',
+      // Lets the review screen offer a per-attempt switcher without a second round trip
+      attempts: attempts.map((a, i) => ({
+        submissionId: a._id,
+        attemptNumber: a.attemptNumber ?? attempts.length - i,
+        score: a.score,
+        autoSubmitted: a.autoSubmitted ?? false,
+        terminationReason: a.terminationReason || 'manual',
+        submittedAt: a.submittedAt || a.createdAt
+      }))
     });
   } catch (error) {
     console.error('Test Result Error:', { message: error.message, name: error.name });

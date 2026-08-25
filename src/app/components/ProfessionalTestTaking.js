@@ -1,8 +1,16 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatQuestionText } from '@/lib/formatQuestionText';
+import useTestProctoring from '@/lib/useTestProctoring';
 
-export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
+const TERMINATION_MESSAGES = {
+  exited_fullscreen: 'You left fullscreen mode, so the attempt was ended and your answers were submitted automatically.',
+  left_test_screen: 'You left the test screen, so the attempt was ended and your answers were submitted automatically.',
+  time_expired: 'Time is up. Your answers have been submitted automatically.',
+  manual: 'Your test is being submitted.'
+};
+
+export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
   const [answers, setAnswers] = useState(Array(test.mcqs.length).fill(null));
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timeLeft, setTimeLeft] = useState(test.duration * 60); // Convert to seconds
@@ -11,21 +19,25 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [markedQuestions, setMarkedQuestions] = useState(new Set());
   const [submitError, setSubmitError] = useState(null);
+  const [confirmSubmit, setConfirmSubmit] = useState(null);
+  // Once set the attempt is over - no more answering, whatever happens to the submission
+  const [endedReason, setEndedReason] = useState(null);
   const warningDismissedRef = useRef(false);
-  const autoSubmittedRef = useRef(false);
+  const endedRef = useRef(false);
 
   const totalQuestions = test.mcqs.length;
+  const attemptEnded = endedReason !== null;
 
-  const submitAnswers = useCallback(async () => {
+  const submitAnswers = useCallback(async (reason) => {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const filledAnswers = answers.map(answer => answer !== null ? answer : 0);
+    const filledAnswers = answers.map(answer => (answer !== null ? answer : 0));
     const timeTaken = Math.max(0, test.duration * 60 - timeLeft);
 
     try {
-      const succeeded = await onSubmit(filledAnswers, timeTaken);
-      // On failure the button must be released, otherwise it stays on "Submitting..." forever
+      const succeeded = await onSubmit(filledAnswers, timeTaken, reason);
+      // On failure the retry affordance must be released, or it stays on "Submitting..." forever
       if (!succeeded) {
         setSubmitError('Submission failed. Check your connection and try again.');
         setIsSubmitting(false);
@@ -37,40 +49,53 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
     }
   }, [answers, onSubmit, test.duration, timeLeft]);
 
-  const handleAutoSubmit = useCallback(() => {
-    // Fire once only - otherwise the timer effect retries on every tick after a failure
-    if (autoSubmittedRef.current) return;
-    autoSubmittedRef.current = true;
-    submitAnswers();
+  /**
+   * The one and only way out of an attempt. Latched, because a single tab switch usually
+   * fires several proctoring events and the timer keeps ticking through a failed submit.
+   */
+  const endAttempt = useCallback((reason) => {
+    if (endedRef.current) return;
+    endedRef.current = true;
+    setEndedReason(reason);
+    setConfirmSubmit(null);
+    submitAnswers(reason);
   }, [submitAnswers]);
+
+  // Fullscreen lock, presence detection and paste blocking - disarmed once the attempt ends
+  const { isFullscreen, armed, enterFullscreen } = useTestProctoring({
+    active: !attemptEnded,
+    onViolation: endAttempt
+  });
 
   const dismissWarning = () => {
     warningDismissedRef.current = true;
     setShowWarning(false);
   };
 
-  // Countdown timer
+  // Countdown timer - frozen once the attempt has ended
   useEffect(() => {
+    if (attemptEnded) return undefined;
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev <= 0 ? 0 : prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [attemptEnded]);
 
   // Auto-submit when time runs out
   useEffect(() => {
     if (timeLeft <= 0) {
-      handleAutoSubmit();
+      endAttempt('time_expired');
     }
-  }, [timeLeft, handleAutoSubmit]);
+  }, [timeLeft, endAttempt]);
 
   // Show 5-minute warning once (until user dismisses it)
   useEffect(() => {
-    if (timeLeft <= 300 && timeLeft > 0 && !warningDismissedRef.current) {
+    if (timeLeft <= 300 && timeLeft > 0 && !warningDismissedRef.current && !attemptEnded) {
       setShowWarning(true);
     }
-  }, [timeLeft]);
+  }, [timeLeft, attemptEnded]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -79,6 +104,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   };
 
   const handleAnswerSelect = (questionIndex, optionIndex) => {
+    if (attemptEnded) return;
     const newAnswers = [...answers];
     newAnswers[questionIndex] = optionIndex;
     setAnswers(newAnswers);
@@ -106,6 +132,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
   };
 
   const handleClearAnswer = () => {
+    if (attemptEnded) return;
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = null;
     setAnswers(newAnswers);
@@ -121,27 +148,20 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
     setMarkedQuestions(newMarked);
   };
 
-  const handleFinalSubmit = async () => {
-    if (isSubmitting) return;
-    
+  /**
+   * window.confirm cannot be used anywhere in here: the native dialog blurs the window,
+   * which the proctoring hook correctly reads as leaving the test screen.
+   */
+  const handleFinalSubmit = () => {
+    if (isSubmitting || attemptEnded) return;
+
     const unanswered = answers.filter(answer => answer === null).length;
     if (unanswered > 0) {
-      const confirmed = window.confirm(
-        `You have ${unanswered} unanswered questions. Are you sure you want to submit?`
-      );
-      if (!confirmed) return;
+      setConfirmSubmit({ unanswered });
+      return;
     }
 
-    await submitAnswers();
-  };
-
-  const handleExit = () => {
-    const confirmed = window.confirm(
-      'Are you sure you want to exit? Your progress will be lost.'
-    );
-    if (confirmed) {
-      onExit();
-    }
+    endAttempt('manual');
   };
 
   const getAnsweredCount = () => {
@@ -155,9 +175,109 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
     return 'unanswered';
   };
 
-  const getProgressPercentage = () => {
-    return Math.round((getAnsweredCount() / totalQuestions) * 100);
-  };
+  const timerClasses = showWarning
+    ? 'bg-red-100 text-red-800 animate-pulse'
+    : timeLeft <= 600
+      ? 'bg-yellow-100 text-yellow-800'
+      : 'bg-green-100 text-green-800';
+
+  /** Terminal state: the attempt is over, only the submission is still in flight. */
+  const terminationOverlay = attemptEnded && (
+    <div className="fixed inset-0 bg-gray-900/90 flex items-center justify-center z-[100] p-4">
+      <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
+        <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-7 h-7 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Attempt ended</h3>
+        <p className="text-gray-600 mb-6">
+          {TERMINATION_MESSAGES[endedReason] || TERMINATION_MESSAGES.manual}
+        </p>
+
+        {submitError ? (
+          <>
+            <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
+              {submitError} Your answers are not saved yet - do not close this window.
+            </p>
+            <button
+              onClick={() => submitAnswers(endedReason)}
+              disabled={isSubmitting}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              {isSubmitting ? 'Retrying...' : 'Retry Submit'}
+            </button>
+          </>
+        ) : (
+          <div className="flex items-center justify-center gap-3 text-gray-600">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+            <span>Submitting your answers...</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  /**
+   * Only ever seen before fullscreen is first entered - if the browser refuses the initial
+   * request the questions stay covered instead of being readable in a windowed tab.
+   */
+  const fullscreenGate = !attemptEnded && !isFullscreen && (
+    <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-[100] p-4">
+      <div className="bg-white rounded-xl p-8 max-w-md w-full text-center">
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Fullscreen required</h3>
+        <p className="text-gray-600 mb-6">
+          This test can only be taken in fullscreen, so your questions stay hidden until you
+          enter it. Once you are in, leaving fullscreen ends the attempt and submits your answers.
+        </p>
+        <button
+          onClick={enterFullscreen}
+          className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+        >
+          Enter Fullscreen
+        </button>
+
+        {/* Escape hatch for a browser that will not grant fullscreen at all. Offered only
+            before the first entry, when no question has ever been rendered - so there is
+            nothing to submit and nothing to cheat with. */}
+        {!armed && onAbandon && (
+          <button
+            onClick={onAbandon}
+            className="w-full mt-3 px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            My browser cannot go fullscreen - leave without starting
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  const confirmSubmitModal = confirmSubmit && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90] p-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Submit test?</h3>
+        <p className="text-gray-600 mb-6">
+          You have {confirmSubmit.unanswered} unanswered question
+          {confirmSubmit.unanswered === 1 ? '' : 's'}. Once submitted you cannot return to this
+          attempt.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setConfirmSubmit(null)}
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Keep Working
+          </button>
+          <button
+            onClick={() => endAttempt('manual')}
+            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+          >
+            Submit Anyway
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (showReview) {
     return (
@@ -167,35 +287,21 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
           <div className="flex items-center space-x-6">
             <h1 className="text-lg font-semibold text-gray-900">{test.title}</h1>
             <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <span>Question {currentQuestion + 1} of {totalQuestions}</span>
-              <span>•</span>
               <span>Answered: {getAnsweredCount()}/{totalQuestions}</span>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-              showWarning 
-                ? 'bg-red-100 text-red-800 animate-pulse' 
-                : timeLeft <= 600 
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-green-100 text-green-800'
-            }`}>
-              ⏱️ {formatTime(timeLeft)}
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${timerClasses}`}>
+              {formatTime(timeLeft)}
             </div>
-            
+
             <button
               onClick={handleReviewToggle}
-              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors"
+              disabled={attemptEnded}
+              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 disabled:opacity-50 transition-colors"
             >
               Back to Questions
-            </button>
-            
-            <button
-              onClick={handleExit}
-              className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors"
-            >
-              Exit
             </button>
           </div>
         </div>
@@ -203,33 +309,31 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
         {/* Review Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-lg shadow-sm p-6 max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl font-semibold text-gray-900">Review Your Answers</h2>
               <button
                 onClick={handleFinalSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || attemptEnded}
                 className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Test'}
               </button>
             </div>
+            <p className="text-sm text-gray-500 mb-6">
+              Submitting ends this attempt for good - you will not be able to return to it.
+            </p>
 
-            {submitError && (
-              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {submitError}
-              </div>
-            )}
 
             <div className="space-y-4">
               {test.mcqs.map((mcq, index) => (
-                <div 
+                <div
                   key={index}
                   className={`border rounded-lg p-4 ${
                     answers[index] === null ? 'border-red-200 bg-red-50' : 'border-gray-200'
                   }`}
                 >
                   <p className="text-sm text-gray-600">
-                    <span className="font-medium">Your answer: </span>
+                    <span className="font-medium">Q{index + 1} - Your answer: </span>
                     {answers[index] !== null ? (
                       <span className="text-green-700 whitespace-pre-wrap font-mono text-sm">{mcq.options[answers[index]]}</span>
                     ) : (
@@ -241,6 +345,10 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
             </div>
           </div>
         </div>
+
+        {confirmSubmitModal}
+        {fullscreenGate}
+        {terminationOverlay}
       </div>
     );
   }
@@ -249,30 +357,18 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
     <div className="fixed inset-0 bg-white text-gray-900 flex flex-col overflow-hidden z-50">
       {/* Top Bar */}
       <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleExit}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            End & Exit
-          </button>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900">Professional Test... ({totalQuestions})</h1>
-            <p className="text-sm text-gray-500">{test.title}</p>
-          </div>
+        <div>
+          <h1 className="text-lg font-semibold text-gray-900">{test.title}</h1>
+          <p className="text-sm text-gray-500">
+            Question {currentQuestion + 1} of {totalQuestions}
+          </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
-          <div className={`px-3 py-2 rounded-lg text-sm font-medium ${
-            showWarning 
-              ? 'bg-red-100 text-red-800 animate-pulse' 
-              : timeLeft <= 600 
-                ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-green-100 text-green-800'
-          }`}>
+          <span className="text-xs text-gray-500 hidden lg:inline">
+            Fullscreen is enforced - leaving the test screen submits your attempt
+          </span>
+          <div className={`px-3 py-2 rounded-lg text-sm font-medium ${timerClasses}`}>
             Time Left: {formatTime(timeLeft)}
           </div>
         </div>
@@ -319,6 +415,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                     value={index}
                     checked={answers[currentQuestion] === index}
                     onChange={() => handleAnswerSelect(currentQuestion, index)}
+                    disabled={attemptEnded}
                     className="mr-3 text-indigo-600 focus:ring-indigo-500"
                   />
                   <span className="text-gray-800 whitespace-pre-wrap font-mono text-sm">{formatQuestionText(option)}</span>
@@ -342,8 +439,8 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
                     onClick={() => handleQuestionJump(index)}
                     className={`
                       w-8 h-8 rounded-full text-xs font-medium transition-colors
-                      ${status === 'current' 
-                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' 
+                      ${status === 'current'
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
                         : status === 'answered'
                           ? 'bg-green-500 text-white'
                           : status === 'marked'
@@ -358,7 +455,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
               })}
             </div>
           </div>
-          
+
           {/* Summary Section */}
           <div className="bg-white p-4 flex-shrink-0">
             <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
@@ -395,15 +492,8 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
 
       {/* Bottom Navigation Bar */}
       <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
-        <div className="flex items-center gap-3">
-          {/* <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors border border-gray-300">
-            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-            Report Error
-          </button> */}
-        </div>
-        
+        <div className="flex items-center gap-3"></div>
+
         <div className="flex items-center gap-3">
           <button
             onClick={handlePrevious}
@@ -412,14 +502,14 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
           >
             Previous
           </button>
-          
+
           <button
             onClick={handleClearAnswer}
             className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
           >
             Clear
           </button>
-          
+
           <button
             onClick={handleMarkQuestion}
             className={`px-4 py-2 rounded-lg transition-colors ${
@@ -430,7 +520,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
           >
             Mark
           </button>
-          
+
           <button
             onClick={handleNext}
             disabled={currentQuestion === totalQuestions - 1}
@@ -439,36 +529,21 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
             Next
           </button>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <button
             onClick={handleReviewToggle}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            disabled={attemptEnded}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
-            End Test
+            Review &amp; Submit
           </button>
         </div>
       </div>
 
-      {/* Submission failure banner - covers the auto-submit path, which has no button */}
-      {submitError && (
-        <div className="fixed inset-x-0 bottom-24 flex justify-center px-4 z-50">
-          <div className="flex items-center gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 shadow-lg">
-            <span className="text-sm text-red-700">{submitError}</span>
-            <button
-              onClick={() => submitAnswers()}
-              disabled={isSubmitting}
-              className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50 whitespace-nowrap"
-            >
-              {isSubmitting ? 'Retrying...' : 'Retry Submit'}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Time warning modal */}
-      {showWarning && timeLeft > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {showWarning && timeLeft > 0 && !attemptEnded && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
           <div className="bg-white rounded-lg p-6 max-w-md mx-4">
             <div className="flex items-center mb-4">
               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
@@ -490,6 +565,10 @@ export default function ProfessionalTestTaking({ test, onSubmit, onExit }) {
           </div>
         </div>
       )}
+
+      {confirmSubmitModal}
+      {fullscreenGate}
+      {terminationOverlay}
     </div>
   );
 }

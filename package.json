@@ -15,7 +15,8 @@
     "migrate-tests": "node scripts/migrate-existing-tests.js",
     "migrate-language-field": "node --require ./scripts/load-env.js scripts/migrate-language-field.js",
     "normalize-languages": "node --require ./scripts/load-env.js scripts/normalize-all-languages.js",
-    "normalize-collections": "node --require ./scripts/load-env.js scripts/normalize-test-collections.js"
+    "normalize-collections": "node --require ./scripts/load-env.js scripts/normalize-test-collections.js",
+    "cleanup-orphaned-data": "node --require ./scripts/load-env.js scripts/cleanup-orphaned-user-data.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",

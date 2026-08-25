@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Edit, Trash2, Code2, FolderOpen, Target, GraduationCap, ClipboardList } from 'lucide-react';
+import { Plus, Edit, Trash2, Code2, FolderOpen, Target } from 'lucide-react';
 import AdminSidebar from '../../components/AdminSidebar';
 import LanguageCard from '../../components/LanguageCard';
 import CategoryCard from '../../components/CategoryCard';
 import LevelCard from '../../components/LevelCard';
 import Loader from '../../components/Loader';
 import { useRouter } from 'next/navigation';
+import BrandLogo from '@/app/components/BrandLogo';
 
 export default function AdminProblemsPage() {
   const router = useRouter();
@@ -255,77 +256,10 @@ export default function AdminProblemsPage() {
     setShowLevelCards(true);
   };
 
-  const isProgrammingLanguage = (language) => {
-    if (!language) return false;
-    const langLower = language.toLowerCase().trim();
-    const knownLanguages = [
-      'javascript', 'python', 'java', 'cpp', 'c++', 'c++ programming', 'cpp programming',
-      'csharp', 'c#', 'c', 'go', 'rust', 'kotlin', 'typescript', 'php', 'ruby', 'swift',
-      'sql', 'html', 'css', 'bash', 'shell'
-    ];
-    return knownLanguages.includes(langLower);
-  };
-
-  const getLanguageTypeLabel = (language) => {
-    if (!language) return '';
-    if (isProgrammingLanguage(language)) {
-      return 'Programming Language';
-    }
-    const langLower = language.toLowerCase();
-    if (langLower.includes('college') || langLower.includes('university') || langLower.includes('institute') || langLower.includes('school')) {
-      return 'College';
-    }
-    return 'Assessment';
-  };
-
-  const getLanguageImage = (language) => {
-    if (!language) return null;
-    
-    switch (language.toLowerCase()) {
-      case 'javascript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" className="h-12 w-12" />;
-      case 'python':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" className="h-12 w-12" />;
-      case 'java':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="h-12 w-12" />;
-      case 'cpp':
-      case 'c++':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg" alt="C++" className="h-12 w-12" />;
-      case 'csharp':
-      case 'c#':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" className="h-12 w-12" />;
-      case 'c':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/c/c-original.svg" alt="C" className="h-12 w-12" />;
-      case 'go':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg" alt="Go" className="h-12 w-12" />;
-      case 'rust':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" alt="Rust" className="h-12 w-12" />;
-      case 'kotlin':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="h-12 w-12" />;
-      case 'typescript':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" className="h-12 w-12" />;
-      case 'php':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" alt="PHP" className="h-12 w-12" />;
-      case 'ruby':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg" alt="Ruby" className="h-12 w-12" />;
-      case 'swift':
-        return <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg" alt="Swift" className="h-12 w-12" />;
-      default:
-        const typeLabel = getLanguageTypeLabel(language);
-        if (typeLabel === 'College') {
-          return (
-            <div className="h-12 w-12 flex items-center justify-center bg-indigo-50 rounded-lg border border-indigo-100 shadow-sm">
-              <GraduationCap className="h-7 w-7 text-indigo-600" />
-            </div>
-          );
-        }
-        return (
-          <div className="h-12 w-12 flex items-center justify-center bg-orange-50 rounded-lg border border-orange-100 shadow-sm">
-            <ClipboardList className="h-7 w-7 text-orange-600" />
-          </div>
-        );
-    }
-  };
+  // Logo comes from the shared registry in `src/lib/brandLogos.js` so languages,
+  // companies and colleges stay consistent across the app.
+  const getLanguageImage = (language) =>
+    language ? <BrandLogo name={language} size="xs" /> : null;
 
   return (
     <div className="flex min-h-screen">
