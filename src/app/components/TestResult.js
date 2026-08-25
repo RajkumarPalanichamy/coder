@@ -25,12 +25,6 @@ export default function TestResult({ test, answers, correctAnswers, score, corre
                 {mcq.options[answers[idx]] ?? <span className="italic">No answer</span>}
               </span>
             </div>
-            {!isCorrect && (
-              <div>
-                <span className="font-semibold">Correct Answer: </span>
-                <span className="text-green-700">{mcq.options[correctAnswers[idx]]}</span>
-              </div>
-            )}
           </div>
         );
       })}
