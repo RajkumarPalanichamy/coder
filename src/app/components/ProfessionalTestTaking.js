@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { CheckCircle, Clock } from 'lucide-react';
 import { formatQuestionText } from '@/lib/formatQuestionText';
 import useTestProctoring from '@/lib/useTestProctoring';
 
@@ -259,24 +260,13 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
   const confirmSubmitModal = confirmSubmit && (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[90] p-4">
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Submit test?</h3>
-        <p className="text-gray-600 mb-6">
-          You have {confirmSubmit.unanswered} unanswered question
-          {confirmSubmit.unanswered === 1 ? '' : 's'}. Once submitted you cannot return to this
-          attempt.
-        </p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Submit test?</h3>
         <div className="flex gap-3">
-          <button
-            onClick={() => setConfirmSubmit(null)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            Keep Working
-          </button>
           <button
             onClick={() => endAttempt('manual')}
             className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
           >
-            Submit Anyway
+            Submit
           </button>
         </div>
       </div>
@@ -534,7 +524,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
             </div>
 
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-64px)]">
-              <div className="grid grid-cols-5 gap-2 mb-6">
+              <div className="grid grid-cols-10 gap-2 mb-6">
                 {Array.from({ length: totalQuestions }, (_, index) => {
                   const status = getQuestionStatus(index);
                   return (
@@ -542,7 +532,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
                       key={index}
                       onClick={() => handleQuestionJump(index)}
                       className={`
-                        w-10 h-10 rounded-full text-sm font-medium transition-colors
+                        w-full aspect-square rounded-lg text-sm font-medium transition-colors
                         ${status === 'current'
                           ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
                           : status === 'answered'
@@ -560,31 +550,34 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
               </div>
 
               <h3 className="font-semibold text-gray-900 mb-3">Summary</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Total Questions</span>
-                  <span className="font-medium">{totalQuestions}</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-700">Total Questions</span>
+                  <span className="text-sm text-gray-500 ml-auto">{totalQuestions}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                    Answered
-                  </span>
-                  <span className="font-medium">{getAnsweredCount()}</span>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded bg-green-500 flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-gray-700">Answered</span>
+                  <span className="text-sm text-gray-500 ml-auto">{getAnsweredCount()}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                    Not Answered
-                  </span>
-                  <span className="font-medium">{totalQuestions - getAnsweredCount()}</span>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded bg-blue-500 flex items-center justify-center">
+                    <Clock className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-gray-700">Not Answered</span>
+                  <span className="text-sm text-gray-500 ml-auto">{totalQuestions - getAnsweredCount()}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                    Marked
-                  </span>
-                  <span className="font-medium">{markedQuestions.size}</span>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded bg-yellow-500 flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-sm text-gray-700">Marked</span>
+                  <span className="text-sm text-gray-500 ml-auto">{markedQuestions.size}</span>
                 </div>
               </div>
             </div>

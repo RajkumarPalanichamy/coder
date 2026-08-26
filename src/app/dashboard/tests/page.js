@@ -391,6 +391,7 @@ export default function TestListPage() {
                     <TestCategoryCard
                       key={categoryData.category}
                       category={categoryData.category}
+                      collection={selectedCollection}
                       onClick={() => handleCategorySelect(categoryData.category)}
                     />
                   ))}

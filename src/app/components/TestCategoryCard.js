@@ -1,8 +1,14 @@
 "use client";
 
+import { useState } from 'react';
 import { Target } from 'lucide-react';
+import { resolveCategoryImage } from '@/lib/categoryImages';
 
-export default function TestCategoryCard({ category, onClick }) {
+export default function TestCategoryCard({ category, collection, onClick }) {
+  const [broken, setBroken] = useState(false);
+  const image = resolveCategoryImage(category, collection);
+  const showImage = Boolean(image) && !broken;
+
   return (
     <div
       onClick={onClick}
@@ -14,7 +20,16 @@ export default function TestCategoryCard({ category, onClick }) {
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <Target className="w-8 h-8 text-green-500" />
+          {showImage ? (
+            <img
+              src={image}
+              alt={`${category} illustration`}
+              className="w-14 h-14 rounded-lg object-cover border border-gray-100"
+              onError={() => setBroken(true)}
+            />
+          ) : (
+            <Target className="w-8 h-8 text-green-500" />
+          )}
           <span className="text-2xl font-bold text-gray-700">∞</span>
         </div>
         <p className="text-gray-600 text-sm mb-4">

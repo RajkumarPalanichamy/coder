@@ -254,6 +254,7 @@ export default function AdminTestsPage() {
                     <TestCategoryCard
                       key={categoryData.category}
                       category={categoryData.category}
+                      collection={selectedCollection}
                       testCount={categoryData.count || 0}
                       onClick={() => handleCategorySelect(categoryData.category)}
                     />

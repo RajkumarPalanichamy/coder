@@ -18,7 +18,7 @@
  * so its tests stay recognisable until real artwork is supplied.
  */
 
-export const COLLEGE_LOGO = '/logos/college.svg';
+export const COLLEGE_LOGO = '/img/college.jpeg';
 
 const DEVICON = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons';
 
@@ -74,16 +74,16 @@ const LANGUAGE_ALIASES = {
 // called "Zoho Technical Test" still picks up the Zoho logo.
 
 const COMPANIES = {
-  zoho: { label: 'Zoho', logo: '/logos/companies/zoho.svg', accent: '#e42527', gradient: 'from-red-500 to-amber-500', border: 'border-red-200 hover:border-red-300' },
-  accenture: { label: 'Accenture', logo: '/logos/companies/accenture.svg', accent: '#a100ff', gradient: 'from-purple-500 to-violet-700', border: 'border-purple-200 hover:border-purple-300' },
-  tcs: { label: 'TCS', logo: '/logos/companies/tcs.svg', accent: '#0070ad', gradient: 'from-sky-600 to-blue-800', border: 'border-sky-200 hover:border-sky-300', match: ['tata consultancy services', 'tata consultancy'] },
+  zoho: { label: 'Zoho', logo: '/img/zoho.jpeg', accent: '#e42527', gradient: 'from-red-500 to-amber-500', border: 'border-red-200 hover:border-red-300' },
+  accenture: { label: 'Accenture', logo: '/img/acc.jpeg', accent: '#a100ff', gradient: 'from-purple-500 to-violet-700', border: 'border-purple-200 hover:border-purple-300' },
+  tcs: { label: 'TCS', logo: '/img/tcs.jpeg', accent: '#0070ad', gradient: 'from-sky-600 to-blue-800', border: 'border-sky-200 hover:border-sky-300', match: ['tata consultancy services', 'tata consultancy'] },
   infosys: { label: 'Infosys', logo: '/logos/companies/infosys.svg', accent: '#007cc3', gradient: 'from-sky-500 to-blue-700', border: 'border-sky-200 hover:border-sky-300' },
-  wipro: { label: 'Wipro', logo: '/logos/companies/wipro.svg', accent: '#341c53', gradient: 'from-violet-600 to-purple-800', border: 'border-violet-200 hover:border-violet-300' },
-  cognizant: { label: 'Cognizant', logo: '/logos/companies/cognizant.svg', accent: '#1c4ed8', gradient: 'from-blue-500 to-indigo-700', border: 'border-blue-200 hover:border-blue-300' },
-  capgemini: { label: 'Capgemini', logo: '/logos/companies/capgemini.svg', accent: '#0070ad', gradient: 'from-cyan-600 to-blue-700', border: 'border-cyan-200 hover:border-cyan-300' },
+  wipro: { label: 'Wipro', logo: '/img/wip.jpeg', accent: '#341c53', gradient: 'from-violet-600 to-purple-800', border: 'border-violet-200 hover:border-violet-300' },
+  cognizant: { label: 'Cognizant', logo: '/img/cog.jpeg', accent: '#1c4ed8', gradient: 'from-blue-500 to-indigo-700', border: 'border-blue-200 hover:border-blue-300' },
+  capgemini: { label: 'Capgemini', logo: '/img/cap.jpeg', accent: '#0070ad', gradient: 'from-cyan-600 to-blue-700', border: 'border-cyan-200 hover:border-cyan-300' },
   hcl: { label: 'HCLTech', logo: '/logos/companies/hcl.svg', accent: '#0f6bb2', gradient: 'from-blue-500 to-blue-700', border: 'border-blue-200 hover:border-blue-300', match: ['hcltech', 'hcl technologies'] },
-  techmahindra: { label: 'Tech Mahindra', logo: '/logos/companies/techmahindra.svg', accent: '#e4002b', gradient: 'from-red-500 to-rose-700', border: 'border-red-200 hover:border-red-300', match: ['tech mahindra'] },
-  ibm: { label: 'IBM', logo: '/logos/companies/ibm.svg', accent: '#0f62fe', gradient: 'from-blue-600 to-indigo-800', border: 'border-blue-200 hover:border-blue-300' },
+  techmahindra: { label: 'Tech Mahindra', logo: '/img/tech.jpeg', accent: '#e4002b', gradient: 'from-red-500 to-rose-700', border: 'border-red-200 hover:border-red-300', match: ['tech mahindra'] },
+  ibm: { label: 'IBM', logo: '/img/ibm.jpeg', accent: '#0f62fe', gradient: 'from-blue-600 to-indigo-800', border: 'border-blue-200 hover:border-blue-300' },
   amazon: { label: 'Amazon', accent: '#ff9900', gradient: 'from-amber-500 to-orange-600', border: 'border-amber-200 hover:border-amber-300', match: ['aws'] },
   microsoft: { label: 'Microsoft', accent: '#0078d4', gradient: 'from-sky-500 to-blue-700', border: 'border-sky-200 hover:border-sky-300' },
   google: { label: 'Google', accent: '#4285f4', gradient: 'from-blue-500 to-emerald-500', border: 'border-blue-200 hover:border-blue-300' },
@@ -105,6 +105,31 @@ const ASSESSMENT_STYLE = {
   gradient: 'from-orange-500 to-amber-700',
   border: 'border-orange-200 hover:border-orange-300',
 };
+
+// Standalone aptitude-style collections (not tied to a company) that have
+// their own artwork. Matched by exact normalized collection name.
+const ASSESSMENT_LOGOS = {
+  'quantitative aptitude': '/img/Quantitative-aptitude.jpeg',
+  'verbal ability': '/img/Verbal-ability.jpeg',
+  'logical reasoning': '/img/Logical-reasoning.jpeg',
+  'reasoning ability': '/img/Reasoning-ability.jpeg',
+};
+
+// "Model Assesment 1", "Model Assessment 2", ... share a numbered set of
+// artwork - cycles so a later "Model Assesment 4" still gets an image.
+const MODEL_ASSESSMENT_IMAGES = [
+  '/img/Assesment-1.jpeg',
+  '/img/Assesment-2.jpeg',
+  '/img/Assesment-3.jpeg',
+];
+
+function resolveModelAssessmentLogo(key) {
+  const match = key.match(/(?:assessment|assesment)\s*(\d+)$/);
+  if (!match) return null;
+  const n = parseInt(match[1], 10);
+  if (!n) return null;
+  return MODEL_ASSESSMENT_IMAGES[(n - 1) % MODEL_ASSESSMENT_IMAGES.length];
+}
 
 const COLLEGE_KEYWORDS = [
   'college', 'university', 'institute', 'institution', 'school',
@@ -228,7 +253,15 @@ export function resolveBrand(name) {
     return { kind: 'college', label: formatBrandName(name), typeLabel: 'College', monogram, ...COLLEGE_STYLE };
   }
 
-  return { kind: 'assessment', label: formatBrandName(name), typeLabel: 'Assessment', monogram, ...ASSESSMENT_STYLE };
+  const assessmentLogo = ASSESSMENT_LOGOS[key] || resolveModelAssessmentLogo(key);
+  return {
+    kind: 'assessment',
+    label: formatBrandName(name),
+    typeLabel: 'Assessment',
+    monogram,
+    ...ASSESSMENT_STYLE,
+    ...(assessmentLogo ? { logo: assessmentLogo } : {}),
+  };
 }
 
 /** Back-compat helper for cards that only need the old type label. */

@@ -4,7 +4,7 @@ import { resolveBrand } from '@/lib/brandLogos';
 // Company collections (Zoho, Accenture, ...) get their own logo, every college
 // shares one common college logo, and anything else keeps the neutral test
 // collection styling. See `src/lib/brandLogos.js` to register a new name.
-export default function CollectionCard({ collection, testCount, onClick }) {
+export default function CollectionCard({ collection, onClick }) {
   const brand = resolveBrand(collection);
   const subtitle = brand.kind === 'assessment' ? 'Test Collection' : brand.typeLabel;
 
@@ -18,11 +18,8 @@ export default function CollectionCard({ collection, testCount, onClick }) {
         <p className="text-base opacity-90">{subtitle}</p>
       </div>
       <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <BrandLogo name={collection} size="md" />
-          <span className="text-3xl font-bold text-gray-700">
-            {typeof testCount === 'number' && testCount > 0 ? testCount : '∞'}
-          </span>
+        <div className="flex items-center justify-center mb-4">
+          <BrandLogo name={collection} size="lg" />
         </div>
         <p className="text-gray-600 text-base mb-6">
           Explore various test categories in {brand.label}
