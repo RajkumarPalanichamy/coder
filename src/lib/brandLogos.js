@@ -31,7 +31,7 @@ const LANGUAGES = {
   java: { label: 'Java', logo: DEVICON + '/java/java-original.svg', accent: '#e76f00', gradient: 'from-red-400 to-red-600', border: 'border-red-200 hover:border-red-300' },
   cpp: { label: 'C++', logo: '/c.svg', accent: '#00599c', gradient: 'from-blue-500 to-blue-700', border: 'border-blue-200 hover:border-blue-300' },
   csharp: { label: 'C#', logo: '/c--4.svg', accent: '#68217a', gradient: 'from-purple-500 to-purple-700', border: 'border-purple-200 hover:border-purple-300' },
-  c: { label: 'C', logo: '/c-1.svg', accent: '#5c6bc0', gradient: 'from-gray-500 to-gray-700', border: 'border-gray-200 hover:border-gray-300' },
+  c: { label: 'C', logo: '/c-1.svg', accent: '#5c6bc0', gradient: 'from-indigo-500 to-indigo-700', border: 'border-indigo-200 hover:border-indigo-300' },
   go: { label: 'Go', logo: DEVICON + '/go/go-original.svg', accent: '#00add8', gradient: 'from-cyan-500 to-cyan-700', border: 'border-cyan-200 hover:border-cyan-300' },
   rust: { label: 'Rust', logo: DEVICON + '/rust/rust-plain.svg', accent: '#dea584', gradient: 'from-orange-500 to-orange-700', border: 'border-orange-200 hover:border-orange-300' },
   kotlin: { label: 'Kotlin', logo: DEVICON + '/kotlin/kotlin-original.svg', accent: '#7f52ff', gradient: 'from-violet-500 to-violet-700', border: 'border-violet-200 hover:border-violet-300' },
