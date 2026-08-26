@@ -249,12 +249,8 @@ export default function ProblemFlow() {
               <h3 className="text-lg font-semibold">{formatLanguageName(langData.language)}</h3>
               <p className="text-sm opacity-90">{getLanguageTypeLabel(langData.language)}</p>
             </div>
+            <BrandLogo name={langData.language} size="xl" />
             <div className="p-4">
-              <div className="flex flex-col items-center gap-3 mb-3">
-                <BrandLogo name={langData.language} size="lg" />
-                {/* <span className="text-2xl font-bold text-gray-700">{langData.count || 0}</span> */}
-                {/* <span className="text-2xl font-bold text-gray-700">∞</span> */}
-              </div>
               <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
                 Continue
               </button>

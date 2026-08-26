@@ -17,13 +17,8 @@ export default function CollectionCard({ collection, onClick }) {
         <h3 className="text-2xl font-bold">{brand.label}</h3>
         <p className="text-base opacity-90">{subtitle}</p>
       </div>
+      <BrandLogo name={collection} size="xl" />
       <div className="p-6">
-        <div className="flex items-center justify-center mb-4">
-          <BrandLogo name={collection} size="lg" />
-        </div>
-        <p className="text-gray-600 text-base mb-6">
-          Explore various test categories in {brand.label}
-        </p>
         <button className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-semibold text-lg">
           Continue
         </button>

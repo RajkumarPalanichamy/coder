@@ -118,7 +118,7 @@ const ASSESSMENT_LOGOS = {
 // "Model Assesment 1", "Model Assessment 2", ... share a numbered set of
 // artwork - cycles so a later "Model Assesment 4" still gets an image.
 const MODEL_ASSESSMENT_IMAGES = [
-  '/img/Assesment-1.jpeg',
+  '/img/Assesment-1.PNG',
   '/img/Assesment-2.jpeg',
   '/img/Assesment-3.jpeg',
 ];
