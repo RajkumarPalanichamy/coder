@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Clock, ArrowLeft, FolderOpen, BarChart3, ChevronRight, Search, Filter, Target } from 'lucide-react';
 import CollectionCard from '../../components/CollectionCard';
-import BrandLogo from '../../components/BrandLogo';
 import TestCategoryCard from '../../components/TestCategoryCard';
 
 export default function TestListPage() {
@@ -418,8 +417,7 @@ export default function TestListPage() {
                     <div className="p-4">
                       <div className="text-gray-600 mb-4 line-clamp-2 min-h-[40px] whitespace-pre-wrap">{test.description}</div>
                       <div className="flex items-center justify-between mb-3">
-                        {/* Logo of the collection this test belongs to (Zoho, Accenture, college, ...) */}
-                        <BrandLogo name={selectedCollection} size="sm" />
+                        <Target className="w-8 h-8 text-purple-500" />
                         <span className="text-2xl font-bold text-gray-700">∞</span>
                       </div>
                       <p className="text-gray-600 text-sm mb-4">
