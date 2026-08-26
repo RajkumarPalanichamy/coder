@@ -86,7 +86,9 @@ export default function TakeTestPage() {
           status: response.status,
           error: data.error || 'Unknown error'
         });
-        return false;
+        // 401/403 means the session itself was rejected, not a connectivity problem -
+        // the student needs to re-authenticate, not just retry the same request.
+        return { success: false, code: response.status === 401 || response.status === 403 ? 'AUTH' : 'SERVER' };
       }
 
       closeAttempt(testId, terminationReason);
@@ -96,10 +98,10 @@ export default function TakeTestPage() {
           ? `/dashboard/tests/${testId}/result?submissionId=${data.submissionId}`
           : `/dashboard/tests/${testId}/result`
       );
-      return true;
+      return { success: true };
     } catch (error) {
       console.error('Network or submission error:', error);
-      return false;
+      return { success: false, code: 'NETWORK' };
     }
   }, [testId, router]);
 

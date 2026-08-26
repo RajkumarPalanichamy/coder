@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import Problem from '@/models/Problem';
 import Submission from '@/models/Submission';
 import { dropOrphanedDocs } from '@/lib/studentDataCleanup';
 

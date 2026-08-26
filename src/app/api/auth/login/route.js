@@ -53,7 +53,6 @@ export async function POST(request) {
     await user.save();
 
     // Generate JWT token
-    console.log('LOGIN API: JWT_SECRET', JWT_SECRET);
     const token = jwt.sign(
       {
         userId: user._id,
@@ -62,9 +61,8 @@ export async function POST(request) {
         username: user.username
       },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '2d' }
     );
-    console.log('LOGIN API: Issued token', token);
 
     // Remove password from response
     const userResponse = {
@@ -91,7 +89,7 @@ export async function POST(request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 2 * 24 * 60 * 60, // 2 days
       path: '/'
     });
 

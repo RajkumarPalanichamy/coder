@@ -40,15 +40,15 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
     const timeTaken = Math.max(0, test.duration * 60 - timeLeft);
 
     try {
-      const succeeded = await onSubmit(filledAnswers, timeTaken, reason);
+      const result = await onSubmit(filledAnswers, timeTaken, reason);
       // On failure the retry affordance must be released, or it stays on "Submitting..." forever
-      if (!succeeded) {
-        setSubmitError('Submission failed. Check your connection and try again.');
+      if (!result?.success) {
+        setSubmitError(result?.code === 'AUTH' ? 'AUTH' : 'NETWORK');
         setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Test submission failed:', error);
-      setSubmitError('Submission failed. Check your connection and try again.');
+      setSubmitError('NETWORK');
       setIsSubmitting(false);
     }
   }, [answers, onSubmit, test.duration, timeLeft]);
@@ -203,8 +203,19 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
         {submitError ? (
           <>
             <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
-              {submitError} Your answers are not saved yet - do not close this window.
+              {submitError === 'AUTH'
+                ? 'Your session has expired, so the server rejected the submission. Log in again in the tab that opens, then come back here and press Retry Submit.'
+                : 'Submission failed. Check your connection and try again.'}
+              {' '}Your answers are not saved yet - do not close this window.
             </p>
+            {submitError === 'AUTH' && (
+              <button
+                onClick={() => window.open('/login', '_blank', 'noopener')}
+                className="w-full px-4 py-2 mb-3 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                Log In Again (New Tab)
+              </button>
+            )}
             <button
               onClick={() => submitAnswers(endedReason)}
               disabled={isSubmitting}
