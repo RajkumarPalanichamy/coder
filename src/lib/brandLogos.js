@@ -109,10 +109,10 @@ const ASSESSMENT_STYLE = {
 // Standalone aptitude-style collections (not tied to a company) that have
 // their own artwork. Matched by exact normalized collection name.
 const ASSESSMENT_LOGOS = {
-  'quantitative aptitude': '/img/Quantitative-aptitude.jpeg',
+  'quantitative aptitude': '/img/Quantitative-aptitude.jpg',
   'verbal ability': '/img/Verbal-ability.jpeg',
   'logical reasoning': '/img/Logical-reasoning.jpeg',
-  'reasoning ability': '/img/Reasoning-ability.jpeg',
+  'reasoning ability': '/img/Reasoning-ability.PNG',
 };
 
 // "Model Assesment 1", "Model Assessment 2", ... share a numbered set of
