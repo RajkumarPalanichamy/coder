@@ -18,7 +18,7 @@
  * so its tests stay recognisable until real artwork is supplied.
  */
 
-export const COLLEGE_LOGO = '/img/college.jpeg';
+export const COLLEGE_LOGO = '/img/college.jpg';
 
 const DEVICON = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons';
 
@@ -110,8 +110,8 @@ const ASSESSMENT_STYLE = {
 // their own artwork. Matched by exact normalized collection name.
 const ASSESSMENT_LOGOS = {
   'quantitative aptitude': '/img/Quantitative-aptitude.jpg',
-  'verbal ability': '/img/Verbal-ability.jpeg',
-  'logical reasoning': '/img/Logical-reasoning.jpeg',
+  'verbal ability': '/img/Verbal-ability.jpg',
+  'logical reasoning': '/img/Logical-reasoning.jpg',
   'reasoning ability': '/img/Reasoning-ability.PNG',
 };
 
@@ -120,7 +120,7 @@ const ASSESSMENT_LOGOS = {
 const MODEL_ASSESSMENT_IMAGES = [
   '/img/Assesment-1.PNG',
   '/img/Assesment-2.jpeg',
-  '/img/Assesment-3.jpeg',
+  '/img/Assesment-3.jpg',
 ];
 
 function resolveModelAssessmentLogo(key) {
