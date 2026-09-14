@@ -5,12 +5,34 @@ import User from '@/models/User';
 export async function GET(request) {
   try {
     await connectDB();
-    
-    const students = await User.find({ role: 'student' })
-      .select('-password')
-      .sort({ createdAt: -1 });
 
-    return NextResponse.json({ students });
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10) || 50, 1), 200);
+    const search = (searchParams.get('search') || '').trim();
+
+    const filter = { role: 'student' };
+    if (search) {
+      const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      filter.$or = [{ firstName: regex }, { lastName: regex }, { email: regex }];
+    }
+
+    const [students, total] = await Promise.all([
+      User.find(filter)
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      User.countDocuments(filter),
+    ]);
+
+    return NextResponse.json({
+      students,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    });
 
   } catch (error) {
     console.error('Error fetching students:', error);

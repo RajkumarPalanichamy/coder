@@ -10,7 +10,10 @@ import {
   Clock,
   Copy,
   Crown,
+  Eye,
+  EyeOff,
   Flame,
+  Lock,
   LogIn,
   Mail,
   ShieldCheck,
@@ -264,6 +267,135 @@ function AchievementBadge({ badge }) {
         <div className="text-xs text-slate-500 truncate">{badge.description}</div>
       </div>
     </div>
+  );
+}
+
+function ChangePasswordCard() {
+  const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setError('');
+    setSuccess('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (form.newPassword.length < 6) {
+      setError('New password must be at least 6 characters.');
+      return;
+    }
+    if (form.newPassword !== form.confirmPassword) {
+      setError('New passwords do not match.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword: form.currentPassword,
+          newPassword: form.newPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update password');
+      setSuccess('Password updated successfully.');
+      setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <SectionCard title="Change Password" icon={Lock}>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">{error}</div>
+        )}
+        {success && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 rounded text-sm">
+            {success}
+          </div>
+        )}
+        <div>
+          <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700">
+            Current password
+          </label>
+          <input
+            id="currentPassword"
+            name="currentPassword"
+            type={show ? 'text' : 'password'}
+            required
+            value={form.currentPassword}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-slate-900"
+            autoComplete="current-password"
+          />
+        </div>
+        <div>
+          <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700">
+            New password
+          </label>
+          <input
+            id="newPassword"
+            name="newPassword"
+            type={show ? 'text' : 'password'}
+            required
+            minLength={6}
+            value={form.newPassword}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-slate-900"
+            autoComplete="new-password"
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+            Confirm new password
+          </label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type={show ? 'text' : 'password'}
+            required
+            minLength={6}
+            value={form.confirmPassword}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md text-slate-900"
+            autoComplete="new-password"
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setShow((v) => !v)}
+            className="text-xs font-medium text-indigo-600 flex items-center gap-1"
+          >
+            {show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            {show ? 'Hide' : 'Show'} passwords
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="py-2 px-5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {saving ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+      </form>
+    </SectionCard>
   );
 }
 
@@ -705,6 +837,9 @@ export default function StudentProfilePage() {
             </div>
           </div>
         </SectionCard>
+
+        {/* ------------------------------------------------------ password */}
+        <ChangePasswordCard />
       </div>
     </div>
   );

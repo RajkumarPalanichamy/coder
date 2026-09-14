@@ -190,6 +190,8 @@ export default function StudentSidebar({ onLogout }) {
   };
 
   const pathname = usePathname();
+  const isNavItemActive = (href) =>
+    href === '/dashboard' ? pathname === href : (pathname === href || pathname.startsWith(`${href}/`));
   const initials = user ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() : '';
   const progressPercentage = weeklyProgress.totalProblems > 0 ? Math.round((weeklyProgress.solvedProblems / weeklyProgress.totalProblems) * 100) : 0;
 
@@ -240,10 +242,10 @@ export default function StudentSidebar({ onLogout }) {
             <Link
               key={label}
               href={href}
-              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 bg-white hover:bg-gray-50 ${textColor} hover:shadow-md hover:scale-[1.02] border-2 ${borderColor} ${
-                pathname === href
-                  ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
-                  : ''
+              className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 hover:shadow-md hover:scale-[1.02] border-2 ${
+                isNavItemActive(href)
+                  ? `${bgColor} ${borderColor} ${textColor} shadow-md`
+                  : `bg-white hover:bg-gray-50 ${textColor} ${borderColor}`
               }`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
@@ -349,10 +351,10 @@ export default function StudentSidebar({ onLogout }) {
               <Link
                 key={label}
                 href={href}
-                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group bg-white hover:bg-gray-50 ${textColor} hover:shadow-md hover:scale-[1.02] border-2 border-gray-300 ${
-                  pathname === href
-                    ? 'ring-2 ring-white ring-offset-2 ring-offset-white-800'
-                    : ''
+                className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group hover:shadow-md hover:scale-[1.02] border-2 ${
+                  isNavItemActive(href)
+                    ? `${bgColor} ${borderColor} ${textColor} shadow-md`
+                    : `bg-white hover:bg-gray-50 ${textColor} border-gray-300`
                 }`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 ${iconColor}`} />

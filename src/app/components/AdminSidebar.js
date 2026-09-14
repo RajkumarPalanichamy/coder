@@ -107,7 +107,7 @@ export default function AdminSidebar({ onLogout }) {
             </h3>
             <div className="space-y-1">
               {navItems.map(({ label, href, icon: Icon, description }) => {
-                const isActive = pathname === href;
+                const isActive = pathname === href || pathname.startsWith(`${href}/`);
                 return (
                   <Link
                     key={href}

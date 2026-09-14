@@ -1,59 +1,56 @@
 import * as XLSX from 'xlsx';
-import { formatDateTime } from './formatDateTime';
 import { formatStudentName } from './formatStudentName';
 
-const formatDate = formatDateTime;
+function formatDateOnly(date) {
+  if (!date) return '';
+  return new Date(date).toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function formatTimeOnly(date) {
+  if (!date) return '';
+  return new Date(date).toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
 
 function formatTitle(submission) {
   return submission.problem?.title || submission.test?.title || 'Unknown';
 }
 
 function rowProblem(submission) {
-  const exec =
-    submission.executionTime != null && submission.executionTime !== ''
-      ? `${submission.executionTime} ms`
-      : '';
-  const mem =
-    submission.memoryUsed != null && submission.memoryUsed !== ''
-      ? `${submission.memoryUsed} MB`
-      : '';
   return {
-    Type: 'Problem',
     Student: formatStudentName(submission),
     Title: formatTitle(submission),
     Status: submission.status || '',
     Score: `${submission.score ?? 0}%`,
-    Date: formatDate(submission.submittedAt),
+    Date: formatDateOnly(submission.submittedAt),
+    Time: formatTimeOnly(submission.submittedAt),
     Language: submission.language || '',
-    'Execution Time': exec,
-    Memory: mem,
     'Time Taken': '',
-    'Pass Rate': '',
   };
 }
 
 function rowTest(submission) {
-  const passRate =
-    submission.totalQuestions > 0
-      ? `${Math.round((submission.correctAnswers / submission.totalQuestions) * 100)}%`
-      : '0%';
   const timeTaken =
     submission.timeTaken != null
       ? `${Math.floor(submission.timeTaken / 60)}m ${submission.timeTaken % 60}s`
       : '';
   const totalScore = submission.totalQuestions ?? 0;
   return {
-    Type: 'Test',
     Student: formatStudentName(submission),
     Title: formatTitle(submission),
     Status: submission.status || 'Completed',
     Score: `${submission.correctAnswers ?? 0}/${totalScore} (${submission.score ?? 0}%)`,
-    Date: formatDate(submission.submittedAt),
+    Date: formatDateOnly(submission.submittedAt),
+    Time: formatTimeOnly(submission.submittedAt),
     Language: submission.language || 'multiple_choice',
-    'Execution Time': '',
-    Memory: '',
     'Time Taken': timeTaken,
-    'Pass Rate': passRate,
   };
 }
 
@@ -85,7 +82,7 @@ export const exportSubmissionsToExcel = (
         Title: `Level ${submission.level || 'Unknown'}`,
         Status: submission.completed ? 'Completed' : 'In Progress',
         Score: submission.totalScore || 0,
-        Date: formatDate(submission.completedAt || submission.createdAt),
+        Date: formatDateOnly(submission.completedAt || submission.createdAt),
         'Problems Solved': `${submission.solvedProblems || 0}/${submission.totalProblems || 0}`,
         'Pass Rate':
           submission.totalProblems > 0
@@ -143,6 +140,55 @@ export const exportSelectedSubmissionsToExcel = (
   }
 
   return exportSubmissionsToExcel(selectedSubmissions, fileName, submissionType);
+};
+
+export const downloadStudentImportTemplate = (fileName = 'student_import_template.xlsx') => {
+  try {
+    const sampleRows = [
+      { 'First Name': 'Aditi', 'Last Name': 'Sharma', 'Email': 'aditi.sharma@example.com' },
+      { 'First Name': 'Rahul', 'Last Name': 'Verma', 'Email': 'rahul.verma@example.com' },
+    ];
+
+    const wb = XLSX.utils.book_new();
+
+    const ws = XLSX.utils.json_to_sheet(sampleRows);
+    ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 32 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Students');
+
+    const instructions = [
+      { Instructions: 'Fill one row per student below. Keep the header row exactly as-is.' },
+      { Instructions: 'Required columns: First Name, Last Name, Email.' },
+      { Instructions: 'Each email must be unique - rows with an email already in use are skipped automatically.' },
+      { Instructions: "Don't add a Password column - a common temporary password is set on the upload screen and applied to every student in this file." },
+      { Instructions: 'Students can change their password anytime from their own profile page.' },
+      { Instructions: 'Large files (tens of thousands of rows) upload in automatic batches - keep the browser tab open until it finishes.' },
+    ];
+    const wsInfo = XLSX.utils.json_to_sheet(instructions);
+    wsInfo['!cols'] = [{ wch: 95 }];
+    XLSX.utils.book_append_sheet(wb, wsInfo, 'Instructions');
+
+    XLSX.writeFile(wb, fileName);
+    return true;
+  } catch (error) {
+    console.error('Error generating student import template:', error);
+    return false;
+  }
+};
+
+export const exportBulkImportReport = (rows, fileName = 'bulk_import_report.xlsx') => {
+  try {
+    if (!rows || rows.length === 0) return false;
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{ wch: 8 }, { wch: 34 }, { wch: 40 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Skipped Rows');
+    XLSX.writeFile(wb, fileName);
+    return true;
+  } catch (error) {
+    console.error('Error exporting bulk import report:', error);
+    return false;
+  }
 };
 
 export const exportStudentsToExcel = (students, fileName = 'students.xlsx') => {
