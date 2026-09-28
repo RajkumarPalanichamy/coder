@@ -562,7 +562,7 @@ export default function LevelProblemsPage() {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-white text-center">
           <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-          <h2 className="text-xl font-semibold mb-2">No Problems Found</h2>
+          <h2 className="text-xl font-semibold mb-2 text-white">No Problems Found</h2>
           <p className="text-gray-400 mb-4">No problems found for this level</p>
           <button
             onClick={() => router.push('/dashboard/problems')}
@@ -1298,7 +1298,7 @@ export default function LevelProblemsPage() {
           <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden pointer-events-auto">
             {/* Header */}
             <div className="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Problem Status Overview</h2>
+              <h2 className="text-xl font-semibold text-white">Problem Status Overview</h2>
               <button
                 onClick={() => setShowProblemStatusPopup(false)}
                 className="text-white hover:text-gray-200 transition-colors p-2 rounded-lg hover:bg-blue-700"

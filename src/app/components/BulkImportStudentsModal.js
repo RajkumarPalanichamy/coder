@@ -168,6 +168,7 @@ export default function BulkImportStudentsModal({ onClose, onImported }) {
 
         {stage === STAGES.SELECT && (
           <div className="p-6 space-y-5">
+            <p className="text-sm text-gray-600">Download the template, fill in one student per row and save it. Choose that file below, review the names and emails, then click Start Import to create accounts. Downloading the template alone does not add students.</p>
             <button
               type="button"
               onClick={() => downloadStudentImportTemplate()}
@@ -245,6 +246,15 @@ export default function BulkImportStudentsModal({ onClose, onImported }) {
                     </span>
                   )}
                 </p>
+                <p className="text-xs text-gray-600">Preview of the first {Math.min(parsedRows.length, 5)} rows. Existing emails will be skipped during import.</p>
+                <ul className="divide-y divide-indigo-100">
+                  {parsedRows.slice(0, 5).map(row => (
+                    <li key={row.email} className="py-2 break-words">
+                      <span className="font-medium">{row.firstName} {row.lastName}</span>
+                      <span className="block text-xs">{row.email}</span>
+                    </li>
+                  ))}
+                </ul>
                 {parsedRows.length > BATCH_SIZE && (
                   <p className="text-xs text-gray-500">
                     Uploads run in batches of {BATCH_SIZE} - keep this tab open until it finishes.

@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation';
 import { exportSubmissionsToExcel, exportSelectedSubmissionsToExcel } from '../../../lib/excelExport';
 import { formatStudentName } from '@/lib/formatStudentName';
 import { formatDateTime } from '@/lib/formatDateTime';
+import { assessmentTitle, matchesSubmission } from '@/lib/submissionFilters';
 import BrandLogo from '@/app/components/BrandLogo';
 
 export default function AdminSubmissionsPage() {
@@ -38,7 +39,13 @@ export default function AdminSubmissionsPage() {
   const [sortConfig, setSortConfig] = useState({ key: 'submittedAt', direction: 'desc' });
   const [activeTab, setActiveTab] = useState('individual'); // 'individual' or 'level'
   const [selectedSubmissions, setSelectedSubmissions] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [assessmentFilter, setAssessmentFilter] = useState('all');
+
+  useEffect(() => {
+    setSelectedSubmissions([]);
+  }, [query, statusFilter, assessmentFilter, filter, activeTab]);
 
   useEffect(() => {
     fetchSubmissions();
@@ -53,15 +60,15 @@ export default function AdminSubmissionsPage() {
         fetch('/api/admin/tests/submissions', { credentials: 'include' }),
         fetch('/api/admin/submissions/level', { credentials: 'include' })
       ]);
-      
+
       if (!problemRes.ok || !testRes.ok || !levelRes.ok) {
         throw new Error('Failed to fetch submissions');
       }
-      
+
       const problemData = await problemRes.json();
       const testData = await testRes.json();
       const levelData = await levelRes.json();
-      
+
       setProblemSubmissions(problemData.submissions || []);
       setTestSubmissions(testData.submissions || []);
       setLevelSubmissions(levelData.levelSubmissions || []);
@@ -78,7 +85,7 @@ export default function AdminSubmissionsPage() {
 
   const handleDelete = async (id, type) => {
     if (!confirm('Are you sure you want to delete this submission?')) return;
-    
+
     try {
       let url;
       if (type === 'problem') {
@@ -88,13 +95,13 @@ export default function AdminSubmissionsPage() {
       } else if (type === 'level') {
         url = `/api/admin/submissions/level?id=${id}`;
       }
-      
+
       const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete submission');
       }
-      
+
       fetchSubmissions();
     } catch (error) {
       console.error('Delete submission error:', error);
@@ -123,30 +130,24 @@ export default function AdminSubmissionsPage() {
         setSelectedSubmissions(allIds);
       }
     } else {
-      const allIds = levelSubmissions.map(sub => sub._id);
+      const allIds = filteredLevels.map(sub => sub._id);
       if (selectAll) {
         setSelectedSubmissions([]);
       } else {
         setSelectedSubmissions(allIds);
       }
     }
-    setSelectAll(!selectAll);
+
   };
 
   // Export all submissions to Excel
   const handleExportAll = () => {
     if (activeTab === 'individual') {
       const fileName = `all_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
-      if (filter === 'problem') {
-        exportSubmissionsToExcel(problemSubmissions, fileName, 'problem');
-      } else if (filter === 'test') {
-        exportSubmissionsToExcel(testSubmissions, fileName, 'test');
-      } else {
-        exportSubmissionsToExcel(sortedSubmissions, fileName, 'mixed');
-      }
+      exportSubmissionsToExcel(sortedSubmissions, fileName, 'mixed');
     } else {
       const fileName = `level_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
-      exportSubmissionsToExcel(levelSubmissions, fileName, 'level');
+      exportSubmissionsToExcel(filteredLevels, fileName, 'level');
     }
   };
 
@@ -158,7 +159,7 @@ export default function AdminSubmissionsPage() {
     }
 
     const fileName = `selected_submissions_${new Date().toISOString().split('T')[0]}.xlsx`;
-    
+
     if (activeTab === 'individual') {
       const exportType =
         filter === 'test' ? 'test' : filter === 'problem' ? 'problem' : 'mixed';
@@ -169,7 +170,7 @@ export default function AdminSubmissionsPage() {
         exportType
       );
     } else {
-      exportSelectedSubmissionsToExcel(levelSubmissions, selectedSubmissions, fileName, 'level');
+      exportSelectedSubmissionsToExcel(filteredLevels, selectedSubmissions, fileName, 'level');
     }
   };
 
@@ -248,15 +249,23 @@ export default function AdminSubmissionsPage() {
 
   // Combine and filter submissions
   const combinedSubmissions = [
-    ...problemSubmissions.map(sub => ({ ...sub, type: 'problem' })),
-    ...testSubmissions.map(sub => ({ ...sub, type: 'test' }))
+    ...problemSubmissions.map(sub => ({ ...sub, type: 'problem', title: assessmentTitle(sub) })),
+    ...testSubmissions.map(sub => ({ ...sub, type: 'test', title: assessmentTitle(sub) }))
   ];
 
   const filteredSubmissions = combinedSubmissions.filter(sub => 
-    filter === 'all' || sub.type === filter
+    (filter === 'all' || sub.type === filter) && matchesSubmission(sub, query, statusFilter, assessmentFilter)
   );
 
   const sortedSubmissions = sortSubmissions(filteredSubmissions);
+  const filteredLevels = levelSubmissions.filter(sub => matchesSubmission(sub, query, statusFilter, assessmentFilter));
+  const visibleSubmissions = activeTab === 'individual' ? sortedSubmissions : filteredLevels;
+  const selectAll = visibleSubmissions.length > 0 && visibleSubmissions.every(sub => selectedSubmissions.includes(sub._id));
+  const tabSubmissions = activeTab === 'individual'
+    ? combinedSubmissions.filter(sub => filter === 'all' || sub.type === filter)
+    : levelSubmissions;
+  const statusOptions = [...new Set(tabSubmissions.map(sub => sub.status).filter(Boolean))].sort();
+  const assessmentOptions = [...new Set(tabSubmissions.map(assessmentTitle).filter(Boolean))].sort();
 
   if (loading) {
     return (
@@ -279,14 +288,22 @@ export default function AdminSubmissionsPage() {
       <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 p-8">
         <h1 className="text-2xl font-bold mb-6">Submissions</h1>
-        
+        {error && (
+          <div role="alert" className="mb-4 rounded-lg border border-indigo-300 bg-indigo-50 p-4 text-indigo-900">
+            <p>{error}. Submission results are unavailable; this does not mean there are no submissions.</p>
+            <button type="button" onClick={fetchSubmissions} className="mt-2 underline font-medium">Try again</button>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div className="flex space-x-1 mb-6 bg-white rounded-lg shadow p-1">
           <button
             onClick={() => {
               setActiveTab('individual');
+              setStatusFilter('all');
+              setAssessmentFilter('all');
               setSelectedSubmissions([]);
-              setSelectAll(false);
+
             }}
             className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === 'individual'
@@ -300,8 +317,10 @@ export default function AdminSubmissionsPage() {
           <button
             onClick={() => {
               setActiveTab('level');
+              setStatusFilter('all');
+              setAssessmentFilter('all');
               setSelectedSubmissions([]);
-              setSelectAll(false);
+
             }}
             className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === 'level'
@@ -313,7 +332,32 @@ export default function AdminSubmissionsPage() {
             Level Submissions
           </button>
         </div>
-        
+
+        <section className="mb-6 rounded-lg border border-indigo-200 bg-white p-4 space-y-3" aria-label="Submission filters">
+          <p className="text-sm text-gray-600">Type a student name or email (for example a department code like ai24 or a college domain) to find students. Pick a test or problem to see everyone who attempted it, and click the Score or Date header to sort. Filters combine with Problems / Tests below. Export Filtered downloads only the matching rows; tick checkboxes to export selected rows.</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex-1 min-w-48 text-sm font-medium text-gray-700">
+              Student or assessment
+              <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Name, email, test or problem title" className="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
+            </label>
+            <label className="text-sm font-medium text-gray-700">
+              {activeTab === 'individual' ? 'Test / problem' : 'Level'}
+              <select value={assessmentFilter} onChange={e => setAssessmentFilter(e.target.value)} className="mt-1 block max-w-64 rounded border border-gray-300 px-3 py-2">
+                <option value="all">All</option>
+                {assessmentOptions.map(title => <option key={title} value={title}>{title.replace(/^level(\d)$/, 'Level $1')}</option>)}
+              </select>
+            </label>
+            <label className="text-sm font-medium text-gray-700">
+              Status
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="mt-1 block rounded border border-gray-300 px-3 py-2">
+                <option value="all">All statuses</option>
+                {statusOptions.map(status => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
+              </select>
+            </label>
+            <button type="button" onClick={() => { setQuery(''); setStatusFilter('all'); setAssessmentFilter('all'); setFilter('all'); }} className="rounded border border-indigo-600 px-3 py-2 text-sm text-indigo-700">Clear filters</button>
+          </div>
+          <p className="text-sm text-gray-600" aria-live="polite">{visibleSubmissions.length} matching submission{visibleSubmissions.length === 1 ? '' : 's'}</p>
+        </section>
         {/* Conditional Content Based on Tab */}
         {activeTab === 'individual' ? (
           <>
@@ -321,7 +365,7 @@ export default function AdminSubmissionsPage() {
         <div className="flex justify-between items-center mb-4">
           <div className="flex space-x-2">
             <button 
-              onClick={() => setFilter('all')}
+              onClick={() => { setFilter('all'); setAssessmentFilter('all'); }}
               className={`px-3 py-1 rounded ${
                 filter === 'all' 
                   ? 'bg-indigo-600 text-white' 
@@ -331,7 +375,7 @@ export default function AdminSubmissionsPage() {
               All
             </button>
             <button 
-              onClick={() => setFilter('problem')}
+              onClick={() => { setFilter('problem'); setAssessmentFilter('all'); }}
               className={`px-3 py-1 rounded ${
                 filter === 'problem' 
                   ? 'bg-indigo-600 text-white' 
@@ -341,7 +385,7 @@ export default function AdminSubmissionsPage() {
               Problems
             </button>
             <button 
-              onClick={() => setFilter('test')}
+              onClick={() => { setFilter('test'); setAssessmentFilter('all'); }}
               className={`px-3 py-1 rounded ${
                 filter === 'test' 
                   ? 'bg-indigo-600 text-white' 
@@ -351,7 +395,7 @@ export default function AdminSubmissionsPage() {
               Tests
             </button>
           </div>
-          
+
           {/* Excel Export Buttons */}
           <div className="flex space-x-2">
             <button
@@ -371,7 +415,7 @@ export default function AdminSubmissionsPage() {
               className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 flex items-center"
             >
               <FileSpreadsheet className="w-4 h-4 mr-1" />
-              Export All
+              Export Filtered
             </button>
           </div>
         </div>
@@ -435,7 +479,7 @@ export default function AdminSubmissionsPage() {
               {sortedSubmissions.map(sub => {
                 const StatusIcon = getStatusStyle(sub.status).icon;
                 const statusStyle = getStatusStyle(sub.status);
-                
+
                 return (
                   <tr key={sub._id} className="hover:bg-gray-50">
                     <td className="px-4 py-2">
@@ -456,7 +500,11 @@ export default function AdminSubmissionsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2">
-                      {formatStudentName(sub)}
+                      <div className="font-medium text-gray-900">{formatStudentName(sub)}</div>
+                      {(() => {
+                        const email = (sub.student || sub.user)?.email;
+                        return email && email !== formatStudentName(sub) && <div className="text-sm text-gray-500">{email}</div>;
+                      })()}
                     </td>
                     <td className="px-4 py-2">
                       {sub.problem?.title || sub.test?.title || 'N/A'}
@@ -525,10 +573,10 @@ export default function AdminSubmissionsPage() {
                 className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 flex items-center"
               >
                 <FileSpreadsheet className="w-4 h-4 mr-1" />
-                Export All
+                Export Filtered
               </button>
             </div>
-            
+
             {/* Level Submissions Table */}
             <div className="bg-white shadow rounded-lg">
               <div className="p-4 border-b">
@@ -579,10 +627,10 @@ export default function AdminSubmissionsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {levelSubmissions.map((submission) => {
+                    {filteredLevels.map((submission) => {
                       const statusStyle = getStatusStyle(submission.status);
                       const StatusIcon = statusStyle.icon;
-                      
+
                       return (
                         <tr key={submission._id} className="hover:bg-gray-50">
                           <td className="px-4 py-4 whitespace-nowrap">
@@ -671,7 +719,7 @@ export default function AdminSubmissionsPage() {
             </div>
 
             {/* No Level Submissions Message */}
-            {levelSubmissions.length === 0 && (
+            {filteredLevels.length === 0 && (
               <div className="text-center py-8 bg-white rounded-lg shadow mt-4">
                 <p className="text-gray-600">No level submissions found.</p>
               </div>

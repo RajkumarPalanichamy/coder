@@ -4,6 +4,7 @@
 
 
 @import "tailwindcss";
+@import "./brand-theme.css";
 
 :root {
   --background: #ffffff;

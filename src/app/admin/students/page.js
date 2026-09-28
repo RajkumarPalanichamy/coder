@@ -132,11 +132,28 @@ function AdminStudentsContent() {
             </div>
           </div>
 
+          <details className="mb-6 rounded-lg border border-indigo-200 bg-white p-4">
+            <summary className="cursor-pointer font-semibold text-indigo-800">How to add and find students</summary>
+            <ol className="mt-3 list-decimal pl-5 space-y-2 text-sm text-gray-700">
+              <li><strong>Template Sheet</strong> downloads a blank format. Downloading or editing it does not add students.</li>
+              <li>Fill in First Name, Last Name and Email, one student per row, then save the file.</li>
+              <li>Open <strong>Bulk Import</strong>, choose the saved file and enter a temporary password of at least 6 characters. Review the preview, then click <strong>Start Import</strong>.</li>
+              <li>The result shows how many accounts were created and which rows were skipped. Existing emails are skipped. Click <strong>Done</strong> to refresh this list.</li>
+              <li><strong>Add Student</strong> creates one account. <strong>Export Excel</strong> downloads students matching the current search.</li>
+            </ol>
+            <p className="mt-3 text-sm text-gray-600">Search using a student name or email. An admin account will not appear in this student list. Clear the search to see all students.</p>
+          </details>
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div className="relative w-full sm:max-w-xs">
               <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
-                type="text"
+                // type="search" + a non-login name stops Chrome filling the saved admin email here.
+                type="search"
+                name="student-search"
+                aria-label="Search students by name or email"
+                autoComplete="off"
+                data-lpignore="true"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search by name or email"
@@ -144,7 +161,7 @@ function AdminStudentsContent() {
               />
             </div>
             {!loading && !error && (
-              <p className="text-sm text-gray-500">{total.toLocaleString()} student{total === 1 ? '' : 's'} total</p>
+              <p className="text-sm text-gray-500">{total.toLocaleString()} student{total === 1 ? '' : 's'} {search ? 'matching your search' : 'total'}</p>
             )}
           </div>
 
@@ -153,7 +170,10 @@ function AdminStudentsContent() {
           ) : error ? (
             <div className="text-center py-12 text-red-500">{error}</div>
           ) : students.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">No students found.</div>
+            <div className="text-center py-12 text-gray-500">
+              <p>{search ? `No students match "${search}". Try a student name or email.` : 'No students yet. Use Add Student or Bulk Import to create accounts.'}</p>
+              {searchInput && <button type="button" onClick={() => { setSearchInput(''); setSearch(''); setPage(1); }} className="mt-3 text-indigo-700 underline">Clear search and show all students</button>}
+            </div>
           ) : (
             <>
               <div className="overflow-x-auto rounded shadow bg-white mt-4">

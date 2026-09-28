@@ -523,7 +523,7 @@ export default function ProfessionalTestTaking({ test, onSubmit, onAbandon }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[95] p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
             <div className="bg-indigo-600 text-white px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Questions</h2>
+              <h2 className="text-lg font-semibold text-white">Questions</h2>
               <button
                 onClick={() => setShowQuestionPanel(false)}
                 className="text-white hover:text-gray-200 transition-colors p-1 rounded-lg hover:bg-indigo-700"

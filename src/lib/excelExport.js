@@ -144,19 +144,17 @@ export const exportSelectedSubmissionsToExcel = (
 
 export const downloadStudentImportTemplate = (fileName = 'student_import_template.xlsx') => {
   try {
-    const sampleRows = [
-      { 'First Name': 'Aditi', 'Last Name': 'Sharma', 'Email': 'aditi.sharma@example.com' },
-      { 'First Name': 'Rahul', 'Last Name': 'Verma', 'Email': 'rahul.verma@example.com' },
-    ];
-
     const wb = XLSX.utils.book_new();
 
-    const ws = XLSX.utils.json_to_sheet(sampleRows);
+    // Keep example accounts out of the upload sheet to prevent accidental imports.
+    const ws = XLSX.utils.aoa_to_sheet([['First Name', 'Last Name', 'Email']]);
     ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 32 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Students');
 
     const instructions = [
-      { Instructions: 'Fill one row per student below. Keep the header row exactly as-is.' },
+      { Instructions: 'Downloading this template does not create accounts. Fill the Students sheet, save it, then use Bulk Import and Start Import in the portal.' },
+      { Instructions: 'Fill one row per student on the Students sheet. Keep the header row exactly as-is.' },
+      { Instructions: 'Example only: First Name = Aditi, Last Name = Sharma, Email = aditi.sharma@example.com. Enter real student details on the Students sheet.' },
       { Instructions: 'Required columns: First Name, Last Name, Email.' },
       { Instructions: 'Each email must be unique - rows with an email already in use are skipped automatically.' },
       { Instructions: "Don't add a Password column - a common temporary password is set on the upload screen and applied to every student in this file." },

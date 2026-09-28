@@ -122,8 +122,8 @@ function ProgressRing({ percent, size = 190, stroke = 14, children }) {
       <svg width={size} height={size} className="-rotate-90">
         <defs>
           <linearGradient id="profileRing" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#a855f7" />
+            <stop offset="0%" stopColor="#073763" />
+            <stop offset="100%" stopColor="#166534" />
           </linearGradient>
         </defs>
         <circle
