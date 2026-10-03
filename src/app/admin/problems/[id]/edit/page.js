@@ -145,7 +145,7 @@ export default function AdminProblemEditPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white">
       <AdminSidebar />
       <main className="flex-1 min-h-screen overflow-auto">
         <div className="w-full py-10 px-4 sm:px-8">

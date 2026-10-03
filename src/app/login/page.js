@@ -58,7 +58,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-32 w-96 h-96 bg-indigo-100 rounded-full opacity-20 animate-pulse"></div>
@@ -117,7 +117,7 @@ export default function Login() {
                 />
               </div>
             </div>
-            <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-extrabold text-green-600">
               Welcome Back
             </h2>
             <p className="mt-2 text-sm text-gray-500">
@@ -200,7 +200,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md"
+                className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md"
               >
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <ArrowRight className={`h-5 w-5 text-indigo-100 transition-transform duration-200 ${loading ? '' : 'group-hover:translate-x-1'}`} />
@@ -212,7 +212,7 @@ export default function Login() {
             <div className="flex items-center justify-center mt-6">
               <Link 
                 href="/" 
-                className="text-sm text-indigo-600 hover:text-indigo-500 font-medium flex items-center gap-1 transition-colors group"
+                className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1 transition-colors group"
               >
                 <ArrowRight className="h-4 w-4 transform transition-transform duration-200 group-hover:-translate-x-1" />
                 <span>Back to home</span>

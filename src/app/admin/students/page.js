@@ -97,7 +97,7 @@ function AdminStudentsContent() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
-      <main className="flex-1 bg-gray-50 min-h-screen">
+      <main className="flex-1 bg-white min-h-screen">
         <div className="max-w-6xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
             <h1 className="text-3xl font-bold text-black">Students Management</h1>
@@ -272,7 +272,7 @@ function AdminStudentsContent() {
 export default function AdminStudentsPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-gray-500">Loading...</div>
       </div>
     }>

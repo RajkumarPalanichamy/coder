@@ -122,8 +122,8 @@ function ProgressRing({ percent, size = 190, stroke = 14, children }) {
       <svg width={size} height={size} className="-rotate-90">
         <defs>
           <linearGradient id="profileRing" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#073763" />
-            <stop offset="100%" stopColor="#166534" />
+            <stop offset="0%" stopColor="#053567" />
+            <stop offset="100%" stopColor="#3a9b1b" />
           </linearGradient>
         </defs>
         <circle
@@ -542,35 +542,35 @@ export default function StudentProfilePage() {
     <div className="px-4 py-8 md:px-0">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* ---------------------------------------------------------- hero */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 shadow-xl">
-          <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-28 -left-10 w-72 h-72 rounded-full bg-black/10 blur-2xl" />
+        <div className="relative overflow-hidden rounded-3xl bg-white border border-slate-200 shadow-lg">
+          <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-emerald-100/60 blur-2xl" />
+          <div className="absolute -bottom-28 -left-10 w-72 h-72 rounded-full bg-indigo-100/60 blur-2xl" />
 
           <div className="relative p-8 md:p-10 flex flex-col lg:flex-row lg:items-center gap-8">
             {/* identity */}
             <div className="flex items-center gap-5 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
-                <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/30 flex items-center justify-center text-4xl md:text-5xl font-black text-white shadow-lg">
+                <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-indigo-600 border border-indigo-700 flex items-center justify-center text-4xl md:text-5xl font-black text-white shadow-lg">
                   {initials}
                 </div>
                 {user.isActive && (
-                  <span className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1 bg-emerald-400 text-emerald-950 text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-900" />
+                  <span className="absolute -bottom-1.5 -right-1.5 flex items-center gap-1 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
                     ACTIVE
                   </span>
                 )}
               </div>
 
               <div className="min-w-0">
-                <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight truncate">
+                <h1 className="text-3xl md:text-4xl font-black text-indigo-700 tracking-tight truncate">
                   {user.firstName} {user.lastName}
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/20 capitalize">
+                  <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-200 capitalize">
                     {user.role}
                   </span>
                   {joined ? (
-                    <span className="text-white/70 text-xs font-medium flex items-center gap-1">
+                    <span className="text-emerald-700 text-xs font-medium flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       Member since {joined}
                     </span>
@@ -578,23 +578,23 @@ export default function StudentProfilePage() {
                 </div>
 
                 {/* Email ID - required profile field */}
-                <div className="mt-4 inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl pl-3 pr-2 py-2 max-w-full">
-                  <Mail className="w-4 h-4 text-white/80 flex-shrink-0" />
+                <div className="mt-4 inline-flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-xl pl-3 pr-2 py-2 max-w-full">
+                  <Mail className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold leading-none">
+                    <div className="text-[10px] uppercase tracking-wider text-emerald-700 font-bold leading-none">
                       Email ID
                     </div>
-                    <div className="text-sm text-white font-semibold truncate">{user.email}</div>
+                    <div className="text-sm text-indigo-700 font-semibold truncate">{user.email}</div>
                   </div>
                   <button
                     onClick={copyEmail}
                     title="Copy email address"
-                    className="ml-1 p-1.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
+                    className="ml-1 p-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex-shrink-0"
                   >
                     {copied ? (
-                      <Check className="w-4 h-4 text-emerald-300" />
+                      <Check className="w-4 h-4 text-emerald-600" />
                     ) : (
-                      <Copy className="w-4 h-4 text-white/70" />
+                      <Copy className="w-4 h-4 text-indigo-500" />
                     )}
                   </button>
                 </div>
@@ -603,25 +603,25 @@ export default function StudentProfilePage() {
 
             {/* Cumulative score - required profile field */}
             <div className="flex-shrink-0 w-full lg:w-auto">
-              <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-8 py-6 text-center shadow-lg">
-                <div className="flex items-center justify-center gap-1.5 text-white/70 text-[11px] font-bold uppercase tracking-widest">
+              <div className="bg-white border border-emerald-200 rounded-2xl px-8 py-6 text-center shadow-lg">
+                <div className="flex items-center justify-center gap-1.5 text-emerald-700 text-[11px] font-bold uppercase tracking-widest">
                   <Trophy className="w-3.5 h-3.5" />
                   Cumulative Score
                 </div>
-                <div className="text-6xl font-black text-white leading-none mt-2 tabular-nums">
+                <div className="text-6xl font-black text-indigo-700 leading-none mt-2 tabular-nums">
                   {animatedScore}
                 </div>
-                <div className="mt-3 flex items-center justify-center gap-4 text-white/80 text-xs font-medium">
+                <div className="mt-3 flex items-center justify-center gap-4 text-emerald-700 text-xs font-medium">
                   <span>{problemScore} problems</span>
-                  <span className="w-px h-3 bg-white/30" />
+                  <span className="w-px h-3 bg-emerald-200" />
                   <span>{testScore} tests</span>
                 </div>
                 {progress?.rank ? (
-                  <div className="mt-3 inline-flex items-center gap-1.5 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  <div className="mt-3 inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full">
                     <TrendingUp className="w-3.5 h-3.5" />
                     {progress.rank}
                     {progress.totalUsers ? (
-                      <span className="text-white/60 font-medium">
+                      <span className="text-indigo-500 font-medium">
                         · #{progress.userRank} of {progress.totalUsers}
                       </span>
                     ) : null}

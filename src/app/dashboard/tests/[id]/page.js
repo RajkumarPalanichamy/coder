@@ -121,7 +121,7 @@ export default function TakeTestPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading test...</p>
@@ -132,7 +132,7 @@ export default function TakeTestPage() {
 
   if (!test) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 text-lg">Test not found</p>
           <button
@@ -149,7 +149,7 @@ export default function TakeTestPage() {
   // A submitted attempt is closed for good. Reviewing it is fine; re-entering it is not.
   if (attemptLocked && !testStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+      <div className="min-h-screen bg-white p-4">
         <div className="max-w-2xl mx-auto pt-16">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -191,7 +191,7 @@ export default function TakeTestPage() {
       : null;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+      <div className="min-h-screen bg-white p-4">
         <div className="max-w-2xl mx-auto pt-16">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="text-center mb-8">

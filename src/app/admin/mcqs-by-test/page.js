@@ -16,7 +16,7 @@ export default function MCQsByTestPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
-      <main className="flex-1 bg-gray-50 p-8">
+      <main className="flex-1 bg-white p-8">
         <h1 className="text-2xl font-bold mb-6 text-black">MCQs by Test Set</h1>
         {loading ? (
           <div>Loading...</div>

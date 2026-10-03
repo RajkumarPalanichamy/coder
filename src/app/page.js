@@ -95,9 +95,10 @@ export default function Home() {
             </div>
 
             <h1 className="heading-xl text-dark">
-              <span className="block">Master Coding with</span>
-              <span className="block gradient-text-primary">
-                Zenith Mentor
+              <span className="block text-primary">Master Coding with</span>
+              <span className="block">
+                <span className="text-accent">Zenith</span>{' '}
+                <span className="text-primary">Mentor</span>
               </span>
             </h1>
 

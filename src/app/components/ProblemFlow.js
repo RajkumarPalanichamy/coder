@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FolderOpen, Target, ChevronRight, ArrowLeft, Search, Filter, BarChart3, BookOpen } from 'lucide-react';
 import BrandLogo from './BrandLogo';
-import { formatBrandName, getBrandTypeLabel, isProgrammingLanguage, resolveBrand } from '@/lib/brandLogos';
+import { formatBrandName, getBrandTypeLabel, isProgrammingLanguage } from '@/lib/brandLogos';
 
 // Names, labels and artwork all come from the shared registry in
 // `src/lib/brandLogos.js` so a language, company or college only has to be
@@ -11,7 +11,6 @@ const formatLanguageName = (language) => formatBrandName(language);
 
 const getLanguageTypeLabel = (language) => (language ? getBrandTypeLabel(language) : '');
 
-const getCardHeaderGradient = (language) => resolveBrand(language).gradient;
 
 export default function ProblemFlow() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -245,13 +244,13 @@ export default function ProblemFlow() {
             onClick={() => handleLanguageSelect(langData.language)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className={`p-4 text-white bg-gradient-to-r ${getCardHeaderGradient(langData.language)}`}>
+            <div className="p-4 text-white bg-gradient-to-r from-green-500 to-green-700">
               <h3 className="text-lg font-semibold">{formatLanguageName(langData.language)}</h3>
               <p className="text-sm opacity-90">{getLanguageTypeLabel(langData.language)}</p>
             </div>
             <BrandLogo name={langData.language} size="xl" />
             <div className="p-4">
-              <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 Continue
               </button>
             </div>
@@ -272,7 +271,7 @@ export default function ProblemFlow() {
             onClick={() => handleCategorySelect(catData.category)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className="bg-gradient-to-r from-green-400 to-green-600 p-4 text-white">
+            <div className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-white">
               <h3 className="text-lg font-semibold">{catData.category}</h3>
               <p className="text-sm opacity-90">Problem Category</p>
             </div>
@@ -285,7 +284,7 @@ export default function ProblemFlow() {
               <p className="text-gray-600 text-sm mb-4">
                 Problems available in {catData.category}
               </p>
-              <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 Continue
               </button>
             </div>
@@ -306,7 +305,7 @@ export default function ProblemFlow() {
             onClick={() => handleLevelSelect(levelData.level)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className="bg-gradient-to-r from-purple-400 to-purple-600 p-4 text-white">
+            <div className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-white">
               <h3 className="text-lg font-semibold">
                 {levelData.level === 'level1' ? 'Level 1' : 
                  levelData.level === 'level2' ? 'Level 2' : 
@@ -327,7 +326,7 @@ export default function ProblemFlow() {
               <p className="text-gray-600 text-sm mb-4">
                 Problems available at this level
               </p>
-              <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 Continue
               </button>
             </div>
@@ -338,7 +337,7 @@ export default function ProblemFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header Section - This Week Dashboard */}
       <div className="bg-white py-8 px-6 border-b border-gray-200">
         <div className="max-w-7xl mx-auto">

@@ -71,10 +71,10 @@ function MotivationCard() {
   const { quote, author } = MOTIVATION_QUOTES[index];
 
   return (
-    <div className="relative bg-gradient-to-br from-pink-50 via-indigo-50 to-blue-100 rounded-3xl shadow-2xl px-8 py-12 flex flex-col items-center justify-center border border-indigo-100 overflow-hidden transition-all duration-500">
+    <div className="relative bg-white rounded-3xl shadow-lg px-8 py-12 flex flex-col items-center justify-center border-2 border-green-600 overflow-hidden transition-all duration-500">
       <div className="absolute left-8 top-4 text-indigo-100 text-8xl font-serif select-none opacity-40 z-0 animate-fadeIn">“</div>
       <div className={`z-10 w-full flex flex-col items-center transition-opacity duration-400 ${fade ? 'opacity-100' : 'opacity-0'}`} style={{ minHeight: 110 }}>
-        <div className="text-lg md:text-xl font-bold text-indigo-700 mb-4 tracking-wide text-center">Motivation for Today</div>
+        <div className="text-lg md:text-xl font-bold text-green-700 mb-4 tracking-wide text-center">Motivation for Today</div>
         <div className="text-2xl md:text-3xl font-serif text-gray-800 text-center leading-snug mb-6 animate-fadeIn" style={{ maxWidth: 700 }}>
           {quote}
         </div>
@@ -167,7 +167,7 @@ export default function Dashboard() {
   return (
     <>
       {/* Sticky header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-br from-blue-50 to-indigo-100 px-4 md:px-0 pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-indigo-100">
+      <div className="sticky top-0 z-20 bg-white px-4 md:px-0 pt-6 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-200">
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-3">

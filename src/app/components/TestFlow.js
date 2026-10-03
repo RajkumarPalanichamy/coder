@@ -222,7 +222,7 @@ export default function TestFlow() {
             onClick={() => handleCategorySelect(category.name)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className="bg-gradient-to-r from-blue-400 to-blue-600 p-4 text-white">
+            <div className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-white">
               <h3 className="text-lg font-semibold">{category.name}</h3>
               <p className="text-sm opacity-90">Test Category</p>
             </div>
@@ -234,7 +234,7 @@ export default function TestFlow() {
               <p className="text-gray-600 text-sm mb-4">
                 {category.testCount || 0} tests available in {category.name}
               </p>
-              <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 Continue
               </button>
             </div>
@@ -255,7 +255,7 @@ export default function TestFlow() {
             onClick={() => handleDifficultySelect(difficulty.name)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className="bg-gradient-to-r from-green-400 to-green-600 p-4 text-white">
+            <div className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-white">
               <h3 className="text-lg font-semibold">{difficulty.name}</h3>
               <p className="text-sm opacity-90">Difficulty Level</p>
             </div>
@@ -267,7 +267,7 @@ export default function TestFlow() {
               <p className="text-gray-600 text-sm mb-4">
                 {difficulty.testCount || 0} tests available at {difficulty.name} level
               </p>
-              <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 Continue
               </button>
             </div>
@@ -288,7 +288,7 @@ export default function TestFlow() {
             onClick={() => handleTestSelect(test)}
             className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
           >
-            <div className="bg-gradient-to-r from-purple-400 to-purple-600 p-4 text-white">
+            <div className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-white">
               <h3 className="text-lg font-semibold">{test.title}</h3>
               <p className="text-sm opacity-90">{test.category} • {test.difficulty}</p>
             </div>
@@ -312,7 +312,7 @@ export default function TestFlow() {
                 </div>
               </div>
               
-              <button className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium">
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                 Start Test
               </button>
             </div>
@@ -323,7 +323,7 @@ export default function TestFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header Section - This Week Dashboard */}
       <div className="bg-white py-8 px-6 border-b border-gray-200">
         <div className="max-w-7xl mx-auto">

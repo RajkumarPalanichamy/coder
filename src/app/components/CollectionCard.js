@@ -13,13 +13,13 @@ export default function CollectionCard({ collection, onClick }) {
       onClick={onClick}
       className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100"
     >
-      <div className={`bg-gradient-to-r ${brand.gradient} p-6 text-white`}>
+      <div className="bg-gradient-to-r from-green-500 to-green-700 p-6 text-white">
         <h3 className="text-2xl font-bold">{brand.label}</h3>
         <p className="text-base opacity-90">{subtitle}</p>
       </div>
       <BrandLogo name={collection} size="xl" />
       <div className="p-6">
-        <button className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-semibold text-lg">
+        <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg">
           Continue
         </button>
       </div>

@@ -32,10 +32,10 @@ export default function EditTestPage() {
     router.push('/admin/tests');
   };
 
-  if (loading || !test) return <div className="flex min-h-screen"><AdminSidebar /><main className="flex-1 bg-gray-50 p-8"><div>Loading...</div></main></div>;
+  if (loading || !test) return <div className="flex min-h-screen"><AdminSidebar /><main className="flex-1 bg-white p-8"><div>Loading...</div></main></div>;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white">
       <AdminSidebar />
       <main className="flex-1 min-h-screen overflow-auto">
         <div className="w-full py-10 px-4 sm:px-8">

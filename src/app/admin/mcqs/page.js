@@ -51,7 +51,7 @@ export default function MCQListPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 bg-white">
         <div className="max-w-4xl mx-auto py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
             <h1 className="text-2xl font-bold text-black">MCQ Management</h1>

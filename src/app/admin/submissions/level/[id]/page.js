@@ -166,7 +166,7 @@ export default function AdminLevelSubmissionDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading submission details...</p>
@@ -177,7 +177,7 @@ export default function AdminLevelSubmissionDetailsPage() {
 
   if (error || !submission) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error || 'Submission not found'}</p>
           <button
@@ -195,7 +195,7 @@ export default function AdminLevelSubmissionDetailsPage() {
   const OverallStatusIcon = overallStatus.icon;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-white">
       <AdminSidebar onLogout={handleLogout} />
       <main className="flex-1 p-8">
         {/* Header */}

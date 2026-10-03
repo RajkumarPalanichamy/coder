@@ -39,10 +39,10 @@ const navItems = [
     icon: LayoutDashboard,
     description: 'Overview & progress',
     badge: null,
-    bgColor: 'bg-purple-100',
-    textColor: 'text-purple-700',
-    iconColor: 'text-purple-600',
-    borderColor: 'border-purple-300'
+    bgColor: 'bg-blue-100',
+    textColor: 'text-blue-800',
+    iconColor: 'text-blue-700',
+    borderColor: 'border-blue-600'
   },
   { 
     label: 'Profile', 
@@ -51,9 +51,9 @@ const navItems = [
     description: 'Personal information',
     badge: null,
     bgColor: 'bg-green-100',
-    textColor: 'text-green-700',
-    iconColor: 'text-green-600',
-    borderColor: 'border-green-300'
+    textColor: 'text-green-800',
+    iconColor: 'text-green-700',
+    borderColor: 'border-green-600'
   },
   { 
     label: 'Technical Courses', 
@@ -61,10 +61,10 @@ const navItems = [
     icon: Code2,
     description: 'Coding challenges',
     badge: 'New',
-    bgColor: 'bg-purple-100',
-    textColor: 'text-purple-700',
-    iconColor: 'text-purple-600',
-    borderColor: 'border-purple-300'
+    bgColor: 'bg-blue-100',
+    textColor: 'text-blue-800',
+    iconColor: 'text-blue-700',
+    borderColor: 'border-blue-600'
   },
   { 
     label: 'Aptitude Tests', 
@@ -72,10 +72,10 @@ const navItems = [
     icon: Trophy,
     description: 'Assessments & MCQs',
     badge: null,
-    bgColor: 'bg-yellow-100',
-    textColor: 'text-orange-700',
-    iconColor: 'text-orange-600',
-    borderColor: 'border-orange-300'
+    bgColor: 'bg-green-100',
+    textColor: 'text-green-800',
+    iconColor: 'text-green-700',
+    borderColor: 'border-green-600'
   },
   { 
     label: 'My Submissions', 
@@ -84,9 +84,9 @@ const navItems = [
     description: 'Code submissions',
     badge: null,
     bgColor: 'bg-blue-100',
-    textColor: 'text-blue-700',
-    iconColor: 'text-blue-600',
-    borderColor: 'border-blue-300'
+    textColor: 'text-blue-800',
+    iconColor: 'text-blue-700',
+    borderColor: 'border-blue-600'
   }
 ];
 
@@ -252,14 +252,14 @@ export default function StudentSidebar({ onLogout }) {
               <Icon className={`w-5 h-5 ${iconColor}`} />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium">{label}</span>
+                  <span className="font-semibold">{label}</span>
                   {badge && (
                     <span className="text-xs bg-white/80 text-purple-700 px-2 py-1 rounded-full font-medium">
                       {badge}
                     </span>
                   )}
                 </div>
-                <p className="text-sm opacity-90">{description}</p>
+                <p className="text-sm">{description}</p>
               </div>
             </Link>
           ))}
@@ -272,7 +272,7 @@ export default function StudentSidebar({ onLogout }) {
               onLogout();
               setIsMobileMenuOpen(false);
             }}
-            className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center space-x-2 p-3 text-red-700 font-semibold hover:bg-red-50 rounded-lg transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span>Logout</span>
@@ -301,7 +301,7 @@ export default function StudentSidebar({ onLogout }) {
         isCollapsed ? 'w-20' : 'w-20 md:w-72'
       }`}>
         {/* Logo / App Name */}
-        <div className="sticky top-0 z-10 flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-blue-500">
+        <div className="sticky top-0 z-10 flex items-center justify-center md:justify-start h-20 px-6 border-b border-gray-100 bg-green-600">
           <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="h-10 w-10 rounded-lg shadow-lg" />
           {!isCollapsed && (
             <span className="hidden md:inline ml-3 text-xl font-bold text-white tracking-tight">Zenith Mentor</span>
@@ -344,7 +344,7 @@ export default function StudentSidebar({ onLogout }) {
         <div className="flex-1 overflow-y-auto">
           {/* Navigation */}
           <nav className="p-4">
-            <h3 className={`text-sm font-semibold text-gray-700 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
+            <h3 className={`text-sm font-semibold text-gray-900 mb-3 ${isCollapsed ? 'text-center' : ''}`}>
               {!isCollapsed && 'Navigation'}
             </h3>
             {navItems.map(({ label, href, icon: Icon, description, badge, bgColor, textColor, iconColor, borderColor }) => (
@@ -354,21 +354,21 @@ export default function StudentSidebar({ onLogout }) {
                 className={`flex items-center space-x-3 p-3 rounded-lg mb-2 transition-all duration-200 group hover:shadow-md hover:scale-[1.02] border-2 ${
                   isNavItemActive(href)
                     ? `${bgColor} ${borderColor} ${textColor} shadow-md`
-                    : `bg-white hover:bg-gray-50 ${textColor} border-gray-300`
+                    : `bg-white hover:bg-gray-50 ${textColor} ${borderColor}`
                 }`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 ${iconColor}`} />
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium truncate">{label}</span>
+                      <span className="font-semibold truncate">{label}</span>
                                         {/* {badge && (
                     // <span className="text-xs bg-white bg-opacity-80 text-purple-700 px-2 py-1 rounded-full flex-shrink-0 font-medium">
                     //   {badge}
                     // </span>
                   // )} */}
                     </div>
-                    <p className="text-sm truncate opacity-80">{description}</p>
+                    <p className="text-sm truncate">{description}</p>
                   </div>
                 )}
               </Link>
@@ -384,7 +384,7 @@ export default function StudentSidebar({ onLogout }) {
           <div className="p-4">
             <button
               onClick={onLogout}
-              className="w-full flex items-center justify-center space-x-2 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center space-x-2 p-3 text-red-700 font-semibold hover:bg-red-50 rounded-lg transition-colors"
             >
               <LogOut className="w-5 h-5" />
               {!isCollapsed && <span>Logout</span>}

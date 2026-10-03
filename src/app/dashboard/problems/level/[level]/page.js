@@ -578,7 +578,7 @@ export default function LevelProblemsPage() {
   // Show instruction page BEFORE session starts (like tests)
   if (!sessionStarted) {
     return (
-      <div className="min-h-screen bg-gray-50 text-gray-900 p-4">
+      <div className="min-h-screen bg-white text-gray-900 p-4">
         <div className="max-w-2xl mx-auto pt-16">
           <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
             <div className="text-center mb-8">
@@ -859,7 +859,7 @@ export default function LevelProblemsPage() {
                 <button
                   onClick={handleRunCode}
                   disabled={runningCode || !sessionStarted}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {runningCode ? (
                     <>
@@ -878,7 +878,7 @@ export default function LevelProblemsPage() {
                 <button
                   onClick={handleSubmitProblem}
                   disabled={submittingProblem || submitting || !sessionStarted}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {submittingProblem ? (
                     <>
@@ -1085,7 +1085,7 @@ export default function LevelProblemsPage() {
           </button>
           <button
             onClick={handleClearProblem}
-            className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             Clear
           </button>
@@ -1104,8 +1104,8 @@ export default function LevelProblemsPage() {
             disabled={currentProblemIndex === problems.length - 1}
             className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
               isCurrentProblemSubmitted()
-                ? 'bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300'
-                : 'bg-blue-600 hover:bg-blue-700'
+                ? 'bg-green-600 hover:bg-green-700 ring-2 ring-green-300'
+                : 'bg-green-600 hover:bg-green-700'
             }`}
           >
             Next
@@ -1115,7 +1115,7 @@ export default function LevelProblemsPage() {
                   <button
                     onClick={() => handleSubmitAll()}
                     disabled={submitting}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
                     title="Ends the test and submits every question"
                   >
                     {submitting ? (
@@ -1136,7 +1136,7 @@ export default function LevelProblemsPage() {
             <button
               onClick={() => setConfirmDialog({ type: 'exit' })}
               disabled={submitting || attemptEnded}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               <XCircle className="w-4 h-4" />
               End Test

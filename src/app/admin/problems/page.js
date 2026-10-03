@@ -264,7 +264,7 @@ export default function AdminProblemsPage() {
   return (
     <div className="flex min-h-screen">
       <AdminSidebar onLogout={handleLogout} />
-      <main className="flex-1 bg-gray-50 min-h-screen">
+      <main className="flex-1 bg-white min-h-screen">
         <div className="max-w-7xl mx-auto py-10 px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4 border-b pb-4">
             <div className="flex items-center gap-3">

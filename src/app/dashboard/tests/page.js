@@ -166,7 +166,7 @@ export default function TestListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header Section - This Week Dashboard */}
       <div className="bg-white py-8 px-6 border-b border-gray-200">
         <div className="max-w-7xl mx-auto">
@@ -410,7 +410,7 @@ export default function TestListPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {getFilteredItems(tests, searchTerm).map(test => (
                   <div key={test._id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-gray-100">
-                    <div className="bg-gradient-to-r from-purple-400 to-purple-600 p-4 text-white">
+                    <div className="bg-gradient-to-r from-green-500 to-green-700 p-4 text-white">
                       <h3 className="text-lg font-semibold">{test.title}</h3>
                       <p className="text-sm opacity-90">{formatCategoryName(test.category)}</p>
                     </div>
@@ -427,7 +427,7 @@ export default function TestListPage() {
                         // attempt=new is the sanctioned entry point: it releases the lock
                         // left by a previous submission so a fresh attempt can start
                         href={`/dashboard/tests/${test._id}?attempt=new`}
-                        className="w-full bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition-colors font-medium text-center block"
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
                       >
                         Start Test
                       </Link>
